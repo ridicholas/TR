@@ -1,21 +1,21 @@
-nohup python3 -u main.py -d 'heart_disease' -i 0 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log0_heart_calibrated_standard_cost0.out &
-nohup python3 -u main.py -d 'heart_disease' -i 1 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log1_heart_calibrated_standard_cost0.out &
-nohup python3 -u main.py -d 'heart_disease' -i 2 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log2_heart_calibrated_standard_cost0.out &
-nohup python3 -u main.py -d 'heart_disease' -i 3 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log3_heart_calibrated_standard_cost0.out &
-nohup python3 -u main.py -d 'heart_disease' -i 4 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log4_heart_calibrated_standard_cost0.out &
-nohup python3 -u main.py -d 'heart_disease' -i 5 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log5_heart_calibrated_standard_cost0.out &
-nohup python3 -u main.py -d 'heart_disease' -i 6 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log6_heart_calibrated_standard_cost0.out &
-nohup python3 -u main.py -d 'heart_disease' -i 7 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log7_heart_calibrated_standard_cost0.out &
-nohup python3 -u main.py -d 'heart_disease' -i 8 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log8_heart_calibrated_standard_cost0.out &
-nohup python3 -u main.py -d 'heart_disease' -i 9 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log9_heart_calibrated_standard_cost0.out &
-nohup python3 -u main.py -d 'heart_disease' -i 10 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log10_heart_calibrated_standard_cost0.out &
-nohup python3 -u main.py -d 'heart_disease' -i 11 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log11_heart_calibrated_standard_cost0.out &
-nohup python3 -u main.py -d 'heart_disease' -i 12 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log12_heart_calibrated_standard_cost0.out &
-nohup python3 -u main.py -d 'heart_disease' -i 13 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log13_heart_calibrated_standard_cost0.out &
-nohup python3 -u main.py -d 'heart_disease' -i 14 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log14_heart_calibrated_standard_cost0.out &
-nohup python3 -u main.py -d 'heart_disease' -i 15 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log15_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 0 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log0_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 1 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log1_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 2 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log2_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 3 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log3_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 4 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log4_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 5 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log5_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 6 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log6_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 7 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log7_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 8 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log8_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 9 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log9_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 10 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log10_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 11 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log11_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 12 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log12_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 13 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log13_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 14 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log14_heart_calibrated_standard_cost0.out &
+#nohup python3 -u main.py -d 'heart_disease' -i 15 -h 'calibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log15_heart_calibrated_standard_cost0.out &
 
-wait
+#wait
 
 nohup python3 -u main.py -d 'heart_disease' -i 0 -h 'miscalibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log0_heart_miscalibrated_standard_cost0.out &
 nohup python3 -u main.py -d 'heart_disease' -i 1 -h 'miscalibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log1_heart_miscalibrated_standard_cost0.out &
@@ -34,7 +34,9 @@ nohup python3 -u main.py -d 'heart_disease' -i 13 -h 'miscalibrated' -r 'standar
 nohup python3 -u main.py -d 'heart_disease' -i 14 -h 'miscalibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log14_heart_miscalibrated_standard_cost0.out &
 nohup python3 -u main.py -d 'heart_disease' -i 15 -h 'miscalibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log15_heart_miscalibrated_standard_cost0.out &
 
+echo 'miscal running'
 wait
+echo 'starting slightly miscal'
 
 nohup python3 -u main.py -d 'heart_disease' -i 0 -h 'slightly_miscalibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log0_heart_slightly_miscalibrated_standard_cost0.out &
 nohup python3 -u main.py -d 'heart_disease' -i 1 -h 'slightly_miscalibrated' -r 'standard' -c 0 -n False -w 'hyrs,brs,tr' > ../logs/log1_heart_slightly_miscalibrated_standard_cost0.out &
