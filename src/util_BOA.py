@@ -86,10 +86,21 @@ def brs_predict_conf(rules, df, brs_model):
         rule_index = brs_model.rules.index(rule)
         rule_conf = brs_model.p_precision_matrix[:, rule_index].max()
         Z[i] = (np.sum(df[list(rule)],axis=1)==len(rule)).astype(int) * rule_conf
-    neg_conf = (brs_predict(rules, brs_model.df)[brs_predict(rules, brs_model.df) == 0] == brs_model.Y[brs_predict(rules, brs_model.df) == 0]).sum()/(brs_predict(rules, brs_model.df) == 0).sum()
+    if (brs_predict(rules, brs_model.df) == 0).sum() == 0:
+        neg_conf = 0
+    else:
+        neg_conf = (brs_predict(rules, brs_model.df)[brs_predict(rules, brs_model.df) == 0] == brs_model.Y[brs_predict(rules, brs_model.df) == 0]).sum()/(brs_predict(rules, brs_model.df) == 0).sum()
     Yhat_conf = (np.max(Z,axis=0))
     Yhat_conf[Yhat_conf == 0] = neg_conf
     return Yhat_conf
+
+def brs_humanifyPreds(preds, conf_model, Yb, conf_human, fA):
+        agreement = preds == Yb
+        paccept = fA(conf_human, conf_model, agreement)
+        accept = bernoulli.rvs(paccept, size=len(paccept)).astype(bool)    
+        finalPreds = Yb.copy()
+        finalPreds[accept] = preds[accept]
+        return finalPreds
 
 
 

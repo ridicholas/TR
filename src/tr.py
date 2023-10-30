@@ -192,7 +192,7 @@ class tr(object):
     def get_model_conf_agreement(self, df, Yb, prs_min=None, nrs_min=None):
         if prs_min == None:
             prs_min = self.prs_min
-        if nrs_min == None:
+        if nrs_min == None: 
             nrs_min = self.nrs_min
         #get max confidence of each rule 
         prules = [self.prules[i] for i in prs_min]
@@ -1000,6 +1000,18 @@ def binary_code(df,collist,Nlevel):
             threshold = df[col].quantile(float(q)/Nlevel)
             df[col+'_geq_'+str(int(q))+'q'] = (df[col] >= threshold).astype(float)
     df.drop(collist,axis = 1, inplace = True)
+
+
+def make_lite(self):
+    self.df = None
+    self.Y = None
+    self.pRMatrix = None
+    self.nRMatrix = None
+    self.p_precision_matrix = None
+    self.n_precision_matrix = None
+
+    return 0 
+
 
 
 

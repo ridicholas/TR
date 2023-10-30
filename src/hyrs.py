@@ -602,6 +602,16 @@ class hyrs(object):
         finalPreds = Yb.copy()
         finalPreds[accept] = preds[accept]
         return finalPreds
+    
+    def make_lite(self):
+        self.df = None
+        self.Y = None
+        self.pRMatrix = None
+        self.nRMatrix = None
+        self.p_precision_matrix = None
+        self.n_precision_matrix = None
+
+        return 0 
 
 
 def accumulate(iterable, func=operator.add):
@@ -677,3 +687,5 @@ def binary_code(df, collist, Nlevel):
             threshold = df[col].quantile(float(q) / Nlevel)
             df[col + '_geq_' + str(int(q)) + 'q'] = (df[col] >= threshold).astype(float)
     df.drop(collist, axis=1, inplace=True)
+
+

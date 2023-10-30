@@ -11,6 +11,7 @@ import pickle
 from scipy.stats import bernoulli, uniform
 from sklearn.metrics import accuracy_score, auc, roc_auc_score, roc_curve, mean_squared_error
 import numpy as np
+from sklearn.model_selection import train_test_split
 
 class ADB(object):
     def __init__(self, adb_model) -> None:
@@ -77,7 +78,10 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         with open(f'results/{dataset}/run{run_num}/conf_model_{human_name}.pkl', 'rb') as f:
             conf_model = pickle.load(f)
     #train ADB model
-    initial_task_model = LogisticRegression().fit(x_train.iloc[0:5, :], y_train.iloc[0:5])
+
+    _, x_initial, _, y_initial = train_test_split(x_train, y_train, test_size=5/len(y_train), stratify=y_train)
+    initial_task_model = xgb.XGBClassifier().fit(x_initial, y_initial)
+    
 
     if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl'):
 
@@ -137,6 +141,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
         #write hyrs model
         with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/hyrs_model_{human_name}.pkl', 'wb') as f:
+            hyrs_model.make_lite()
             pickle.dump(hyrs_model, f)
     
     if 'brs' in which_models: 
@@ -145,10 +150,11 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         brs_model.set_parameters()
 
        
-        _ = brs_model.fit(Niteration=Niteration, Nchain=1, print_message=False)
+        _ = brs_model.fit(Niteration=Niteration, Nchain=1, print_message=True)
 
         #write brs model
         with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/brs_model.pkl', 'wb') as f:
+            brs_model.make_lite()
             pickle.dump(brs_model, f)
 
     if 'tr' in which_models:
@@ -167,12 +173,18 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         tr_model.generate_rulespace(supp = supp, maxlen=maxlen, N=Nrules, need_negcode=True, method='randomforest',criteria='precision')
         _, _, _ = tr_model.train(Niteration=Niteration, T0=0.01, print_message=False)
 
-        
+        #write ey and eyb models
+        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name}.pkl', 'wb') as f:
+            pickle.dump(e_y_mod, f)
+        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/eyb_model_{human_name}.pkl', 'wb') as f:
+            pickle.dump(e_yb_mod, f)
+
         #write tr model
         with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr_model_{human_name}.pkl', 'wb') as f:
+            tr_model.make_lite()
             pickle.dump(tr_model, f)
 
-#run('heart_disease', 2, 'slightly_miscalibrated', runtype='standard', which_models=['hyrs','brs','tr'], contradiction_reg=0.4, remake_humans=False)
+#run('heart_disease', 0, 'calibrated', runtype='standard', which_models=['hyrs', 'brs', 'tr'], contradiction_reg=0.0, remake_humans=True)
 
 
 

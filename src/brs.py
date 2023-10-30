@@ -192,11 +192,13 @@ class brs(object):
         if keep_most_accurate_model:
             acc_list = [acc[chain] for chain in range(Nchain)]
             index = acc_list.index(max(acc_list))
-            return [self.rules[i] for i in most_accurate_model[index]]
+            self.opt_rules = [self.rules[i] for i in most_accurate_model[index]]
+            return self.opt_rules
         else:
             pt_max = [sum(maps[chain][-1][1]) for chain in range(Nchain)]
             index = pt_max.index(max(pt_max))
-            return maps[index][-1][3]
+            self.opt_rules = maps[index][-1][3]
+            return self.opt_rules
 
     def propose(self, rules_curr, rules_norm, q):
         nRules = len(self.rules)
@@ -323,5 +325,14 @@ class brs(object):
         for rule_index in rules_max:
             print(self.rules[rule_index])
 
+
+    def make_lite(self):
+        self.df = None
+        self.Y = None
+        self.RMatrix = None
+
+
+
+        return 0 
     
 
