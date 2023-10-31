@@ -275,7 +275,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 costs = [0]
 num_runs = 5
-name = 'miscalibrated'
+name = 'slightly_miscalibrated'
 
 r_means, r_stderrs, rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
