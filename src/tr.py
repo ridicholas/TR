@@ -882,6 +882,16 @@ class tr(object):
 
         
         return Yhat,covered,Yb
+    
+    def make_lite(self):
+        self.df = None
+        self.Y = None
+        self.pRMatrix = None
+        self.nRMatrix = None
+        self.p_precision_matrix = None
+        self.n_precision_matrix = None
+
+        return 0 
 
     def predictHumanInLoop(self, df, Yb, conf_human, fA, with_reset=False, p_yb=None, p_y=None):
         prules = [self.prules[i] for i in self.prs_min]
@@ -1002,15 +1012,7 @@ def binary_code(df,collist,Nlevel):
     df.drop(collist,axis = 1, inplace = True)
 
 
-def make_lite(self):
-    self.df = None
-    self.Y = None
-    self.pRMatrix = None
-    self.nRMatrix = None
-    self.p_precision_matrix = None
-    self.n_precision_matrix = None
 
-    return 0 
 
 
 
