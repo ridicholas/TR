@@ -50,7 +50,7 @@ def load_humans(dataset, setting, run_num):
 costs = [0, 1, 2
          ]
 
-def make_results(dataset, whichtype, num_runs, costs):
+def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
     #create dataframe of empty lists with column headers below
 
@@ -84,6 +84,11 @@ def make_results(dataset, whichtype, num_runs, costs):
         
         bar=progressbar.ProgressBar()
         x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized = load_datasets('heart_disease', run)
+
+        if validation==True:
+            x_test = x_val
+            y_test = y_val
+            x_test_non_binarized = x_val_non_binarized
 
         human, adb_mod, conf_mod = load_humans(dataset, whichtype, run)
 
@@ -263,7 +268,7 @@ def make_results(dataset, whichtype, num_runs, costs):
 
     results_stderrs = results.apply(lambda x: x.apply(lambda y: np.std(y)/np.sqrt(len(y))))
 
-    return results_means, results_stderrs
+    return results_means, results_stderrs, results
 
 
 
@@ -272,7 +277,9 @@ costs = [0]
 num_runs = 5
 name = 'miscalibrated'
 
-r_means, r_stderrs = make_results('heart_disease', name, num_runs, costs)
+r_means, r_stderrs, rs = make_results('heart_disease', name, num_runs, costs, False)
+#val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
+
 
 
 '''
