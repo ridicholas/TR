@@ -69,13 +69,13 @@ class Human(object):
     def heart_confidence_transformation(self, X=None, t_type=None):
         if t_type==None or t_type=='calibrated':
             confidences = np.zeros(X.shape[0])
-            confidences[X['sex_Male'] == 0] = 0.5
+            confidences[X['sex_Male'] == 0] = 0
             confidences[X['sex_Male'] == 1] = 0.9
 
         if t_type=='miscalibrated':
             confidences = np.zeros(X.shape[0])
             confidences[X['sex_Male'] == 0] = 0.9
-            confidences[X['sex_Male'] == 1] = 0.5
+            confidences[X['sex_Male'] == 1] = 0
         if t_type=='slightly_miscalibrated':
             confidences = self.slightly_miscalibrated_confidences_heart_1(X)
         
@@ -86,8 +86,8 @@ class Human(object):
         decisions = y.copy()
         #low accuracy on females, 50%
         flip_females = bernoulli.rvs(p=0.5, size=len(decisions)).astype(bool)
-        #higher accuracy on males, 90%
-        flip_males = bernoulli.rvs(p=0.1, size=len(decisions)).astype(bool)
+        #higher accuracy on males, 95%
+        flip_males = bernoulli.rvs(p=0.05, size=len(decisions)).astype(bool)
         decisions[(X['sex_Male'] == 0) & flip_females] = 1-decisions[(X['sex_Male'] == 0) & flip_females]
         decisions[(X['sex_Male'] == 1) & flip_males] = 1-decisions[(X['sex_Male'] == 1) & flip_males]
 
@@ -95,8 +95,8 @@ class Human(object):
     
     def slightly_miscalibrated_confidences_heart_1(self, X):
         confidences = np.zeros(X.shape[0])
-        confidences[X['age54.0'] == 0] = np.random.randint(97,100,len(confidences[X['age54.0'] == 0]))/100
-        confidences[X['age54.0'] == 1] = np.random.randint(0,20,len(confidences[X['age54.0'] == 1]))/100
+        confidences[X['age54.0'] == 0] = np.random.randint(98,100,len(confidences[X['age54.0'] == 0]))/100
+        confidences[X['age54.0'] == 1] = np.random.randint(0,10,len(confidences[X['age54.0'] == 1]))/100
 
         return confidences
 
