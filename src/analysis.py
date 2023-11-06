@@ -293,14 +293,14 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-costs = [0, 0.2]
+costs = [0]
 num_runs = 5
 name = 'calibrated'
 
 #cal_r_means, cal_r_stderrs, cal_rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
-bias_r_means, bias_r_stderrs, bias_rs = make_results('heart_disease', 'slightly_miscalibrated', num_runs, costs, False)
-val_r_means, val_bias_r_stderrs, val_bias_rs = make_results('heart_disease', 'slightly_miscalibrated', num_runs, costs, True)
+bias_r_means, bias_r_stderrs, bias_rs = make_results('heart_disease', 'calibrated', num_runs, costs, False)
+val_r_means, val_bias_r_stderrs, val_bias_rs = make_results('heart_disease', 'calibrated', num_runs, costs, True)
 
 
 robust_rs = bias_rs.copy()
