@@ -48,8 +48,7 @@ def load_humans(dataset, setting, run_num):
         conf_model = pickle.load(f)
     return human, adb_model, conf_model
 
-costs = [0, 1, 2
-         ]
+
 
 def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
@@ -77,8 +76,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                                 'hyrs_team_objective':[[]],
                                 'brs_model_objective': [[]],
                                 'brs_team_objective': [[]],
-                                'human_decision_loss': [[]]}, index=[0]
+                                'human_decision_loss': [[]]}, index=[costs[0]]
                             )
+
+    for cost in costs[1:]:
+        results.loc[cost] = [[] for i in range(len(results.columns))]
+
     bar=progressbar.ProgressBar()
     for run in bar(range(num_runs)):
 
@@ -92,6 +95,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             x_test_non_binarized = x_val_non_binarized
 
         human, adb_mod, conf_mod = load_humans(dataset, whichtype, run)
+        human.dataset = dataset
 
         brs_mod = load_results(dataset, whichtype , run, 0.0, 'brs')
 
@@ -144,7 +148,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                 brs_model_preds = brs_predict(brs_mod.opt_rules, x_test)
                 brs_conf = brs_predict_conf(brs_mod.opt_rules, x_test, brs_mod)
 
-            for i in range(15):
+            for i in range(1):
                 
 
 
@@ -159,8 +163,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     hyrs_model_preds = hyrs_mod.predict(x_test, human.get_decisions(x_test, y_test))[0]
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human.get_decisions(x_test, y_test), conf_mod.predict(x_test_non_binarized), learned_adb.ADB_model_wrapper, x_test)
 
-                
-                    brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human.get_decisions(x_test, y_test), conf_mod.predict(x_test_non_binarized), learned_adb.ADB_model_wrapper)
+                    if cost == 0.0:
+                        brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human.get_decisions(x_test, y_test), conf_mod.predict(x_test_non_binarized), learned_adb.ADB_model_wrapper)
                 else:
                     tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human.get_decisions(x_test, y_test), human.get_confidence(x_test), human.ADB, with_reset=True, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human.get_decisions(x_test, y_test), human.get_confidence(x_test), human.ADB, with_reset=False, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
@@ -171,8 +175,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     hyrs_model_preds = hyrs_mod.predict(x_test, human.get_decisions(x_test, y_test))[0]
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human.get_decisions(x_test, y_test), human.get_confidence(x_test), human.ADB, x_test)
 
-                    
-                    brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human.get_decisions(x_test, y_test), human.get_confidence(x_test), human.ADB)
+                    if cost == 0.0:
+                        brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human.get_decisions(x_test, y_test), human.get_confidence(x_test), human.ADB)
 
                 tr_team_w_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_with_reset, y_test))
                 tr_team_wo_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_no_reset, y_test))
@@ -289,28 +293,29 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-costs = [0]
+costs = [0, 0.2]
 num_runs = 5
 name = 'calibrated'
 
 #cal_r_means, cal_r_stderrs, cal_rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
-val_r_means, val_bias_r_stderrs, val_bias_rs = make_results('heart_disease', 'slightly_miscalibrated', num_runs, costs, True)
 bias_r_means, bias_r_stderrs, bias_rs = make_results('heart_disease', 'slightly_miscalibrated', num_runs, costs, False)
+val_r_means, val_bias_r_stderrs, val_bias_rs = make_results('heart_disease', 'slightly_miscalibrated', num_runs, costs, True)
+
 
 robust_rs = bias_rs.copy()
-for i in range(len(val_bias_rs['tr_team_w_reset_objective'][0])):
-    if val_bias_rs['tr_team_w_reset_objective'][0][i] > val_bias_rs['hyrs_team_objective'][0][i]:
-        if val_bias_rs['hyrs_team_objective'][0][i] > val_bias_rs['brs_team_objective'][0][i]:
-            robust_rs['tr_team_w_reset_objective'][0][i] = bias_rs['brs_team_objective'][0][i]
-            robust_rs['tr_model_w_reset_contradictions'][0][i] = bias_rs['brs_model_contradictions'][0][i]
-            robust_rs['tr_team_w_reset_decision_loss'][0][i] = bias_rs['brs_team_decision_loss'][0][i]
+for i in range(len(val_bias_rs['tr_team_w_reset_objective'][0.2])):
+    if val_bias_rs['tr_team_w_reset_objective'][0.2][i] > val_bias_rs['hyrs_team_objective'][0.2][i]:
+        if val_bias_rs['hyrs_team_objective'][0.2][i] > val_bias_rs['brs_team_objective'][0.2][i]:
+            robust_rs['tr_team_w_reset_objective'][0.2][i] = bias_rs['brs_team_objective'][0.2][i]
+            robust_rs['tr_model_w_reset_contradictions'][0.2][i] = bias_rs['brs_model_contradictions'][0.2][i]
+            robust_rs['tr_team_w_reset_decision_loss'][0.2][i] = bias_rs['brs_team_decision_loss'][0.2][i]
 
 
         else:
-            robust_rs['tr_team_w_reset_objective'][0][i] = bias_rs['hyrs_team_objective'][0][i]
-            robust_rs['tr_model_w_reset_contradictions'][0][i] = bias_rs['hyrs_model_contradictions'][0][i]
-            robust_rs['tr_team_w_reset_decision_loss'][0][i] = bias_rs['hyrs_team_decision_loss'][0][i]
+            robust_rs['tr_team_w_reset_objective'][0.2][i] = bias_rs['hyrs_team_objective'][0.2][i]
+            robust_rs['tr_model_w_reset_contradictions'][0.2][i] = bias_rs['hyrs_model_contradictions'][0.2][i]
+            robust_rs['tr_team_w_reset_decision_loss'][0.2][i] = bias_rs['hyrs_team_decision_loss'][0.2][i]
 
 #mis_r_means, mis_r_stderrs, mis_rs = make_results('heart_disease', 'miscalibrated', num_runs, costs, False)
 

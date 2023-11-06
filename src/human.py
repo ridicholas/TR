@@ -4,21 +4,33 @@ import pandas as pd
 from scipy.stats import bernoulli, uniform
 
 class Human(object):
-    def __init__(self, name, X, y) -> None:
+    def __init__(self, name, X, y, dataset=None) -> None:
         self.name = name
         self.X = X.dropna(axis=1)
         self.y = y
         self.model = LogisticRegression().fit(self.X, y)
-        self.custom_decision_func = None
-        self.custom_confidence_func = None
+        self.dataset = dataset
+        self.confVal = 0.5
 
 
     
     def get_confidence(self, X):
-        return self.heart_confidence_transformation(X=X, t_type=self.name)
+        if self.dataset == 'heart_disease':
+            return self.heart_confidence_transformation(X=X, t_type=self.name)
+        elif self.dataset == 'fico':
+            return self.fico_confidence_transformation(X=X, t_type=self.name)
+        
+    def set_confVal(self, val):
+        self.confVal = val
 
     def get_decisions(self, X, y):
-        return self.heart_decision_transformation(X, y, t_type=self.name)
+        decisions = y.copy()
+        model_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+        #low accuracy 50%
+        low = bernoulli.rvs(p=0.5, size=len(decisions)).astype(bool)
+        decisions[(model_confidences > self.confVal) & low] = 1-decisions[(model_confidences > self.confVal) & low]
+
+        return decisions
 
     def get_final_decisions(self, X, c_model, advice):
         c_human = self.get_confidence(X)
@@ -60,47 +72,90 @@ class Human(object):
 
         return prob
 
-    def heart_decision_transformation(self, X=None, y=None, t_type=None):
 
-        return self.slightly_miscalibrated_decisions_heart_1(X, y)
 
         
     
     def heart_confidence_transformation(self, X=None, t_type=None):
         if t_type==None or t_type=='calibrated':
+            start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences > self.confVal] = 0
+        if t_type=='miscalibrated':
+            start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0
+        if t_type=='biased':
+            confidences = self.bias_confidences_heart_1(X)
+        if t_type=='offset_02':
+            start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+            confidences = np.ones(X.shape[0]) - 0.2
+            confidences[start_confidences > self.confVal] = 0.2
+
+
+        
+        return confidences
+    
+    def fico_confidence_transformation(self, X=None, t_type=None):
+        if t_type==None or t_type=='calibrated':
             confidences = np.zeros(X.shape[0])
-            confidences[X['sex_Male'] == 0] = 0
-            confidences[X['sex_Male'] == 1] = 0.9
+            confidences[X['ExternalRiskEstimate65.0'] == 1] = 0
+            confidences[X['ExternalRiskEstimate65.0'] == 0] = 0.9
 
         if t_type=='miscalibrated':
             confidences = np.zeros(X.shape[0])
-            confidences[X['sex_Male'] == 0] = 0.9
-            confidences[X['sex_Male'] == 1] = 0
+            confidences[X['ExternalRiskEstimate65.0'] == 1] = 0.9
+            confidences[X['ExternalRiskEstimate65.0'] == 0] = 0
         if t_type=='slightly_miscalibrated':
-            confidences = self.slightly_miscalibrated_confidences_heart_1(X)
+            confidences = self.slightly_miscalibrated_confidences_fico_1(X)
         
         return confidences
     
     #dataset specific behaviors
     def slightly_miscalibrated_decisions_heart_1(self, X, y):
         decisions = y.copy()
-        #low accuracy on females, 50%
-        flip_females = bernoulli.rvs(p=0.5, size=len(decisions)).astype(bool)
-        #higher accuracy on males, 95%
-        flip_males = bernoulli.rvs(p=0.05, size=len(decisions)).astype(bool)
-        decisions[(X['sex_Male'] == 0) & flip_females] = 1-decisions[(X['sex_Male'] == 0) & flip_females]
-        decisions[(X['sex_Male'] == 1) & flip_males] = 1-decisions[(X['sex_Male'] == 1) & flip_males]
+        model_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+        #low accuracy 50%
+        low = bernoulli.rvs(p=0.5, size=len(decisions)).astype(bool)
+        decisions[(model_confidences < self.confVal) & low] = 1-decisions[(model_confidences < self.confVal) & low]
+        
 
         return decisions
     
-    def slightly_miscalibrated_confidences_heart_1(self, X):
+    def slightly_miscalibrated_decisions_fico_1(self, X, y):
+        decisions = y.copy()
+        #low accuracy on high_est, 50%
+        flip_high_est = bernoulli.rvs(p=0.5, size=len(decisions)).astype(bool)
+        #higher accuracy on low_est, 80%
+        flip_low_est = bernoulli.rvs(p=0.2, size=len(decisions)).astype(bool)
+        decisions[(X['ExternalRiskEstimate65.0'] == 0) &  flip_low_est] = 1-decisions[(X['ExternalRiskEstimate65.0'] == 0) &  flip_low_est]
+        decisions[(X['ExternalRiskEstimate65.0'] == 1) & flip_high_est] = 1-decisions[(X['ExternalRiskEstimate65.0'] == 1) & flip_high_est]
+
+        return decisions
+
+    def bias_confidences_heart_1(self, X):
         confidences = np.zeros(X.shape[0])
         confidences[X['age54.0'] == 0] = np.random.randint(98,100,len(confidences[X['age54.0'] == 0]))/100
         confidences[X['age54.0'] == 1] = np.random.randint(0,10,len(confidences[X['age54.0'] == 1]))/100
 
         return confidences
+    
+    def slightly_miscalibrated_confidences_fico_1(self, X):
+        confidences = np.zeros(X.shape[0])
+        confidences[X['NumSatisfactoryTrades24.0'] == 0] = np.random.randint(98,100,len(confidences[X['NumSatisfactoryTrades24.0'] == 0]))/100
+        confidences[X['NumSatisfactoryTrades24.0'] == 1] = np.random.randint(0,10,len(confidences[X['NumSatisfactoryTrades24.0'] == 1]))/100
 
+        return confidences
+    
+    '''
+    def slightly_miscalibrated_confidences_heart_1(self, X):
+        confidences = np.zeros(X.shape[0])
+        confidences = np.random.randint(99,100,len(confidences))/100
+        confidences[(X['age54.0'] == 1) & (X('sex_Male') == 1)] = np.random.randint(0,10,len(confidences[(X['age54.0'] == 1) & (X('sex_Male') == 1)]))/100
 
+        return confidences
+
+    '''
 
     
 

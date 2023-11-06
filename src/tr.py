@@ -287,12 +287,12 @@ class tr(object):
         model_conf_curr, _ = self.get_model_conf_agreement(self.df, self.Yb, prs_min=prs_curr, nrs_min=nrs_curr)
 
         #reset responses using expection
-        reset = self.expected_loss_filter(self.df, rulePreds_curr, conf_human=self.conf_human, 
-                                          prs=prs_curr, nrs=nrs_curr, p_yb=p_yb, p_y=p_y, 
-                                          e_human_responses=e_human_responses, conf_model=model_conf_curr)
-        p[reset] = False
-        n[reset] = False
-        rulePreds_curr[reset] = self.Yb[reset]
+        #reset = self.expected_loss_filter(self.df, rulePreds_curr, conf_human=self.conf_human, 
+        #                                  prs=prs_curr, nrs=nrs_curr, p_yb=p_yb, p_y=p_y, 
+        #                                  e_human_responses=e_human_responses, conf_model=model_conf_curr)
+        #p[reset] = False
+        #n[reset] = False
+        #rulePreds_curr[reset] = self.Yb[reset]
 
 
         fairness_curr = 0
@@ -387,14 +387,14 @@ class tr(object):
                 rulePreds_new[ncovered_new] = 0
                 rulePreds_new[pcovered_new] = 1
                 model_conf_new, _ = self.get_model_conf_agreement(self.df, self.Yb, prs_min=prs_new, nrs_min=nrs_new)
-                reset = self.expected_loss_filter(self.df, rulePreds_new, conf_human=self.conf_human, 
-                                                  prs=prs_new, nrs=nrs_new, p_yb=p_yb, p_y=p_y, 
-                                                  e_human_responses=e_human_responses,conf_model=model_conf_new)
-                rulePreds_new[reset] = self.Yb[reset]
-                pcovered_new[reset] = 0
-                ncovered_new[reset] = 0
-                overlap_new[reset] = 0
-                covered_new[reset] = 0
+               #reset = self.expected_loss_filter(self.df, rulePreds_new, conf_human=self.conf_human, 
+               #                                   prs=prs_new, nrs=nrs_new, p_yb=p_yb, p_y=p_y, 
+               #                                   e_human_responses=e_human_responses,conf_model=model_conf_new)
+               # rulePreds_new[reset] = self.Yb[reset]
+               # pcovered_new[reset] = 0
+               # ncovered_new[reset] = 0
+               # overlap_new[reset] = 0
+               # covered_new[reset] = 0
 
             if len(prs_new) > 0:
                 p_model_conf_new = np.max(self.p_precision_matrix[:,prs_new],axis = 1)
@@ -562,7 +562,7 @@ class tr(object):
         else:
             self.Paccept = np.ones(len(self.Y))
         err = (np.abs(self.Y - Yhat) * self.Paccept) + (np.abs(self.Y - self.Yb) * (1-self.Paccept)) * asymCosts
-        contras = np.where((rulePreds != self.Yb) & covered & (self.Paccept < self.contradiction_reg))[0] 
+        contras = np.where((rulePreds != self.Yb))[0] 
         err[contras] += self.contradiction_reg
 
         #if random() <= 0.5: #randomly allow for top 5% of errors or take max error only
