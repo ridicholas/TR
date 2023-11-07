@@ -80,17 +80,20 @@ class Human(object):
         if t_type==None or t_type=='calibrated':
             start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
             confidences = np.ones(X.shape[0])
-            confidences[start_confidences > self.confVal] = 0
+            confidences[start_confidences > self.confVal] = 0.1
+            confidences[start_confidences <= self.confVal] = 0.9
         if t_type=='miscalibrated':
             start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
             confidences = np.ones(X.shape[0])
-            confidences[start_confidences <= self.confVal] = 0
+            confidences[start_confidences > self.confVal] = 0.9
+            confidences[start_confidences <= self.confVal] = 0.1
         if t_type=='biased':
             confidences = self.bias_confidences_heart_1(X)
         if t_type=='offset_02':
             start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
-            confidences = np.ones(X.shape[0]) - 0.2
-            confidences[start_confidences > self.confVal] = 0.2
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.9 - 0.2
+            confidences[start_confidences > self.confVal] = 0.1 + 0.2
 
 
         
@@ -115,7 +118,10 @@ class Human(object):
     def slightly_miscalibrated_decisions_heart_1(self, X, y):
         decisions = y.copy()
         model_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
-        #low accuracy 50%
+        #high accuracy 95%
+        high = bernoulli.rvs(p=0.05, size=len(decisions)).astype(bool)
+        decisions[high] = 1-decisions[high]
+        #low accuracy 55%
         low = bernoulli.rvs(p=0.5, size=len(decisions)).astype(bool)
         decisions[(model_confidences < self.confVal) & low] = 1-decisions[(model_confidences < self.confVal) & low]
         

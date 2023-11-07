@@ -148,35 +148,42 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                 brs_model_preds = brs_predict(brs_mod.opt_rules, x_test)
                 brs_conf = brs_predict_conf(brs_mod.opt_rules, x_test, brs_mod)
 
-            for i in range(1):
+            for i in range(25):
+                
                 
 
-
                 if validation: 
+
+                    human_decisions = human.get_decisions(x_test, y_test)
+                    human_conf = human.get_confidence(x_test)
+                    conf_mod_preds = conf_mod.predict(x_test_non_binarized)
+
                     learned_adb = ADB(adb_mod)
-                    tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human.get_decisions(x_test, y_test), conf_mod.predict(x_test_non_binarized), learned_adb.ADB_model_wrapper, with_reset=True, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human.get_decisions(x_test, y_test), conf_mod.predict(x_test_non_binarized), learned_adb.ADB_model_wrapper, with_reset=False, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, conf_mod_preds, learned_adb.ADB_model_wrapper, with_reset=True, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, conf_mod_preds, learned_adb.ADB_model_wrapper, with_reset=False, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
-                    tr_model_preds_with_reset = tr_mod.predict(x_test, human.get_decisions(x_test, y_test), with_reset=True, conf_human=conf_mod.predict(x_test_non_binarized), p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    tr_model_preds_no_reset = tr_mod.predict(x_test, human.get_decisions(x_test, y_test), with_reset=False, conf_human=conf_mod.predict(x_test_non_binarized), p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr_model_preds_with_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=conf_mod_preds, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=conf_mod_preds, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
-                    hyrs_model_preds = hyrs_mod.predict(x_test, human.get_decisions(x_test, y_test))[0]
-                    hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human.get_decisions(x_test, y_test), conf_mod.predict(x_test_non_binarized), learned_adb.ADB_model_wrapper, x_test)
+                    hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
+                    hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, conf_mod_preds, learned_adb.ADB_model_wrapper, x_test)
 
                     if cost == 0.0:
-                        brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human.get_decisions(x_test, y_test), conf_mod.predict(x_test_non_binarized), learned_adb.ADB_model_wrapper)
+                        brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, conf_mod_preds, learned_adb.ADB_model_wrapper)
                 else:
-                    tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human.get_decisions(x_test, y_test), human.get_confidence(x_test), human.ADB, with_reset=True, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human.get_decisions(x_test, y_test), human.get_confidence(x_test), human.ADB, with_reset=False, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    human_decisions = human.get_decisions(x_test, y_test)
+                    human_conf = human.get_confidence(x_test)
+                    tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions,human_conf, human.ADB, with_reset=False, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
-                    tr_model_preds_with_reset = tr_mod.predict(x_test, human.get_decisions(x_test, y_test), with_reset=True, conf_human=human.get_confidence(x_test), p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    tr_model_preds_no_reset = tr_mod.predict(x_test, human.get_decisions(x_test, y_test), with_reset=False, conf_human=human.get_confidence(x_test), p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr_model_preds_with_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
-                    hyrs_model_preds = hyrs_mod.predict(x_test, human.get_decisions(x_test, y_test))[0]
-                    hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human.get_decisions(x_test, y_test), human.get_confidence(x_test), human.ADB, x_test)
+                    hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
+                    hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
 
                     if cost == 0.0:
-                        brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human.get_decisions(x_test, y_test), human.get_confidence(x_test), human.ADB)
+                        brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
 
                 tr_team_w_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_with_reset, y_test))
                 tr_team_wo_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_no_reset, y_test))
@@ -187,10 +194,10 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                 brs_model_decision_loss.append(1 - accuracy_score(brs_model_preds, y_test))
                 brs_team_decision_loss.append(1 - accuracy_score(brs_team_preds, y_test))
 
-                tr_model_w_reset_contradictions.append((tr_model_preds_with_reset != human.get_decisions(x_test,y_test)).sum())
-                tr_model_wo_reset_contradictions.append((tr_model_preds_no_reset != human.get_decisions(x_test,y_test)).sum())
-                hyrs_model_contradictions.append((hyrs_model_preds != human.get_decisions(x_test,y_test)).sum())
-                brs_model_contradictions.append((brs_model_preds != human.get_decisions(x_test,y_test)).sum())
+                tr_model_w_reset_contradictions.append((tr_model_preds_with_reset != human_decisions).sum())
+                tr_model_wo_reset_contradictions.append((tr_model_preds_no_reset != human_decisions).sum())
+                hyrs_model_contradictions.append((hyrs_model_preds != human_decisions).sum())
+                brs_model_contradictions.append((brs_model_preds != human_decisions).sum())
 
                 tr_team_w_reset_objective.append(tr_team_w_reset_decision_loss[-1] + cost*(tr_model_w_reset_contradictions[-1])/len(y_test))
                 tr_team_wo_reset_objective.append(tr_team_wo_reset_decision_loss[-1] + cost*(tr_model_wo_reset_contradictions[-1])/len(y_test))
@@ -201,7 +208,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                 brs_model_objective.append(brs_model_decision_loss[-1] + cost*(brs_model_contradictions[-1])/len(y_test))
                 brs_team_objective.append(brs_team_decision_loss[-1] + cost*(brs_model_contradictions[-1])/len(y_test))
 
-                human_decision_loss.append(1 - accuracy_score(human.get_decisions(x_test, y_test), y_test))
+                human_decision_loss.append(1 - accuracy_score(human_decisions, y_test))
 
 
                 print(i)
@@ -293,29 +300,31 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-costs = [0]
+costs = [0.0, 0.2]
 num_runs = 5
 name = 'calibrated'
 
 #cal_r_means, cal_r_stderrs, cal_rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
-bias_r_means, bias_r_stderrs, bias_rs = make_results('heart_disease', 'calibrated', num_runs, costs, False)
-val_r_means, val_bias_r_stderrs, val_bias_rs = make_results('heart_disease', 'calibrated', num_runs, costs, True)
+r_means, r_stderrs, rs = make_results('heart_disease', name, num_runs, costs, False)
+val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 
-
-robust_rs = bias_rs.copy()
-for i in range(len(val_bias_rs['tr_team_w_reset_objective'][0.2])):
-    if val_bias_rs['tr_team_w_reset_objective'][0.2][i] > val_bias_rs['hyrs_team_objective'][0.2][i]:
-        if val_bias_rs['hyrs_team_objective'][0.2][i] > val_bias_rs['brs_team_objective'][0.2][i]:
-            robust_rs['tr_team_w_reset_objective'][0.2][i] = bias_rs['brs_team_objective'][0.2][i]
-            robust_rs['tr_model_w_reset_contradictions'][0.2][i] = bias_rs['brs_model_contradictions'][0.2][i]
-            robust_rs['tr_team_w_reset_decision_loss'][0.2][i] = bias_rs['brs_team_decision_loss'][0.2][i]
+cost = 0.2
+robust_rs = rs.copy()
+for i in range(len(val_rs['tr_team_w_reset_objective'][cost])):
+    if val_rs['tr_team_w_reset_objective'][cost][i] > val_rs['hyrs_team_objective'][cost][i]:
+        if val_rs['hyrs_team_objective'][cost][i] > val_rs['brs_team_objective'][cost][i]:
+            robust_rs['tr_team_w_reset_objective'][cost][i] = rs['brs_team_objective'][cost][i]
+            robust_rs['tr_model_w_reset_contradictions'][cost][i] = rs['brs_model_contradictions'][cost][i]
+            robust_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['brs_team_decision_loss'][cost][i]
 
 
         else:
-            robust_rs['tr_team_w_reset_objective'][0.2][i] = bias_rs['hyrs_team_objective'][0.2][i]
-            robust_rs['tr_model_w_reset_contradictions'][0.2][i] = bias_rs['hyrs_model_contradictions'][0.2][i]
-            robust_rs['tr_team_w_reset_decision_loss'][0.2][i] = bias_rs['hyrs_team_decision_loss'][0.2][i]
+            robust_rs['tr_team_w_reset_objective'][cost][i] = rs['hyrs_team_objective'][cost][i]
+            robust_rs['tr_model_w_reset_contradictions'][cost][i] = rs['hyrs_model_contradictions'][cost][i]
+            robust_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['hyrs_team_decision_loss'][cost][i]
+
+robust_rs.apply(lambda x: x.apply(lambda y: mean(y)))[['tr_team_w_reset_objective', 'tr_team_wo_reset_objective', 'hyrs_team_objective', 'brs_team_objective', 'human_decision_loss']]
 
 #mis_r_means, mis_r_stderrs, mis_rs = make_results('heart_disease', 'miscalibrated', num_runs, costs, False)
 
