@@ -286,7 +286,7 @@ class tr(object):
         rulePreds_curr[p.astype(bool)] = 1
         model_conf_curr, _ = self.get_model_conf_agreement(self.df, self.Yb, prs_min=prs_curr, nrs_min=nrs_curr)
 
-        reset responses using expection
+        #reset responses using expection
         reset = self.expected_loss_filter(self.df, rulePreds_curr, conf_human=self.conf_human, 
                                           prs=prs_curr, nrs=nrs_curr, p_yb=p_yb, p_y=p_y, 
                                           e_human_responses=e_human_responses, conf_model=model_conf_curr)
