@@ -185,6 +185,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     if cost == 0.0:
                         brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
 
+
                 tr_team_w_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_with_reset, y_test))
                 tr_team_wo_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_no_reset, y_test))
                 tr_model_w_reset_decision_loss.append(1 - accuracy_score(tr_model_preds_with_reset, y_test))
@@ -300,16 +301,16 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-costs = [0.0, 0.2]
+costs = [0.0]
 num_runs = 5
-name = 'calibrated'
+name = 'miscalibrated'
 
 #cal_r_means, cal_r_stderrs, cal_rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 r_means, r_stderrs, rs = make_results('heart_disease', name, num_runs, costs, False)
 val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 
-cost = 0.2
+cost = 0.0
 robust_rs = rs.copy()
 for i in range(len(val_rs['tr_team_w_reset_objective'][cost])):
     if val_rs['tr_team_w_reset_objective'][cost][i] > val_rs['hyrs_team_objective'][cost][i]:

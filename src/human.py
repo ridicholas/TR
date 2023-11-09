@@ -26,8 +26,11 @@ class Human(object):
     def get_decisions(self, X, y):
         decisions = y.copy()
         model_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
-        #low accuracy 50%
-        low = bernoulli.rvs(p=0.5, size=len(decisions)).astype(bool)
+        #low accuracy 55%
+        low = bernoulli.rvs(p=0.45, size=len(decisions)).astype(bool)
+        #high accuracy 95%
+        high = bernoulli.rvs(p=0.05, size=len(decisions)).astype(bool)
+        decisions[high] = 1-decisions[high]
         decisions[(model_confidences > self.confVal) & low] = 1-decisions[(model_confidences > self.confVal) & low]
 
         return decisions
