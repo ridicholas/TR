@@ -387,9 +387,7 @@ class tr(object):
                 rulePreds_new[ncovered_new] = 0
                 rulePreds_new[pcovered_new] = 1
                 model_conf_new, _ = self.get_model_conf_agreement(self.df, self.Yb, prs_min=prs_new, nrs_min=nrs_new)
-               reset = self.expected_loss_filter(self.df, rulePreds_new, conf_human=self.conf_human, 
-                                                  prs=prs_new, nrs=nrs_new, p_yb=p_yb, p_y=p_y, 
-                                                  e_human_responses=e_human_responses,conf_model=model_conf_new)
+                reset = self.expected_loss_filter(self.df, rulePreds_new, conf_human=self.conf_human, prs=prs_new, nrs=nrs_new, p_yb=p_yb, p_y=p_y, e_human_responses=e_human_responses,conf_model=model_conf_new)
                 rulePreds_new[reset] = self.Yb[reset]
                 pcovered_new[reset] = 0
                 ncovered_new[reset] = 0
