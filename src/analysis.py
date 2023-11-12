@@ -10,6 +10,7 @@ from util_BOA import *
 from statistics import mean 
 import progressbar
 from run import ADB
+from run import evaluate_adb_model
 
 def load_datasets(dataset, run_num):
     x_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain.csv', index_col=0).reset_index(drop=True)
@@ -303,12 +304,23 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 costs = [0.0, 0.2]
 num_runs = 5
-name = 'miscalibrated'
 
+name = 'miscalibrated'
 #cal_r_means, cal_r_stderrs, cal_rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 r_means, r_stderrs, rs = make_results('heart_disease', name, num_runs, costs, False)
 val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
+
+name = 'calibrated'
+#cal_r_means, cal_r_stderrs, cal_rs = make_results('heart_disease', name, num_runs, costs, False)
+#val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
+calr_means, calr_stderrs, calrs = make_results('heart_disease', name, num_runs, costs, False)
+calval_r_means, calval_r_stderrs, calval_rs = make_results('heart_disease', name, num_runs, costs, True)
+
+name = 'offset_02'
+
+offr_means, offr_stderrs, offrs = make_results('heart_disease', name, num_runs, costs, False)
+offval_r_means, offval_r_stderrs, offval_rs = make_results('heart_disease', name, num_runs, costs, True)
 
 cost = 0.2
 robust_rs = rs.copy()
