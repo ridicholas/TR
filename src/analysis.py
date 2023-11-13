@@ -77,7 +77,11 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                                 'hyrs_team_objective':[[]],
                                 'brs_model_objective': [[]],
                                 'brs_team_objective': [[]],
-                                'human_decision_loss': [[]]}, index=[costs[0]]
+                                'human_decision_loss': [[]],
+                                'hyrs_norecon_objective': [[]],
+                                'hyrs_norecon_model_decision_loss': [[]],
+                                'hyrs_norecon_team_decision_loss': [[]], 
+                               'hyrs_norecon_model_contradictions': [[]]}, index=[costs[0]]
                             )
 
     for cost in costs[1:]:
@@ -142,6 +146,10 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             brs_team_objective = []
 
             human_decision_loss = []
+            hyrs_norecon_objective = []
+            hyrs_norecon_model_decision_loss = []
+            hyrs_norecon_team_decision_loss = []
+            hyrs_norecon_model_contradictions = []
             
             if cost == 0.0:
                 brs_mod.df = x_train
@@ -171,6 +179,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
                     if cost == 0.0:
                         brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, learned_adb.ADB_model_wrapper)
+                        hyrs_norecon_team_preds = hyrs_team_preds.copy()
+                        hyrs_norecon_model_preds = hyrs_model_preds.copy()
                 else:
                     human_decisions = human.get_decisions(x_test, y_test)
                     human_conf = human.get_confidence(x_test)
@@ -185,6 +195,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
                     if cost == 0.0:
                         brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
+                        hyrs_norecon_team_preds = hyrs_team_preds.copy()
+                        hyrs_norecon_model_preds = hyrs_model_preds.copy()
 
 
                 tr_team_w_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_with_reset, y_test))
@@ -212,58 +224,16 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
                 human_decision_loss.append(1 - accuracy_score(human_decisions, y_test))
 
+                hyrs_norecon_model_decision_loss.append(1 - accuracy_score(hyrs_norecon_model_preds, y_test))
+                hyrs_norecon_team_decision_loss.append(1 - accuracy_score(hyrs_norecon_team_preds, y_test))
+                hyrs_norecon_model_contradictions.append((hyrs_norecon_model_preds != human_decisions).sum())
+                hyrs_norecon_objective.append(hyrs_norecon_team_decision_loss[-1] + cost*(hyrs_norecon_model_contradictions[-1])/len(y_test))
+
+                
+
 
                 print(i)
-            '''
-            if run == 0:
-                if cost == 0.0:
-                    results = pd.DataFrame({'tr_team_w_reset_decision_loss': np.array([mean(tr_team_w_reset_decision_loss)]),
-                                            'tr_team_wo_reset_decision_loss': np.array([mean(tr_team_wo_reset_decision_loss)]),
-                                            'tr_model_w_reset_decision_loss': np.array([mean(tr_model_w_reset_decision_loss)]),
-                                            'tr_model_wo_reset_decision_loss': np.array([mean(tr_model_wo_reset_decision_loss)]),
-                                            'hyrs_model_decision_loss': np.array([mean(hyrs_model_decision_loss)]),
-                                            'hyrs_team_decision_loss': np.array([mean(hyrs_team_decision_loss)]),
-                                            'brs_model_decision_loss': np.array([mean(brs_model_decision_loss)]),
-                                            'brs_team_decision_loss': np.array([mean(brs_team_decision_loss)]),
-                                            'tr_model_w_reset_contradictions': np.array([mean(tr_model_w_reset_contradictions)]),
-                                            'tr_model_wo_reset_contradictions': np.array([mean(tr_model_wo_reset_contradictions)]),
-                                            'hyrs_model_contradictions': np.array([mean(hyrs_model_contradictions)]),
-                                            'brs_model_contradictions': np.array([mean(brs_model_contradictions)]), 
-                                            'tr_team_w_reset_objective': np.array([mean(tr_team_w_reset_objective)]),
-                                            'tr_team_wo_reset_objective': np.array([mean(tr_team_wo_reset_objective)]),
-                                            'tr_model_w_reset_objective': np.array([mean(tr_model_w_reset_objective)]),
-                                            'tr_model_wo_reset_objective': np.array([mean(tr_model_wo_reset_objective)]),
-                                            'hyrs_model_objective': np.array([mean(hyrs_model_objective)]),
-                                            'hyrs_team_objective': np.array([mean(hyrs_team_objective)]),
-                                            'brs_model_objective': np.array([mean(brs_model_objective)]),
-                                            'brs_team_objective': np.array([mean(brs_team_objective)]),
-                                            'human_decision_loss': np.array([mean(human_decision_loss)])}, index=[cost])
-                    
-
-                else:
-                    results.loc[cost] = [np.array([mean(tr_team_w_reset_decision_loss)]),
-                                        np.array([mean(tr_team_wo_reset_decision_loss)]),
-                                        np.array([mean(tr_model_w_reset_decision_loss)]),
-                                        np.array([mean(tr_model_wo_reset_decision_loss)]),
-                                        np.array([mean(hyrs_model_decision_loss)]),
-                                        np.array([mean(hyrs_team_decision_loss)]),
-                                        np.array([mean(brs_model_decision_loss)]),
-                                        np.array([mean(brs_team_decision_loss)]),
-                                        np.array([mean(tr_model_w_reset_contradictions)]),
-                                        np.array([mean(tr_model_wo_reset_contradictions)]),
-                                        np.array([mean(hyrs_model_contradictions)]),
-                                        np.array([mean(brs_model_contradictions)]), 
-                                        np.array([mean(tr_team_w_reset_objective)]),
-                                        np.array([mean(tr_team_wo_reset_objective)]),
-                                        np.array([mean(tr_model_w_reset_objective)]),
-                                        np.array([mean(tr_model_wo_reset_objective)]),
-                                        np.array([mean(hyrs_model_objective)]),
-                                        np.array([mean(hyrs_team_objective)]),
-                                        np.array([mean(brs_model_objective)]),
-                                        np.array([mean(brs_team_objective)]),
-                                        np.array([mean(human_decision_loss)])
-                                        ]
-            '''
+            
             
             #append values to appropriate row in results
             results.loc[cost, 'tr_team_w_reset_decision_loss'].append(mean(tr_team_w_reset_decision_loss))
@@ -287,6 +257,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             results.loc[cost, 'brs_model_objective'].append(mean(brs_model_objective))
             results.loc[cost, 'brs_team_objective'].append(mean(brs_team_objective))
             results.loc[cost, 'human_decision_loss'].append(mean(human_decision_loss))
+            results.loc[cost, 'hyrs_norecon_objective'].append(mean(hyrs_norecon_objective))
+            results.loc[cost, 'hyrs_norecon_model_decision_loss'].append(mean(hyrs_norecon_model_decision_loss))
+            results.loc[cost, 'hyrs_norecon_team_decision_loss'].append(mean(hyrs_norecon_team_decision_loss))
+            results.loc[cost, 'hyrs_norecon_model_contradictions'].append(mean(hyrs_norecon_model_contradictions))
+            
+            
 
 
 
@@ -302,76 +278,78 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-costs = [0.0, 0.2]
 num_runs = 5
+dataset = 'heart_disease'
+
+name = 'offset_02'
+offr_means, offr_stderrs, offrs = make_results('heart_disease', name, num_runs, costs, False)
 
 name = 'miscalibrated'
 #cal_r_means, cal_r_stderrs, cal_rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
-r_means, r_stderrs, rs = make_results('heart_disease', name, num_runs, costs, False)
-val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
+misr_means, misr_stderrs, misrs = make_results('heart_disease', name, num_runs, costs, False)
+#val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 
 name = 'calibrated'
 #cal_r_means, cal_r_stderrs, cal_rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 calr_means, calr_stderrs, calrs = make_results('heart_disease', name, num_runs, costs, False)
-calval_r_means, calval_r_stderrs, calval_rs = make_results('heart_disease', name, num_runs, costs, True)
-
-name = 'offset_02'
-
-offr_means, offr_stderrs, offrs = make_results('heart_disease', name, num_runs, costs, False)
-offval_r_means, offval_r_stderrs, offval_rs = make_results('heart_disease', name, num_runs, costs, True)
-
-cost = 0.2
-robust_rs = rs.copy()
-for i in range(len(val_rs['tr_team_w_reset_objective'][cost])):
-    if val_rs['tr_team_w_reset_objective'][cost][i] > val_rs['hyrs_team_objective'][cost][i]:
-        if val_rs['hyrs_team_objective'][cost][i] > val_rs['brs_team_objective'][cost][i]:
-            robust_rs['tr_team_w_reset_objective'][cost][i] = rs['brs_team_objective'][cost][i]
-            robust_rs['tr_model_w_reset_contradictions'][cost][i] = rs['brs_model_contradictions'][cost][i]
-            robust_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['brs_team_decision_loss'][cost][i]
+#calval_r_means, calval_r_stderrs, calval_rs = make_results('heart_disease', name, num_runs, costs, True)
 
 
-        else:
-            robust_rs['tr_team_w_reset_objective'][cost][i] = rs['hyrs_team_objective'][cost][i]
-            robust_rs['tr_model_w_reset_contradictions'][cost][i] = rs['hyrs_model_contradictions'][cost][i]
-            robust_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['hyrs_team_decision_loss'][cost][i]
+#offval_r_means, offval_r_stderrs, offval_rs = make_results('heart_disease', name, num_runs, costs, True)
 
-robust_rs.apply(lambda x: x.apply(lambda y: mean(y)))[['tr_team_w_reset_objective', 'tr_team_wo_reset_objective', 'hyrs_team_objective', 'brs_team_objective', 'human_decision_loss']]
+#cost = 0.2
+#robust_rs = rs.copy()
+#for i in range(len(val_rs['tr_team_w_reset_objective'][cost])):
+#    if val_rs['tr_team_w_reset_objective'][cost][i] > val_rs['hyrs_team_objective'][cost][i]:
+#        if val_rs['hyrs_team_objective'][cost][i] > val_rs['brs_team_objective'][cost][i]:
+#            robust_rs['tr_team_w_reset_objective'][cost][i] = rs['brs_team_objective'][cost][i]
+#            robust_rs['tr_model_w_reset_contradictions'][cost][i] = rs['brs_model_contradictions'][cost][i]
+#            robust_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['brs_team_decision_loss'][cost][i]#
+
+
+#        else:
+#            robust_rs['tr_team_w_reset_objective'][cost][i] = rs['hyrs_team_objective'][cost][i]
+#            robust_rs['tr_model_w_reset_contradictions'][cost][i] = rs['hyrs_model_contradictions'][cost][i]
+#            robust_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['hyrs_team_decision_loss'][cost][i]#
+#
+#robust_rs.apply(lambda x: x.apply(lambda y: mean(y)))[['tr_team_w_reset_objective', 'tr_team_wo_reset_objective', 'hyrs_team_objective', 'brs_team_objective', 'human_decision_loss']]
 
 #mis_r_means, mis_r_stderrs, mis_rs = make_results('heart_disease', 'miscalibrated', num_runs, costs, False)
 
 
 
-'''
+
 def make_TL_v_cost_plot(results_means, results_stderrs, name):
+    fig = plt.figure(figsize=(3, 2), dpi=200)
     color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42'}
-    plt.plot(r_means.index, r_means['hyrs_team_objective'], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
-    plt.plot(costFrame['Costs'], costFrame['R_HyRS_Objective'], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
-    plt.plot(costFrame['Costs'], costFrame['TR_Objective'], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
-    plt.plot(costFrame['Costs'], costFrame['BRS_Objective'], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
+    plt.plot(results_means.index, results_means['hyrs_norecon_objective'], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
+    plt.plot(results_means.index, results_means['hyrs_team_objective'], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
+    plt.plot(results_means.index, results_means['tr_team_w_reset_objective'], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
+    plt.plot(results_means.index, results_means['brs_team_objective'], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
     
-    plt.axhline(costFrame['Human Only'][0], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
-    plt.fill_between(costFrame['Costs'], 
-                costFrame['Human Only']-(costFrame['Human Only SE']),
-                costFrame['Human Only']+(costFrame['Human Only SE']) ,
+    plt.plot(results_means.index, results_means['human_decision_loss'], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
+    plt.fill_between(results_means.index, 
+                results_means['human_decision_loss']-(results_stderrs['human_decision_loss']),
+                results_means['human_decision_loss']+(results_stderrs['human_decision_loss']) ,
                 color=color_dict['Human'], alpha=0.2)
-    plt.fill_between(costFrame['Costs'], 
-                costFrame['HyRS_Objective']-(costFrame['HyRS_Objective_SE']),
-                costFrame['HyRS_Objective']+(costFrame['HyRS_Objective_SE']) ,
-                color=color_dict['HYRS'], alpha=0.2)
-    
-    plt.fill_between(costFrame['Costs'], 
-                costFrame['R_HyRS_Objective']-(costFrame['R_HyRS_Objective_SE']),
-                costFrame['R_HyRS_Objective']+(costFrame['R_HyRS_Objective_SE']) ,
+    plt.fill_between(results_means.index, 
+                results_means['hyrs_team_objective']-(results_stderrs['hyrs_team_objective']),
+                results_means['hyrs_team_objective']+(results_stderrs['hyrs_team_objective']) ,
                 color=color_dict['HYRSRecon'], alpha=0.2)
-    plt.fill_between(costFrame['Costs'], 
-                costFrame['BRS_Objective']-(costFrame['BRS_Objective_SE']),
-                costFrame['BRS_Objective']+(costFrame['BRS_Objective_SE']) ,
+    
+    plt.fill_between(results_means.index, 
+                results_means['hyrs_norecon_objective']-(results_stderrs['hyrs_norecon_objective']),
+                results_means['hyrs_norecon_objective']+(results_stderrs['hyrs_norecon_objective']) ,
+                color=color_dict['HYRS'], alpha=0.2)
+    plt.fill_between(results_means.index, 
+                results_means['brs_team_objective']-(results_stderrs['brs_team_objective']),
+                results_means['brs_team_objective']+(results_stderrs['brs_team_objective']) ,
                 color=color_dict['BRS'], alpha=0.2)
-    plt.fill_between(costFrame['Costs'], 
-                costFrame['TR_Objective']-(costFrame['TR_Objective_SE']),
-                costFrame['TR_Objective']+(costFrame['TR_Objective_SE']),
+    plt.fill_between(results_means.index, 
+                results_means['tr_team_w_reset_objective']-(results_stderrs['tr_team_w_reset_objective']),
+                results_means['tr_team_w_reset_objective']+(results_stderrs['tr_team_w_reset_objective']),
                 color=color_dict['TR'], alpha=0.2)
     plt.xlabel('Reconciliation Cost', fontsize=12)
     plt.ylabel('Total Team Loss', fontsize=12)
@@ -380,10 +358,11 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name):
     plt.legend(prop={'size': 5})
     plt.grid('on', linestyle='dotted', linewidth=0.2, color='black')
 
-    fig.savefig(f'Plots/TL_{setting_type}_len{rule_len}_{data}_{setting}.png', bbox_inches='tight')
+    fig.savefig(f'results/{dataset}/plots/TL_{dataset}_{name}.png', bbox_inches='tight')
+    #plt.show()
 
-    plt.clf()
-'''
+    #plt.clf()
+
 
 
 

@@ -91,12 +91,28 @@ class Human(object):
             confidences[start_confidences > self.confVal] = 1
             confidences[start_confidences <= self.confVal] = 0
         if t_type=='biased':
-            confidences = self.bias_confidences_heart_1(X)
+            confidences = np.ones(X.shape[0])
+            confidences[(X['age54.0'] == 1) & (X['sex_Male'] == 1)] = np.random.randint(0,20,len(confidences[(X['age54.0'] == 1) & (X['sex_Male'] == 1)]))/100
         if t_type=='offset_02':
             start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
             confidences = np.ones(X.shape[0])
             confidences[start_confidences <= self.confVal] = 0.8
             confidences[start_confidences > self.confVal] = 0.2
+        if t_type=='offset_01':
+            start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.9
+            confidences[start_confidences > self.confVal] = 0.1
+        if t_type=='offset_03':
+            start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.7
+            confidences[start_confidences > self.confVal] = 0.3
+        if t_type=='offset_05':
+            start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.5
+            confidences[start_confidences > self.confVal] = 0.5
 
 
         
