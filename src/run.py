@@ -62,7 +62,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
     # make human
     if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/{human_name}.pkl'):
-        human = Human(human_name, x_human_train, y_human_train, dataset=dataset)
+        human = Human(human_name, x_human_train, y_human_train, dataset=dataset, decision_bias=True)
         with open(f'results/{dataset}/run{run_num}/{human_name}.pkl', 'wb') as f:
             pickle.dump(human, f)
     else:

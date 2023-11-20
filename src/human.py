@@ -4,13 +4,14 @@ import pandas as pd
 from scipy.stats import bernoulli, uniform
 
 class Human(object):
-    def __init__(self, name, X, y, dataset=None) -> None:
+    def __init__(self, name, X, y, dataset=None, decision_bias=False) -> None:
         self.name = name
         self.X = X.dropna(axis=1)
         self.y = y
         self.model = LogisticRegression().fit(self.X, y)
         self.dataset = dataset
         self.confVal = 0.5
+        self.decision_bias = decision_bias
 
 
     
@@ -25,11 +26,18 @@ class Human(object):
 
     def get_decisions(self, X, y):
         decisions = y.copy()
-        model_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+        if self.decision_bias:
+            if self.dataset == 'heart_disease':
+                model_confidences = np.ones(X.shape[0])
+                model_confidences[X['sex_Male'] == 1] = 0
+                
+                
+        else:
+            model_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
         #low accuracy 55%
         low = bernoulli.rvs(p=0.5, size=len(decisions)).astype(bool)
         #high accuracy 95%
-        high = bernoulli.rvs(p=0.00, size=len(decisions)).astype(bool)
+        high = bernoulli.rvs(p=0.05, size=len(decisions)).astype(bool)
         decisions[high] = 1-decisions[high]
         decisions[(model_confidences > self.confVal) & low] = 1-decisions[(model_confidences > self.confVal) & low]
 
@@ -74,44 +82,54 @@ class Human(object):
                         'conf': conf, 'c_model': c_model, 'agreement': agreement, 'prob': prob})
 
         return prob
+    
+    
+        
 
 
 
         
     
     def heart_confidence_transformation(self, X=None, t_type=None):
-        if t_type==None or t_type=='calibrated':
+        if self.decision_bias:
+            if self.dataset == 'heart_disease':
+                start_confidences = np.ones(X.shape[0])
+                start_confidences[X['sex_Male'] == 1] = 0       
+        else:
             start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+
+        if t_type==None or t_type=='calibrated':
+            
             confidences = np.ones(X.shape[0])
             confidences[start_confidences > self.confVal] = 0
-            confidences[start_confidences <= self.confVal] = 1
+            confidences[start_confidences <= self.confVal] = 0.9
         if t_type=='miscalibrated':
-            start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+            
             confidences = np.ones(X.shape[0])
-            confidences[start_confidences > self.confVal] = 1
+            confidences[start_confidences > self.confVal] = 0.9
             confidences[start_confidences <= self.confVal] = 0
         if t_type=='biased':
             confidences = np.ones(X.shape[0])
             confidences[(X['age54.0'] == 1) & (X['sex_Male'] == 1)] = np.random.randint(0,20,len(confidences[(X['age54.0'] == 1) & (X['sex_Male'] == 1)]))/100
         if t_type=='offset_02':
-            start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
-            confidences = np.ones(X.shape[0])
-            confidences[start_confidences <= self.confVal] = 0.8
-            confidences[start_confidences > self.confVal] = 0.2
-        if t_type=='offset_01':
-            start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
-            confidences = np.ones(X.shape[0])
-            confidences[start_confidences <= self.confVal] = 0.9
-            confidences[start_confidences > self.confVal] = 0.1
-        if t_type=='offset_03':
-            start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+            
             confidences = np.ones(X.shape[0])
             confidences[start_confidences <= self.confVal] = 0.7
+            confidences[start_confidences > self.confVal] = 0.2
+        if t_type=='offset_01':
+            
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.8
+            confidences[start_confidences > self.confVal] = 0.1
+        if t_type=='offset_03':
+            
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.6
             confidences[start_confidences > self.confVal] = 0.3
         if t_type=='offset_05':
-            start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+            
             confidences = np.ones(X.shape[0])
-            confidences[start_confidences <= self.confVal] = 0.5
+            confidences[start_confidences <= self.confVal] = 0.4
             confidences[start_confidences > self.confVal] = 0.5
 
 

@@ -281,16 +281,16 @@ costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 num_runs = 5
 dataset = 'heart_disease'
 
-name = 'offset_02'
+name = 'offset_01'
 offr_means, offr_stderrs, offrs = make_results('heart_disease', name, num_runs, costs, False)
 
-name = 'miscalibrated'
+name = 'offset_03'
 #cal_r_means, cal_r_stderrs, cal_rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 misr_means, misr_stderrs, misrs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 
-name = 'calibrated'
+name = 'biased'
 #cal_r_means, cal_r_stderrs, cal_rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 calr_means, calr_stderrs, calrs = make_results('heart_disease', name, num_runs, costs, False)
@@ -358,8 +358,8 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name):
     plt.legend(prop={'size': 5})
     plt.grid('on', linestyle='dotted', linewidth=0.2, color='black')
 
-    fig.savefig(f'results/{dataset}/plots/TL_{dataset}_{name}.png', bbox_inches='tight')
-    #plt.show()
+    #fig.savefig(f'results/{dataset}/plots/TL_{dataset}_{name}.png', bbox_inches='tight')
+    plt.show()
 
     #plt.clf()
 
