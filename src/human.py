@@ -29,7 +29,11 @@ class Human(object):
         if self.decision_bias:
             if self.dataset == 'heart_disease':
                 model_confidences = np.ones(X.shape[0])
-                model_confidences[X['sex_Male'] == 1] = 0
+                model_confidences[X['age54.0'] == 0] = 0
+            if self.dataset == 'fico':
+                model_confidences = np.ones(X.shape[0])
+                model_confidences[X['ExternalRiskEstimate65.0'] == 0] = 0
+            
                 
                 
         else:
@@ -110,9 +114,8 @@ class Human(object):
             confidences[start_confidences <= self.confVal] = 0
         if t_type=='biased':
             confidences = np.ones(X.shape[0])
-            confidences[(X['age54.0'] == 1) & (X['sex_Male'] == 1)] = np.random.randint(0,20,len(confidences[(X['age54.0'] == 1) & (X['sex_Male'] == 1)]))/100
+            confidences[(X['sex_Male'] == 1)] = np.random.randint(0,20,len(confidences[ (X['sex_Male'] == 1)]))/100
         if t_type=='offset_02':
-            
             confidences = np.ones(X.shape[0])
             confidences[start_confidences <= self.confVal] = 0.7
             confidences[start_confidences > self.confVal] = 0.2
@@ -137,6 +140,42 @@ class Human(object):
         return confidences
     
     def fico_confidence_transformation(self, X=None, t_type=None):
+        if self.decision_bias:
+            if self.dataset == 'heart_disease':
+                start_confidences = np.ones(X.shape[0])
+                start_confidences[X['sex_Male'] == 1] = 0       
+        else:
+            start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+        if t_type==None or t_type=='calibrated':
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences > self.confVal] = 0
+            confidences[start_confidences <= self.confVal] = 0.9
+        if t_type=='miscalibrated':
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences > self.confVal] = 0.9
+            confidences[start_confidences <= self.confVal] = 0
+        if t_type=='biased':
+            confidences = np.ones(X.shape[0])
+            confidences[(X['NumSatisfactoryTrades24.0'] == 1) & (X['ExternalRiskEstimate65.0'] == 1)] = np.random.randint(0,20,len(confidences[(X['NumSatisfactoryTrades24.0'] == 1) & (X['ExternalRiskEstimate65.0'] == 1)]))/100
+        if t_type=='offset_02':
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.7
+            confidences[start_confidences > self.confVal] = 0.2
+        if t_type=='offset_01':
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.8
+            confidences[start_confidences > self.confVal] = 0.1
+        if t_type=='offset_03':
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.6
+            confidences[start_confidences > self.confVal] = 0.3
+        if t_type=='offset_05':
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.4
+            confidences[start_confidences > self.confVal] = 0.5
+        return confidences
+    
+    def fico_confidence_transformation(self, X=None, t_type=None):
         if t_type==None or t_type=='calibrated':
             confidences = np.zeros(X.shape[0])
             confidences[X['ExternalRiskEstimate65.0'] == 1] = 0
@@ -148,57 +187,7 @@ class Human(object):
             confidences[X['ExternalRiskEstimate65.0'] == 0] = 0
         if t_type=='slightly_miscalibrated':
             confidences = self.slightly_miscalibrated_confidences_fico_1(X)
-        
         return confidences
     
-    #dataset specific behaviors
-    def slightly_miscalibrated_decisions_heart_1(self, X, y):
-        decisions = y.copy()
-        model_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
-        #high accuracy 95%
-        high = bernoulli.rvs(p=0.05, size=len(decisions)).astype(bool)
-        decisions[high] = 1-decisions[high]
-        #low accuracy 55%
-        low = bernoulli.rvs(p=0.5, size=len(decisions)).astype(bool)
-        decisions[(model_confidences < self.confVal) & low] = 1-decisions[(model_confidences < self.confVal) & low]
-        
-
-        return decisions
-    
-    def slightly_miscalibrated_decisions_fico_1(self, X, y):
-        decisions = y.copy()
-        #low accuracy on high_est, 50%
-        flip_high_est = bernoulli.rvs(p=0.5, size=len(decisions)).astype(bool)
-        #higher accuracy on low_est, 80%
-        flip_low_est = bernoulli.rvs(p=0.2, size=len(decisions)).astype(bool)
-        decisions[(X['ExternalRiskEstimate65.0'] == 0) &  flip_low_est] = 1-decisions[(X['ExternalRiskEstimate65.0'] == 0) &  flip_low_est]
-        decisions[(X['ExternalRiskEstimate65.0'] == 1) & flip_high_est] = 1-decisions[(X['ExternalRiskEstimate65.0'] == 1) & flip_high_est]
-
-        return decisions
-
-    def bias_confidences_heart_1(self, X):
-        confidences = np.zeros(X.shape[0])
-        confidences[X['age54.0'] == 0] = np.random.randint(98,100,len(confidences[X['age54.0'] == 0]))/100
-        confidences[X['age54.0'] == 1] = np.random.randint(0,10,len(confidences[X['age54.0'] == 1]))/100
-
-        return confidences
-    
-    def slightly_miscalibrated_confidences_fico_1(self, X):
-        confidences = np.zeros(X.shape[0])
-        confidences[X['NumSatisfactoryTrades24.0'] == 0] = np.random.randint(98,100,len(confidences[X['NumSatisfactoryTrades24.0'] == 0]))/100
-        confidences[X['NumSatisfactoryTrades24.0'] == 1] = np.random.randint(0,10,len(confidences[X['NumSatisfactoryTrades24.0'] == 1]))/100
-
-        return confidences
-    
-    '''
-    def slightly_miscalibrated_confidences_heart_1(self, X):
-        confidences = np.zeros(X.shape[0])
-        confidences = np.random.randint(99,100,len(confidences))/100
-        confidences[(X['age54.0'] == 1) & (X('sex_Male') == 1)] = np.random.randint(0,10,len(confidences[(X['age54.0'] == 1) & (X('sex_Male') == 1)]))/100
-
-        return confidences
-
-    '''
-
     
 
