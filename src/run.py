@@ -62,7 +62,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
     # make human
     if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/{human_name}.pkl'):
-        human = Human(human_name, x_human_train, y_human_train, dataset=dataset, decision_bias=True)
+        human = Human(human_name, x_human_train, y_human_train, dataset=dataset, decision_bias=False)
         with open(f'results/{dataset}/run{run_num}/{human_name}.pkl', 'wb') as f:
             pickle.dump(human, f)
     else:
@@ -184,7 +184,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             tr_model.make_lite()
             pickle.dump(tr_model, f)
 
-#run('heart_disease', 0, 'biased', runtype='standard', which_models=['hyrs', 'brs', 'tr'], contradiction_reg=0.0, remake_humans=True)
+#run('heart_disease', 0, 'calibrated', runtype='standard', which_models=['hyrs', 'brs', 'tr'], contradiction_reg=0.0, remake_humans=True)
 
 
 

@@ -11,7 +11,7 @@ def make_heart_data(numQs=5, num_runs=50):
     startDict['Xtrain'] = pd.read_csv(
         'datasets/heart_disease/heart_disease_uci.csv')
     startDict['Ytrain'] = startDict['Xtrain']['num']
-    startDict['Ytrain'] = startDict['Ytrain'].replace({2: 1, 3: 1, 4: 1})['num']
+    startDict['Ytrain'] = startDict['Ytrain'].replace({2: 1, 3: 1, 4: 1})
 
     startDict['Xtrain'].drop(columns=['num', 'id', 'dataset'], inplace=True)
 
@@ -73,7 +73,7 @@ def make_heart_data(numQs=5, num_runs=50):
                                                                                                                                                                        'Ytrain'],
                                                                                                                                                                    startDict[
                                                                                                                                                                        'Xtrain_non_binarized'],
-                                                                                                                                                                   test_size=0.1,
+                                                                                                                                                                   test_size=0.05,
                                                                                                                                                                    stratify=startDict[
                                                                                                                                                                        'Ytrain'],
                                                                                                                                                                    random_state=i)
@@ -83,7 +83,7 @@ def make_heart_data(numQs=5, num_runs=50):
             startDict['Ytest'], startDict['Xtrain_non_binarized'], startDict['Xtest_non_binarized'] = split(startDict['Xtrain'],
                                                                                                             startDict['Ytrain'],
                                                                                                             startDict['Xtrain_non_binarized'],
-                                                                                                            test_size=0.15,
+                                                                                                            test_size=0.2,
                                                                                                             stratify=startDict[
                                                                                                                 'Ytrain'],
                                                                                                             random_state=i)
@@ -226,5 +226,5 @@ def make_fico_data(numQs=5, num_runs=50):
         startDict['Xlearning'].to_csv(f'{outdir}/xlearning.csv')
 
 
-#make_heart_data(numQs=5, num_runs=20)
-make_fico_data(numQs=5, num_runs=20)
+make_heart_data(numQs=5, num_runs=20)
+#make_fico_data(numQs=5, num_runs=20)

@@ -10,7 +10,7 @@ class Human(object):
         self.y = y
         self.model = LogisticRegression().fit(self.X, y)
         self.dataset = dataset
-        self.confVal = 0.5
+        self.confVal = 0.35
         self.decision_bias = decision_bias
 
 
@@ -39,9 +39,9 @@ class Human(object):
         else:
             model_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
         #low accuracy 55%
-        low = bernoulli.rvs(p=0.5, size=len(decisions)).astype(bool)
+        low = bernoulli.rvs(p=0.45, size=len(decisions)).astype(bool)
         #high accuracy 95%
-        high = bernoulli.rvs(p=0.05, size=len(decisions)).astype(bool)
+        high = bernoulli.rvs(p=0.00, size=len(decisions)).astype(bool)
         decisions[high] = 1-decisions[high]
         decisions[(model_confidences > self.confVal) & low] = 1-decisions[(model_confidences > self.confVal) & low]
 
@@ -106,34 +106,36 @@ class Human(object):
             
             confidences = np.ones(X.shape[0])
             confidences[start_confidences > self.confVal] = 0
-            confidences[start_confidences <= self.confVal] = 0.9
+            confidences[start_confidences <= self.confVal] = 1
         if t_type=='miscalibrated':
             
             confidences = np.ones(X.shape[0])
-            confidences[start_confidences > self.confVal] = 0.9
+            confidences[start_confidences > self.confVal] = 1
             confidences[start_confidences <= self.confVal] = 0
         if t_type=='biased':
             confidences = np.ones(X.shape[0])
-            confidences[(X['sex_Male'] == 1)] = np.random.randint(0,20,len(confidences[ (X['sex_Male'] == 1)]))/100
+            confidences[(X['sex_Male'] == 1) & (X['age54.0'] == 1)] = np.random.randint(0,20,len(confidences[ (X['sex_Male'] == 1)]) & (X['age54.0'] == 1))/100
         if t_type=='offset_02':
             confidences = np.ones(X.shape[0])
-            confidences[start_confidences <= self.confVal] = 0.7
+            confidences[start_confidences <= self.confVal] = 0.8
             confidences[start_confidences > self.confVal] = 0.2
         if t_type=='offset_01':
             
             confidences = np.ones(X.shape[0])
-            confidences[start_confidences <= self.confVal] = 0.8
+            confidences[start_confidences <= self.confVal] = 0.9
             confidences[start_confidences > self.confVal] = 0.1
         if t_type=='offset_03':
-            
             confidences = np.ones(X.shape[0])
-            confidences[start_confidences <= self.confVal] = 0.6
+            confidences[start_confidences <= self.confVal] = 0.7
             confidences[start_confidences > self.confVal] = 0.3
         if t_type=='offset_05':
-            
             confidences = np.ones(X.shape[0])
-            confidences[start_confidences <= self.confVal] = 0.4
+            confidences[start_confidences <= self.confVal] = 0.5
             confidences[start_confidences > self.confVal] = 0.5
+        if t_type=='offset_08':
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.2
+            confidences[start_confidences > self.confVal] = 0.8
 
 
         

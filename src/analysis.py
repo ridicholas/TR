@@ -282,18 +282,18 @@ num_runs = 5
 dataset = 'heart_disease'
 
 name = 'offset_01'
-offr_means, offr_stderrs, offrs = make_results('heart_disease', name, num_runs, costs, False)
+offr_means, offr_stderrs, offrs = make_results('heart_disease_gender_expertise', name, num_runs, costs, False)
 
 name = 'calibrated'
 #cal_r_means, cal_r_stderrs, cal_rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
-misr_means, misr_stderrs, misrs = make_results('heart_disease', name, num_runs, costs, False)
+misr_means, misr_stderrs, misrs = make_results('heart_disease_gender_expertise', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 
 name = 'biased'
 #cal_r_means, cal_r_stderrs, cal_rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
-calr_means, calr_stderrs, calrs = make_results('heart_disease', name, num_runs, costs, False)
+calr_means, calr_stderrs, calrs = make_results('heart_disease_gender_expertise', name, num_runs, costs, False)
 #calval_r_means, calval_r_stderrs, calval_rs = make_results('heart_disease', name, num_runs, costs, True)
 
 
