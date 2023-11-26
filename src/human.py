@@ -10,7 +10,7 @@ class Human(object):
         self.y = y
         self.model = LogisticRegression().fit(self.X, y)
         self.dataset = dataset
-        self.confVal = 0.35
+        self.confVal = 0.6
         self.decision_bias = decision_bias
 
 
@@ -29,7 +29,7 @@ class Human(object):
         if self.decision_bias:
             if self.dataset == 'heart_disease':
                 model_confidences = np.ones(X.shape[0])
-                model_confidences[X['age54.0'] == 0] = 0
+                model_confidences[X['sex_Male'] == 1] = 0
             if self.dataset == 'fico':
                 model_confidences = np.ones(X.shape[0])
                 model_confidences[X['ExternalRiskEstimate65.0'] == 0] = 0
@@ -38,9 +38,9 @@ class Human(object):
                 
         else:
             model_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
-        #low accuracy 55%
-        low = bernoulli.rvs(p=0.45, size=len(decisions)).astype(bool)
-        #high accuracy 95%
+        #low accuracy 60%
+        low = bernoulli.rvs(p=0.4, size=len(decisions)).astype(bool)
+        #high accuracy 100%
         high = bernoulli.rvs(p=0.00, size=len(decisions)).astype(bool)
         decisions[high] = 1-decisions[high]
         decisions[(model_confidences > self.confVal) & low] = 1-decisions[(model_confidences > self.confVal) & low]
@@ -98,7 +98,7 @@ class Human(object):
         if self.decision_bias:
             if self.dataset == 'heart_disease':
                 start_confidences = np.ones(X.shape[0])
-                start_confidences[X['sex_Male'] == 1] = 0       
+                start_confidences[X['age54.0'] == 1] = 0       
         else:
             start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
 
