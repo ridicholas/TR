@@ -278,14 +278,14 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 
-costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+costs = [0.0, 0.2, 0.4, 0.6]
 num_runs = 5
-dataset = 'heart_disease_conf_expertise'
+dataset = 'heart_disease'
 
 name = 'offset_02'
-offr_means, offr_stderrs, offrs = make_results(dataset, name, num_runs, costs, False)
+#offr_means, offr_stderrs, offrs = make_results(dataset, name, num_runs, costs, False)
 
-name = 'offset_01'
+name = 'offset_08'
 #cal_r_means, cal_r_stderrs, cal_rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 misr_means, misr_stderrs, misrs = make_results(dataset, name, num_runs, costs, False)
@@ -325,33 +325,35 @@ calr_means, calr_stderrs, calrs = make_results(dataset, name, num_runs, costs, F
 def make_TL_v_cost_plot(results_means, results_stderrs, name):
     fig = plt.figure(figsize=(3, 2), dpi=200)
     color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42'}
-    plt.plot(results_means.index, results_means['hyrs_norecon_objective'], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
-    plt.plot(results_means.index, results_means['hyrs_team_objective'], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
-    plt.plot(results_means.index, results_means['tr_team_w_reset_objective'], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
-    plt.plot(results_means.index, results_means['brs_team_objective'], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
+    plt.plot(results_means.index[0:4], results_means['hyrs_norecon_objective'].iloc[0:4], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
+    plt.plot(results_means.index[0:4], results_means['hyrs_team_objective'].iloc[0:4], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
+    plt.plot(results_means.index[0:4], results_means['tr_team_w_reset_objective'].iloc[0:4], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
+    plt.plot(results_means.index[0:4], results_means['brs_team_objective'].iloc[0:4], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
     
-    plt.plot(results_means.index, results_means['human_decision_loss'], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
-    plt.fill_between(results_means.index, 
-                results_means['human_decision_loss']-(results_stderrs['human_decision_loss']),
-                results_means['human_decision_loss']+(results_stderrs['human_decision_loss']) ,
+    plt.plot(results_means.index[0:4], results_means['human_decision_loss'].iloc[0:4], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
+    
+    plt.fill_between(results_means.index[0:4], 
+                results_means['human_decision_loss'].iloc[0:4]-(results_stderrs['human_decision_loss'].iloc[0:4]),
+                results_means['human_decision_loss'].iloc[0:4]+(results_stderrs['human_decision_loss'].iloc[0:4]) ,
                 color=color_dict['Human'], alpha=0.2)
-    plt.fill_between(results_means.index, 
-                results_means['hyrs_team_objective']-(results_stderrs['hyrs_team_objective']),
-                results_means['hyrs_team_objective']+(results_stderrs['hyrs_team_objective']) ,
+    plt.fill_between(results_means.index[0:4], 
+                results_means['hyrs_team_objective'].iloc[0:4]-(results_stderrs['hyrs_team_objective'].iloc[0:4]),
+                results_means['hyrs_team_objective'].iloc[0:4]+(results_stderrs['hyrs_team_objective'].iloc[0:4]) ,
                 color=color_dict['HYRSRecon'], alpha=0.2)
     
-    plt.fill_between(results_means.index, 
-                results_means['hyrs_norecon_objective']-(results_stderrs['hyrs_norecon_objective']),
-                results_means['hyrs_norecon_objective']+(results_stderrs['hyrs_norecon_objective']) ,
+    plt.fill_between(results_means.index[0:4], 
+                results_means['hyrs_norecon_objective'].iloc[0:4]-(results_stderrs['hyrs_norecon_objective'].iloc[0:4]),
+                results_means['hyrs_norecon_objective'].iloc[0:4]+(results_stderrs['hyrs_norecon_objective'].iloc[0:4]) ,
                 color=color_dict['HYRS'], alpha=0.2)
-    plt.fill_between(results_means.index, 
-                results_means['brs_team_objective']-(results_stderrs['brs_team_objective']),
-                results_means['brs_team_objective']+(results_stderrs['brs_team_objective']) ,
+    plt.fill_between(results_means.index[0:4], 
+                results_means['brs_team_objective'].iloc[0:4]-(results_stderrs['brs_team_objective'].iloc[0:4]),
+                results_means['brs_team_objective'].iloc[0:4]+(results_stderrs['brs_team_objective'].iloc[0:4]) ,
                 color=color_dict['BRS'], alpha=0.2)
-    plt.fill_between(results_means.index, 
-                results_means['tr_team_w_reset_objective']-(results_stderrs['tr_team_w_reset_objective']),
-                results_means['tr_team_w_reset_objective']+(results_stderrs['tr_team_w_reset_objective']),
+    plt.fill_between(results_means.index[0:4], 
+                results_means['tr_team_w_reset_objective'].iloc[0:4]-(results_stderrs['tr_team_w_reset_objective'].iloc[0:4]),
+                results_means['tr_team_w_reset_objective'].iloc[0:4]+(results_stderrs['tr_team_w_reset_objective'].iloc[0:4]),
                 color=color_dict['TR'], alpha=0.2)
+   
     plt.xlabel('Reconciliation Cost', fontsize=12)
     plt.ylabel('Total Team Loss', fontsize=12)
     plt.tick_params(labelrotation=45, labelsize=10)
