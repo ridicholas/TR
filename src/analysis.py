@@ -278,7 +278,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 
-costs = [0.0, 0.2]
+costs = [0.0]
 num_runs = 5
 dataset = 'heart_disease'
 

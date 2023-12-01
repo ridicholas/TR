@@ -114,7 +114,7 @@ class Human(object):
             confidences[start_confidences <= self.confVal] = 0
         if t_type=='biased':
             confidences = np.ones(X.shape[0]) - 0.1
-            confidences[(X['sex_Male'] == 1)] = np.random.randint(0,20,len(confidences[(X['sex_Male'] == 1)]))/100
+            confidences[(X['sex_Male'] == 0)] = np.random.randint(0,20,len(confidences[(X['sex_Male'] == 0)]))/100
         if t_type=='offset_02':
             confidences = np.ones(X.shape[0])
             confidences[start_confidences <= self.confVal] = 0.8
