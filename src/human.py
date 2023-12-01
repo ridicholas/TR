@@ -105,25 +105,29 @@ class Human(object):
         if t_type==None or t_type=='calibrated':
             
             confidences = np.ones(X.shape[0])
-            confidences[start_confidences > self.confVal] = 0
+            confidences[start_confidences > self.confVal] = 0.2
             confidences[start_confidences <= self.confVal] = 1
         if t_type=='miscalibrated':
             
             confidences = np.ones(X.shape[0])
             confidences[start_confidences > self.confVal] = 1
-            confidences[start_confidences <= self.confVal] = 0
+            confidences[start_confidences <= self.confVal] = 0.2
         if t_type=='biased':
-            confidences = np.ones(X.shape[0]) - 0.1
-            confidences[(X['sex_Male'] == 0)] = np.random.randint(0,20,len(confidences[(X['sex_Male'] == 0)]))/100
+            confidences = np.ones(X.shape[0])
+            confidences[(X['age54.0'] == 1) & (start_confidences <= self.confVal)] = 0.8
+            confidences[(X['age54.0'] == 1) & (start_confidences > self.confVal)] = 0.2
+            confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 1
+            confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.8
+
         if t_type=='offset_02':
             confidences = np.ones(X.shape[0])
             confidences[start_confidences <= self.confVal] = 0.8
-            confidences[start_confidences > self.confVal] = 0.2
+            confidences[start_confidences > self.confVal] = 0.4
         if t_type=='offset_01':
             
             confidences = np.ones(X.shape[0])
             confidences[start_confidences <= self.confVal] = 0.9
-            confidences[start_confidences > self.confVal] = 0.1
+            confidences[start_confidences > self.confVal] = 0.3
         if t_type=='offset_03':
             confidences = np.ones(X.shape[0])
             confidences[start_confidences <= self.confVal] = 0.7
