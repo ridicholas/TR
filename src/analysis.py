@@ -278,21 +278,21 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 
-costs = [0.0]
-num_runs = 5
+costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+num_runs = 10
 dataset = 'heart_disease'
 
 name = 'offset_01'
-#offr_means, offr_stderrs, offrs = make_results(dataset, name, num_runs, costs, False)
+of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, costs, False)
 
 name = 'offset_02'
-#cal_r_means, cal_r_stderrs, cal_rs = make_results('heart_disease', name, num_runs, costs, False)
+of2_means, of2_std, of2_rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 #misr_means, misr_stderrs, misrs = make_results(dataset, name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 
 name = 'biased'
-cal_r_means, cal_r_stderrs, cal_rs = make_results(dataset, name, num_runs, costs, False)
+bia_means, bia_std, bia_rs = make_results(dataset, name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 #calr_means, calr_stderrs, calrs = make_results(dataset, name, num_runs, costs, False)
 #calval_r_means, calval_r_stderrs, calval_rs = make_results('heart_disease', name, num_runs, costs, True)
