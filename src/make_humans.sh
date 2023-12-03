@@ -37,11 +37,11 @@ nohup python3 -u main.py -d 'heart_disease' -i 1 -h 'biased' -r 'standard' -c 0 
 nohup python3 -u main.py -d 'heart_disease' -i 2 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log2_heart_biased_standard_nomodels.out &
 nohup python3 -u main.py -d 'heart_disease' -i 3 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log3_heart_biased_standard_nomodels.out &
 nohup python3 -u main.py -d 'heart_disease' -i 4 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log4_heart_biased_standard_nomodels.out &
-#nohup python3 -u main.py -d 'heart_disease' -i 5 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log5_heart_biased_standard_nomodels.out &
-#nohup python3 -u main.py -d 'heart_disease' -i 6 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log6_heart_biased_standard_nomodels.out &
-#nohup python3 -u main.py -d 'heart_disease' -i 7 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log7_heart_biased_standard_nomodels.out &
-#nohup python3 -u main.py -d 'heart_disease' -i 8 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log8_heart_biased_standard_nomodels.out &
-#nohup python3 -u main.py -d 'heart_disease' -i 9 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log9_heart_biased_standard_nomodels.out &
+nohup python3 -u main.py -d 'heart_disease' -i 5 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log5_heart_biased_standard_nomodels.out &
+nohup python3 -u main.py -d 'heart_disease' -i 6 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log6_heart_biased_standard_nomodels.out &
+nohup python3 -u main.py -d 'heart_disease' -i 7 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log7_heart_biased_standard_nomodels.out &
+nohup python3 -u main.py -d 'heart_disease' -i 8 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log8_heart_biased_standard_nomodels.out &
+nohup python3 -u main.py -d 'heart_disease' -i 9 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log9_heart_biased_standard_nomodels.out &
 #nohup python3 -u main.py -d 'heart_disease' -i 10 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log10_heart_biased_standard_nomodels.out &
 #nohup python3 -u main.py -d 'heart_disease' -i 11 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log11_heart_biased_standard_nomodels.out &
 #nohup python3 -u main.py -d 'heart_disease' -i 12 -h 'biased' -r 'standard' -c 0 -n True -w '' > ../logs/log12_heart_biased_standard_nomodels.out &

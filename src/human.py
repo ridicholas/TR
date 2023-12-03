@@ -114,10 +114,10 @@ class Human(object):
             confidences[start_confidences <= self.confVal] = 0.2
         if t_type=='biased':
             confidences = np.ones(X.shape[0])
-            confidences[(X['age54.0'] == 1) & (start_confidences <= self.confVal)] = 0.8
-            confidences[(X['age54.0'] == 1) & (start_confidences > self.confVal)] = 0.2
-            confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 1
-            confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.8
+            confidences[(X['age54.0'] == 1) & (start_confidences <= self.confVal)] = 0.9
+            confidences[(X['age54.0'] == 1) & (start_confidences > self.confVal)] = 1
+            confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
+            confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.2
 
         if t_type=='offset_02':
             confidences = np.ones(X.shape[0])

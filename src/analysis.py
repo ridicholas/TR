@@ -283,10 +283,10 @@ num_runs = 10
 dataset = 'heart_disease'
 
 name = 'offset_01'
-of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, costs, False)
+#of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, costs, False)
 
 name = 'offset_02'
-of2_means, of2_std, of2_rs = make_results('heart_disease', name, num_runs, costs, False)
+#of2_means, of2_std, of2_rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 #misr_means, misr_stderrs, misrs = make_results(dataset, name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
@@ -325,33 +325,33 @@ bia_means, bia_std, bia_rs = make_results(dataset, name, num_runs, costs, False)
 def make_TL_v_cost_plot(results_means, results_stderrs, name):
     fig = plt.figure(figsize=(3, 2), dpi=200)
     color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42'}
-    plt.plot(results_means.index[0:4], results_means['hyrs_norecon_objective'].iloc[0:4], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
-    plt.plot(results_means.index[0:4], results_means['hyrs_team_objective'].iloc[0:4], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
-    plt.plot(results_means.index[0:4], results_means['tr_team_w_reset_objective'].iloc[0:4], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
-    plt.plot(results_means.index[0:4], results_means['brs_team_objective'].iloc[0:4], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
+    plt.plot(results_means.index[0:6], results_means['hyrs_norecon_objective'].iloc[0:6], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
+    plt.plot(results_means.index[0:6], results_means['hyrs_team_objective'].iloc[0:6], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
+    plt.plot(results_means.index[0:6], results_means['tr_team_w_reset_objective'].iloc[0:6], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
+    plt.plot(results_means.index[0:6], results_means['brs_team_objective'].iloc[0:6], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
     
-    plt.plot(results_means.index[0:4], results_means['human_decision_loss'].iloc[0:4], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
+    plt.plot(results_means.index[0:6], results_means['human_decision_loss'].iloc[0:6], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
     
-    plt.fill_between(results_means.index[0:4], 
-                results_means['human_decision_loss'].iloc[0:4]-(results_stderrs['human_decision_loss'].iloc[0:4]),
-                results_means['human_decision_loss'].iloc[0:4]+(results_stderrs['human_decision_loss'].iloc[0:4]) ,
+    plt.fill_between(results_means.index[0:6], 
+                results_means['human_decision_loss'].iloc[0:6]-(results_stderrs['human_decision_loss'].iloc[0:6]),
+                results_means['human_decision_loss'].iloc[0:6]+(results_stderrs['human_decision_loss'].iloc[0:6]) ,
                 color=color_dict['Human'], alpha=0.2)
-    plt.fill_between(results_means.index[0:4], 
-                results_means['hyrs_team_objective'].iloc[0:4]-(results_stderrs['hyrs_team_objective'].iloc[0:4]),
-                results_means['hyrs_team_objective'].iloc[0:4]+(results_stderrs['hyrs_team_objective'].iloc[0:4]) ,
+    plt.fill_between(results_means.index[0:6], 
+                results_means['hyrs_team_objective'].iloc[0:6]-(results_stderrs['hyrs_team_objective'].iloc[0:6]),
+                results_means['hyrs_team_objective'].iloc[0:6]+(results_stderrs['hyrs_team_objective'].iloc[0:6]) ,
                 color=color_dict['HYRSRecon'], alpha=0.2)
     
-    plt.fill_between(results_means.index[0:4], 
-                results_means['hyrs_norecon_objective'].iloc[0:4]-(results_stderrs['hyrs_norecon_objective'].iloc[0:4]),
-                results_means['hyrs_norecon_objective'].iloc[0:4]+(results_stderrs['hyrs_norecon_objective'].iloc[0:4]) ,
+    plt.fill_between(results_means.index[0:6], 
+                results_means['hyrs_norecon_objective'].iloc[0:6]-(results_stderrs['hyrs_norecon_objective'].iloc[0:6]),
+                results_means['hyrs_norecon_objective'].iloc[0:6]+(results_stderrs['hyrs_norecon_objective'].iloc[0:6]) ,
                 color=color_dict['HYRS'], alpha=0.2)
-    plt.fill_between(results_means.index[0:4], 
-                results_means['brs_team_objective'].iloc[0:4]-(results_stderrs['brs_team_objective'].iloc[0:4]),
-                results_means['brs_team_objective'].iloc[0:4]+(results_stderrs['brs_team_objective'].iloc[0:4]) ,
+    plt.fill_between(results_means.index[0:6], 
+                results_means['brs_team_objective'].iloc[0:6]-(results_stderrs['brs_team_objective'].iloc[0:6]),
+                results_means['brs_team_objective'].iloc[0:6]+(results_stderrs['brs_team_objective'].iloc[0:6]) ,
                 color=color_dict['BRS'], alpha=0.2)
-    plt.fill_between(results_means.index[0:4], 
-                results_means['tr_team_w_reset_objective'].iloc[0:4]-(results_stderrs['tr_team_w_reset_objective'].iloc[0:4]),
-                results_means['tr_team_w_reset_objective'].iloc[0:4]+(results_stderrs['tr_team_w_reset_objective'].iloc[0:4]),
+    plt.fill_between(results_means.index[0:6], 
+                results_means['tr_team_w_reset_objective'].iloc[0:6]-(results_stderrs['tr_team_w_reset_objective'].iloc[0:6]),
+                results_means['tr_team_w_reset_objective'].iloc[0:6]+(results_stderrs['tr_team_w_reset_objective'].iloc[0:6]),
                 color=color_dict['TR'], alpha=0.2)
    
     plt.xlabel('Reconciliation Cost', fontsize=12)
@@ -361,8 +361,8 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name):
     plt.legend(prop={'size': 5})
     plt.grid('on', linestyle='dotted', linewidth=0.2, color='black')
 
-    #fig.savefig(f'results/{dataset}/plots/TL_{dataset}_{name}.png', bbox_inches='tight')
-    plt.show()
+    fig.savefig(f'results/{dataset}/plots/TL_{dataset}_{name}.png', bbox_inches='tight')
+    #plt.show()
 
     #plt.clf()
 
