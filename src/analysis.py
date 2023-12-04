@@ -92,7 +92,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
         
         bar=progressbar.ProgressBar()
-        x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized = load_datasets('heart_disease', run)
+        x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized = load_datasets(dataset, run)
 
         if validation==True:
             x_test = x_val
@@ -100,7 +100,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             x_test_non_binarized = x_val_non_binarized
 
         human, adb_mod, conf_mod = load_humans(dataset, whichtype, run)
-        human.dataset = 'heart_disease'
+        human.dataset = 'fico'
         human.decision_bias = False
 
         brs_mod = load_results(dataset, whichtype , run, 0.0, 'brs')
@@ -278,9 +278,9 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 
-costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-num_runs = 10
-dataset = 'heart_disease'
+costs = [0.0]#, 0.2, 0.4, 0.6, 0.8, 1.0]
+num_runs = 1
+dataset = 'fico'
 
 name = 'offset_01'
 #of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, costs, False)
