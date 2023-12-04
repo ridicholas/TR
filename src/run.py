@@ -184,7 +184,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             tr_model.make_lite()
             pickle.dump(tr_model, f)
 
-run('fico', 0, 'biased', runtype='standard', which_models=['hyrs', 'brs', 'tr'], contradiction_reg=0.0, remake_humans=True)
+#run('fico', 0, 'biased', runtype='standard', which_models=['hyrs', 'brs', 'tr'], contradiction_reg=0.0, remake_humans=True)
 
 
 

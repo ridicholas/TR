@@ -278,9 +278,9 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 
-costs = [0.0]#, 0.2, 0.4, 0.6, 0.8, 1.0]
-num_runs = 1
-dataset = 'fico'
+costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+num_runs = 10
+dataset = 'heart_disease'
 
 name = 'offset_01'
 #of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, costs, False)
