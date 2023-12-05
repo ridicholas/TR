@@ -14,7 +14,7 @@ class Human(object):
         if dataset == 'heart_disease':
             self.confVal = 0.6
         elif dataset == 'fico':
-            self.confVal = 0.4
+            self.confVal = 0.3
         self.decision_bias = decision_bias
 
 
@@ -169,10 +169,10 @@ class Human(object):
             confidences[start_confidences <= self.confVal] = 0.2
         if t_type=='biased':
             confidences = np.ones(X.shape[0])
-            confidences[(X['ExternalRiskEstimate65.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
-            confidences[(X['ExternalRiskEstimate65.0'] == 0) & (start_confidences > self.confVal)] = 1
             confidences[(X['ExternalRiskEstimate65.0'] == 1) & (start_confidences <= self.confVal)] = 0.9
-            confidences[(X['ExternalRiskEstimate65.0'] == 1) & (start_confidences > self.confVal)] = 0.2
+            confidences[(X['ExternalRiskEstimate65.0'] == 1) & (start_confidences > self.confVal)] = 1
+            confidences[(X['ExternalRiskEstimate65.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
+            confidences[(X['ExternalRiskEstimate65.0'] == 0) & (start_confidences > self.confVal)] = 0.2
 
         if t_type=='offset_02':
             confidences = np.ones(X.shape[0])
