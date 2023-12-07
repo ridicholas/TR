@@ -158,7 +158,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                 brs_model_preds = brs_predict(brs_mod.opt_rules, x_test)
                 brs_conf = brs_predict_conf(brs_mod.opt_rules, x_test, brs_mod)
 
-            for i in range(25):
+            for i in range(20):
                 
                 
 
@@ -278,15 +278,15 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 
-costs = [0.2, 0.4, 0.6, 0.8]
+costs = [0, 0.2, 0.4, 0.6, 0.8, 1]
 num_runs = 5
 dataset = 'fico'
 
 name = 'offset_01'
-#of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, costs, False)
+of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, costs, False)
 
 name = 'offset_02'
-#of2_means, of2_std, of2_rs = make_results('heart_disease', name, num_runs, costs, False)
+of2_means, of2_std, of2_rs = make_results('heart_disease', name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 #misr_means, misr_stderrs, misrs = make_results(dataset, name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
