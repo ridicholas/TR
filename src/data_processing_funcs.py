@@ -230,7 +230,7 @@ def make_fico_data(numQs=5, num_runs=50):
 def make_hr_data(numQs=5, num_runs=50):
     startDict = {}
     # train
-    data = arff.loadarff('Train-Natural-HR_employee_attrition.arff')
+    data = arff.loadarff('datasets/hr/Train-Natural-HR_employee_attrition.arff')
     startDict['Xtrain'] = pd.DataFrame(data[0])
     startDict['Ytrain'] = startDict['Xtrain']['Attrition']
     startDict['Ytrain'] = startDict['Ytrain'].str.decode('UTF-8')
@@ -346,5 +346,6 @@ def make_hr_data(numQs=5, num_runs=50):
         startDict['Ylearning'].to_csv(f'{outdir}/ylearning.csv')
         startDict['Xlearning'].to_csv(f'{outdir}/xlearning.csv')
 
-make_heart_data(numQs=5, num_runs=20)
+#make_heart_data(numQs=5, num_runs=20)
 #make_fico_data(numQs=5, num_runs=20)
+make_hr_data(numQs=5, num_runs=20)

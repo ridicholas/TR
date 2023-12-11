@@ -15,6 +15,8 @@ class Human(object):
             self.confVal = 0.6
         elif dataset == 'fico':
             self.confVal = 0.3
+        elif dataset == 'hr':
+            self.confVal = 0.8
         self.decision_bias = decision_bias
 
 
@@ -24,6 +26,8 @@ class Human(object):
             return self.heart_confidence_transformation(X=X, t_type=self.name)
         elif self.dataset == 'fico':
             return self.fico_confidence_transformation(X=X, t_type=self.name)
+        elif self.dataset == 'hr':
+            return self.hr_confidence_transformation(X=X, t_type=self.name)
         
     def set_confVal(self, val):
         self.confVal = val
@@ -149,6 +153,57 @@ class Human(object):
         
         return confidences
     
+    def hr_confidence_transformation(self, X=None, t_type=None):
+            if self.decision_bias:
+                if self.dataset == 'heart_disease':
+                    start_confidences = np.ones(X.shape[0])
+                    start_confidences[X['age54.0'] == 1] = 0       
+            else:
+                start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+
+            if t_type==None or t_type=='calibrated':
+                
+                confidences = np.ones(X.shape[0])
+                confidences[start_confidences > self.confVal] = 0.2
+                confidences[start_confidences <= self.confVal] = 1
+            if t_type=='miscalibrated':
+                
+                confidences = np.ones(X.shape[0])
+                confidences[start_confidences > self.confVal] = 1
+                confidences[start_confidences <= self.confVal] = 0.2
+            if t_type=='biased':
+                confidences = np.ones(X.shape[0])
+                confidences[(X['Gender_Male'] == 0) & (start_confidences <= self.confVal)] = 0.9
+                confidences[(X['Gender_Male'] == 0) & (start_confidences > self.confVal)] = 1
+                confidences[(X['Gender_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
+                confidences[(X['Gender_Male'] == 1) & (start_confidences > self.confVal)] = 0.2
+
+            if t_type=='offset_02':
+                confidences = np.ones(X.shape[0])
+                confidences[start_confidences <= self.confVal] = 0.8
+                confidences[start_confidences > self.confVal] = 0.4
+            if t_type=='offset_01':
+                
+                confidences = np.ones(X.shape[0])
+                confidences[start_confidences <= self.confVal] = 0.9
+                confidences[start_confidences > self.confVal] = 0.3
+            if t_type=='offset_03':
+                confidences = np.ones(X.shape[0])
+                confidences[start_confidences <= self.confVal] = 0.7
+                confidences[start_confidences > self.confVal] = 0.3
+            if t_type=='offset_05':
+                confidences = np.ones(X.shape[0])
+                confidences[start_confidences <= self.confVal] = 0.5
+                confidences[start_confidences > self.confVal] = 0.5
+            if t_type=='offset_08':
+                confidences = np.ones(X.shape[0])
+                confidences[start_confidences <= self.confVal] = 0.2
+                confidences[start_confidences > self.confVal] = 0.8
+
+
+            
+            return confidences
+        
     def fico_confidence_transformation(self, X=None, t_type=None):
         if self.decision_bias:
             if self.dataset == 'heart_disease':
