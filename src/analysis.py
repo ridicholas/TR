@@ -100,8 +100,6 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             x_test_non_binarized = x_val_non_binarized
 
         human, adb_mod, conf_mod = load_humans(dataset, whichtype, run)
-        human.dataset = 'fico'
-        human.decision_bias = False
 
         brs_mod = load_results(dataset, whichtype , run, 0.0, 'brs')
 
@@ -283,10 +281,10 @@ num_runs = 10
 dataset = 'fico'
 
 name = 'offset_01'
-#of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, costs, False)
+of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, costs, False)
 
 name = 'offset_02'
-#of2_means, of2_std, of2_rs = make_results(dataset, name, num_runs, costs, False)
+of2_means, of2_std, of2_rs = make_results(dataset, name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 #misr_means, misr_stderrs, misrs = make_results(dataset, name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
