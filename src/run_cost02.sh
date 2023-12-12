@@ -36,16 +36,16 @@
 
 #wait
 
-nohup python3 -u main.py -d 'fico' -i 0 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log0_fico_biased_standard_cost02.out &
-nohup python3 -u main.py -d 'fico' -i 1 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log1_fico_biased_standard_cost02.out &
-nohup python3 -u main.py -d 'fico' -i 2 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log2_fico_biased_standard_cost02.out &
-nohup python3 -u main.py -d 'fico' -i 3 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log3_fico_biased_standard_cost02.out &
-nohup python3 -u main.py -d 'fico' -i 4 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log4_fico_biased_standard_cost02.out &
-#nohup python3 -u main.py -d 'fico' -i 5 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log5_fico_biased_standard_cost02.out &
-#nohup python3 -u main.py -d 'fico' -i 6 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log6_fico_biased_standard_cost02.out &
-#nohup python3 -u main.py -d 'fico' -i 7 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log7_fico_biased_standard_cost02.out &
-#nohup python3 -u main.py -d 'fico' -i 8 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log8_fico_biased_standard_cost02.out &
-#nohup python3 -u main.py -d 'fico' -i 9 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log9_fico_biased_standard_cost02.out &
+#nohup python3 -u main.py -d 'fico' -i 0 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log0_fico_biased_standard_cost02.out &
+#nohup python3 -u main.py -d 'fico' -i 1 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log1_fico_biased_standard_cost02.out &
+#nohup python3 -u main.py -d 'fico' -i 2 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log2_fico_biased_standard_cost02.out &
+#nohup python3 -u main.py -d 'fico' -i 3 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log3_fico_biased_standard_cost02.out &
+#nohup python3 -u main.py -d 'fico' -i 4 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log4_fico_biased_standard_cost02.out &
+nohup python3 -u main.py -d 'fico' -i 5 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log5_fico_biased_standard_cost02.out &
+nohup python3 -u main.py -d 'fico' -i 6 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log6_fico_biased_standard_cost02.out &
+nohup python3 -u main.py -d 'fico' -i 7 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log7_fico_biased_standard_cost02.out &
+nohup python3 -u main.py -d 'fico' -i 8 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log8_fico_biased_standard_cost02.out &
+nohup python3 -u main.py -d 'fico' -i 9 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log9_fico_biased_standard_cost02.out &
 #nohup python3 -u main.py -d 'fico' -i 10 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log10_fico_biased_standard_cost02.out &
 #nohup python3 -u main.py -d 'fico' -i 11 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log11_fico_biased_standard_cost02.out &
 #nohup python3 -u main.py -d 'fico' -i 12 -h 'biased' -r 'standard' -c 0.2 -n False -w 'hyrs,tr' > ../logs/log12_fico_biased_standard_cost02.out &

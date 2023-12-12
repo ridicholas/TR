@@ -283,10 +283,10 @@ num_runs = 10
 dataset = 'fico'
 
 name = 'offset_01'
-of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, costs, False)
+#of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, costs, False)
 
 name = 'offset_02'
-of2_means, of2_std, of2_rs = make_results('heart_disease', name, num_runs, costs, False)
+#of2_means, of2_std, of2_rs = make_results(dataset, name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 #misr_means, misr_stderrs, misrs = make_results(dataset, name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
@@ -362,6 +362,45 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name):
     plt.grid('on', linestyle='dotted', linewidth=0.2, color='black')
 
     fig.savefig(f'results/{dataset}/plots/TL_{dataset}_{name}.png', bbox_inches='tight')
+    #plt.show()
+
+    #plt.clf()
+
+
+def make_contradictions_v_decisionloss_plot(results_means, results_stderrs, name):
+    fig = plt.figure(figsize=(3, 2), dpi=200)
+    color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42'}
+    plt.plot(results_means['brs_model_contradictions'], results_means['brs_team_decision_loss'].iloc[0:6], marker = 'v', c=color_dict['BRS'], label = 'Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
+    #plt.plot(results_means['hyrs_model_contradictions'], results_means['hyrs_team_objective'].iloc[0:6], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
+    plt.plot(results_means['tr_model_w_reset_contradictions'], results_means['tr_team_w_reset_decision_loss'].iloc[0:6], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
+    
+    
+    
+    plt.plot([0,0,0,0,0, 0], results_means['human_decision_loss'].iloc[0:6], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
+    
+    for cost in results_stderrs.index:
+        plt.fill_between(np.linspace(results_means.loc[cost, 'brs_model_contradictions'] - results_stderrs.loc[cost, 'brs_model_contradictions'], 
+                                     results_means.loc[cost, 'brs_model_contradictions'] + results_stderrs.loc[cost, 'brs_model_contradictions'], 50), 
+                    results_means.loc[cost, 'brs_team_decision_loss']-(results_stderrs.loc[cost, 'brs_team_decision_loss']),
+                    results_means.loc[cost, 'brs_team_decision_loss']+(results_stderrs.loc[cost, 'brs_team_decision_loss']),
+                    color=color_dict['BRS'], alpha=0.2)
+        
+        #plt.text(results_means.loc[cost, 'tr_model_w_reset_contradictions'], results_means.loc[cost, 'tr_team_w_reset_decision_loss'], f'cost = {str(cost)}', fontsize=4)
+        
+        plt.fill_between(np.linspace(results_means.loc[cost, 'tr_model_w_reset_contradictions'] - results_stderrs.loc[cost, 'tr_model_w_reset_contradictions'], 
+                                    results_means.loc[cost, 'tr_model_w_reset_contradictions'] + results_stderrs.loc[cost, 'tr_model_w_reset_contradictions'], 50), 
+                    results_means.loc[cost, 'tr_team_w_reset_decision_loss']-(results_stderrs.loc[cost, 'tr_team_w_reset_decision_loss']),
+                    results_means.loc[cost, 'tr_team_w_reset_decision_loss']+(results_stderrs.loc[cost, 'tr_team_w_reset_decision_loss']),
+                    color=color_dict['TR'], alpha=0.2)
+   
+    plt.xlabel('Contradictions', fontsize=12)
+    plt.ylabel('Team Decision Loss', fontsize=12)
+    plt.tick_params(labelrotation=45, labelsize=10)
+    #plt.title('{} Setting'.format(setting), fontsize=15)
+    plt.legend(prop={'size': 5})
+    plt.grid('on', linestyle='dotted', linewidth=0.2, color='black')
+
+    fig.savefig(f'results/{dataset}/plots/TDL_{dataset}_{name}.png', bbox_inches='tight')
     #plt.show()
 
     #plt.clf()
