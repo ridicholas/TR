@@ -132,7 +132,7 @@ class Human(object):
                 confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.2
             else:
 
-                confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
+                confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.2
                 confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.2
                 confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal) ] = 0.9
                 confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 1
