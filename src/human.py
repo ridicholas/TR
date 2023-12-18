@@ -37,7 +37,7 @@ class Human(object):
         if self.decision_bias:
             if self.dataset == 'heart_disease':
                 model_confidences = np.ones(X.shape[0])
-                model_confidences[X['sex_Male'] == 1] = 0
+                model_confidences[X['age54.0'] == 0] = 0
             if self.dataset == 'fico':
                 model_confidences = np.ones(X.shape[0])
                 model_confidences[X['ExternalRiskEstimate65.0'] == 0] = 0
@@ -49,7 +49,10 @@ class Human(object):
         #low accuracy 60%
         low = bernoulli.rvs(p=0.4, size=len(decisions)).astype(bool)
         #high accuracy 100%
-        high = bernoulli.rvs(p=0.00, size=len(decisions)).astype(bool)
+        if self.decision_bias == True:
+            high = bernoulli.rvs(p=0.05, size=len(decisions)).astype(bool)
+        else:
+            high = bernoulli.rvs(p=0.00, size=len(decisions)).astype(bool)
         decisions[high] = 1-decisions[high]
         decisions[(model_confidences > self.confVal) & low] = 1-decisions[(model_confidences > self.confVal) & low]
 
@@ -106,7 +109,7 @@ class Human(object):
         if self.decision_bias:
             if self.dataset == 'heart_disease':
                 start_confidences = np.ones(X.shape[0])
-                start_confidences[X['age54.0'] == 1] = 0       
+                start_confidences[X['age54.0'] == 0] = 0       
         else:
             start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
 
@@ -122,10 +125,17 @@ class Human(object):
             confidences[start_confidences <= self.confVal] = 0.2
         if t_type=='biased':
             confidences = np.ones(X.shape[0])
-            confidences[(X['age54.0'] == 1) & (start_confidences <= self.confVal)] = 0.9
-            confidences[(X['age54.0'] == 1) & (start_confidences > self.confVal)] = 1
-            confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
-            confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.2
+            if self.decision_bias == False:
+                confidences[(X['age54.0'] == 1) & (start_confidences <= self.confVal)] = 0.9
+                confidences[(X['age54.0'] == 1) & (start_confidences > self.confVal)] = 1
+                confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
+                confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.2
+            else:
+
+                confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
+                confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.2
+                confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal) ] = 0.9
+                confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 1
 
         if t_type=='offset_02':
             confidences = np.ones(X.shape[0])

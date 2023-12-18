@@ -53,19 +53,21 @@ def evaluate_adb_model(adb_model, human, x_test, c_human_true, c_human_estimate,
         scores.append(roc_auc_score(realized_accepts, adb_model.predict_proba(pd.DataFrame({'human_conf': c_human_estimate, 'model_confs': c_model, 'agreement':agreement}))[:, 1]))
     return np.array(scores).mean()
 
-def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], contradiction_reg=0, remake_humans=False):   
+def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], contradiction_reg=0, remake_humans=False, human_decision_bias=False, custom_name=""):   
     # load data
     x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized = load_datasets(dataset, run_num)
-
+    
     if not os.path.exists(f'results/{dataset}/run{run_num}'):
         os.makedirs(f'results/{dataset}/run{run_num}')
 
     # make human
     if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/{human_name}.pkl'):
-        human = Human(human_name, x_human_train, y_human_train, dataset=dataset, decision_bias=False)
+        human = Human(human_name, x_human_train, y_human_train, dataset=dataset, decision_bias=human_decision_bias)
+        human_name = human_name + custom_name
         with open(f'results/{dataset}/run{run_num}/{human_name}.pkl', 'wb') as f:
             pickle.dump(human, f)
     else:
+        human_name = human_name + custom_name
         with open(f'results/{dataset}/run{run_num}/{human_name}.pkl', 'rb') as f:
             human = pickle.load(f)
 
@@ -79,7 +81,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             conf_model = pickle.load(f)
     #train ADB model
 
-    _, x_initial, _, y_initial = train_test_split(x_train, y_train, test_size=5/len(y_train), stratify=y_train)
+    _, x_initial, _, y_initial = train_test_split(x_train, y_train, test_size=100/len(y_train), stratify=y_train)
     initial_task_model = xgb.XGBClassifier().fit(x_initial, y_initial)
     
 
@@ -184,7 +186,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             tr_model.make_lite()
             pickle.dump(tr_model, f)
 
-#run('hr', 0, 'biased', runtype='standard', which_models=['hyrs', 'brs', 'tr'], contradiction_reg=0.0, remake_humans=True)
+#run('heart_disease', 0, 'biased', runtype='standard', which_models=['hyrs', 'tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='_case2')
 
 
 
