@@ -83,7 +83,6 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
     _, x_initial, _, y_initial = train_test_split(x_train, y_train, test_size=100/len(y_train), stratify=y_train)
     initial_task_model = xgb.XGBClassifier().fit(x_initial, y_initial)
-    
 
     if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl'):
 
@@ -93,7 +92,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         
         p_accepts = human.ADB(adb_learning_data['human_conf'], adb_learning_data['model_confs'], adb_learning_data['agreement'])
         realized_accepts = bernoulli.rvs(p=p_accepts, size=len(p_accepts))
-        adb_model = xgb.XGBClassifier().fit(adb_learning_data, realized_accepts)
+        adb_model = xgb.XGBClassifier().fit(adb_learning_data[adb_learning_data['agreement'] == False], realized_accepts[adb_learning_data['agreement'] == False])
         with open(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl', 'wb') as f:
             pickle.dump(adb_model, f)
     else:
@@ -186,7 +185,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             tr_model.make_lite()
             pickle.dump(tr_model, f)
 
-#run('heart_disease', 0, 'biased', runtype='standard', which_models=['hyrs', 'tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='_case2')
+#run('heart_disease', 0, 'biased', runtype='standard', which_models=['brs','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='_case1')
 
 
 

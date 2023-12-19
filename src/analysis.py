@@ -99,7 +99,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             y_test = y_train
             x_test_non_binarized = x_train_non_binarized
         
-        whichtype = whichtype + '_case'
+        whichtype = whichtype + '_case1'
 
         human, adb_mod, conf_mod = load_humans(dataset, whichtype, run)
 
@@ -152,7 +152,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             hyrs_norecon_team_decision_loss = []
             hyrs_norecon_model_contradictions = []
             
-            if cost == 0.2:
+            if cost == 0.1:
                 brs_mod.df = x_train
                 brs_mod.Y = y_train
                 brs_model_preds = brs_predict(brs_mod.opt_rules, x_test)
@@ -200,7 +200,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
 
-                    if cost == 0.2:
+                    if cost == 0.1:
                         brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, learned_adb.ADB_model_wrapper)
                         hyrs_norecon_team_preds = hyrs_team_preds.copy()
                         hyrs_norecon_model_preds = hyrs_model_preds.copy()
@@ -216,7 +216,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
 
-                    if cost == 0.2:
+                    if cost == 0.1:
                         brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
                         hyrs_norecon_team_preds = hyrs_team_preds.copy()
                         hyrs_norecon_model_preds = hyrs_model_preds.copy()
@@ -292,6 +292,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                 contras['ef']['brs'].append((preds[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)] != human_decisions[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)]).sum()/total)
                 contras['ym']['brs'].append((preds[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)] != human_decisions[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)]).sum()/total)
                 contras['yf']['brs'].append((preds[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)] != human_decisions[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)]).sum()/total)
+                
                 preds = human_decisions.copy()
                 decs['t']['human'].append((preds != y_test).sum()/total)
                 decs['e']['human'].append((preds[x_test['age54.0'] == 1] != y_test[x_test['age54.0'] == 1]).sum()/total)
@@ -344,24 +345,33 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                 print(i)
             
             tr_confusion = pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
-                                        data = [[mean(decs['ym']['tr']), mean(decs['yf']['tr']), mean(decs['y']['tr'])], [mean(decs['em']['tr']), mean(decs['ef']['tr']), mean(decs['e']['tr'])], [mean(decs['m']['tr']), mean(decs['f']['tr']), mean(decs['t']['tr'])]])
+                                        data = [[mean(decs['em']['tr']), mean(decs['ym']['tr']), mean(decs['m']['tr'])], 
+                                                [mean(decs['ef']['tr']), mean(decs['yf']['tr']), mean(decs['f']['tr'])], 
+                                                [mean(decs['e']['tr']), mean(decs['y']['tr']), mean(decs['t']['tr'])]])
             
             brs_confusion = pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
-                                        data = [[mean(decs['ym']['brs']), mean(decs['yf']['brs']), mean(decs['y']['brs'])], [mean(decs['em']['brs']), mean(decs['ef']['brs']), mean(decs['e']['brs'])], [mean(decs['m']['brs']), mean(decs['f']['brs']), mean(decs['t']['brs'])]])
+            data = [[mean(decs['em']['brs']), mean(decs['ym']['brs']), mean(decs['m']['brs'])], 
+                    [mean(decs['ef']['brs']), mean(decs['yf']['brs']), mean(decs['f']['brs'])], 
+                    [mean(decs['e']['brs']), mean(decs['y']['brs']), mean(decs['t']['brs'])]])
             
-            brs_confusion = pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
-                                        data = [[mean(decs['ym']['brs']), mean(decs['yf']['brs']), mean(decs['y']['brs'])], [mean(decs['em']['brs']), mean(decs['ef']['brs']), mean(decs['e']['brs'])], [mean(decs['m']['brs']), mean(decs['f']['brs']), mean(decs['t']['brs'])]])
 
-            human_confusion = pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],                                           data = [[mean(decs['ym']['human']), mean(decs['yf']['human']), mean(decs['y']['human'])], [mean(decs['em']['human']), mean(decs['ef']['human']), mean(decs['e']['human'])], [mean(decs['m']['human']), mean(decs['f']['human']), mean(decs['t']['human'])]])
+            human_confusion = pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
+                                           data= [[mean(decs['em']['human']), mean(decs['ym']['human']), mean(decs['m']['human'])], 
+                                                  [mean(decs['ef']['human']), mean(decs['yf']['human']), mean(decs['f']['human'])], 
+                                                  [mean(decs['e']['human']), mean(decs['y']['human']), mean(decs['t']['human'])]])
 
             tr_confusion_contras = pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
-                                        data = [[mean(contras['ym']['tr']), mean(contras['yf']['tr']), mean(contras['y']['tr'])], [mean(contras['em']['tr']), mean(contras['ef']['tr']), mean(contras['e']['tr'])], [mean(contras['m']['tr']), mean(contras['f']['tr']), mean(contras['t']['tr'])]])
+                                        data = [[mean(contras['em']['tr']), mean(contras['ym']['tr']), mean(contras['m']['tr'])], 
+                                                [mean(contras['ef']['tr']), mean(contras['yf']['tr']), mean(contras['f']['tr'])], 
+                                                [mean(contras['e']['tr']), mean(contras['y']['tr']), mean(contras['t']['tr'])]])
             
             brs_confusion_contras = pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
-                                        data = [[mean(contras['ym']['brs']), mean(contras['yf']['brs']), mean(contras['y']['brs'])], [mean(contras['em']['brs']), mean(contras['ef']['brs']), mean(contras['e']['brs'])], [mean(contras['m']['brs']), mean(contras['f']['brs']), mean(contras['t']['brs'])]])
+            data = [[mean(contras['em']['brs']), mean(contras['ym']['brs']), mean(contras['m']['brs'])], 
+                    [mean(contras['ef']['brs']), mean(contras['yf']['brs']), mean(contras['f']['brs'])], 
+                    [mean(contras['e']['brs']), mean(contras['y']['brs']), mean(contras['t']['brs'])]])
             
 
-
+            human.ADB(np.array([1, 0.8, 0.6, 0.4, 0.2]), np.array([0.9, 0.9, 0.9, 0.9, 0.9]), np.array([False,False,False,False,False]))
             #append values to appropriate row in results
             results.loc[cost, 'tr_team_w_reset_decision_loss'].append(mean(tr_team_w_reset_decision_loss))
             results.loc[cost, 'tr_team_wo_reset_decision_loss'].append(mean(tr_team_wo_reset_decision_loss))
@@ -404,7 +414,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 
-costs = [0.2]
+costs = [0.1]
 num_runs = 1
 dataset = 'heart_disease'
 
