@@ -11,6 +11,7 @@ from statistics import mean
 import progressbar
 from run import ADB
 from run import evaluate_adb_model
+from copy import deepcopy
 
 def load_datasets(dataset, run_num):
     x_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain.csv', index_col=0).reset_index(drop=True)
@@ -99,8 +100,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             y_test = y_train
             x_test_non_binarized = x_train_non_binarized
         
-        whichtype = whichtype + '_case1'
-
+        whichtype = whichtype + ''
+        dataset = dataset
         human, adb_mod, conf_mod = load_humans(dataset, whichtype, run)
 
         brs_mod = load_results(dataset, whichtype , run, 0.0, 'brs')
@@ -152,11 +153,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             hyrs_norecon_team_decision_loss = []
             hyrs_norecon_model_contradictions = []
             
-            if cost == 0.1:
+            if cost == 0:
                 brs_mod.df = x_train
                 brs_mod.Y = y_train
                 brs_model_preds = brs_predict(brs_mod.opt_rules, x_test)
                 brs_conf = brs_predict_conf(brs_mod.opt_rules, x_test, brs_mod)
+                hyrs_norecon_mod = deepcopy(hyrs_mod)
 
             decs = {}
             decs['t']={'tr': [], 'hyrs': [], 'brs': [], 'human': []}
@@ -180,7 +182,9 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             contras['ef'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
             contras['ym'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
             contras['yf'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            for i in range(20):
+
+            totals = {}
+            for i in range(50):
                 
                 
 
@@ -199,12 +203,19 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
+                    brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, learned_adb.ADB_model_wrapper)
 
-                    if cost == 0.1:
-                        brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, learned_adb.ADB_model_wrapper)
-                        hyrs_norecon_team_preds = hyrs_team_preds.copy()
-                        hyrs_norecon_model_preds = hyrs_model_preds.copy()
+                    hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
+                    hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
+                    brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, learned_adb.ADB_model_wrapper)
+
+                    c_model = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)[0]
+
+
+
+                        
                 else:
+                    learned_adb = ADB(adb_mod)
                     human_decisions = human.get_decisions(x_test, y_test)
                     human_conf = human.get_confidence(x_test)
                     tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
@@ -215,13 +226,28 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
+                    brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
 
-                    if cost == 0.1:
-                        brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
-                        hyrs_norecon_team_preds = hyrs_team_preds.copy()
-                        hyrs_norecon_model_preds = hyrs_model_preds.copy()
+                    hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
+                    hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, human.ADB, x_test)
+                    brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
+
 
                 total = len(y_test)
+                totals['t'] = len(y_test)
+                totals['e'] = len(y_test[x_test['age54.0'] == 1])
+                totals['y'] = len(y_test[x_test['age54.0'] == 0])
+                totals['m'] = len(y_test[x_test['sex_Male'] == 1])
+                totals['f'] = len(y_test[x_test['sex_Male'] == 0])
+                totals['em'] = len(y_test[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)])
+                totals['ef'] = len(y_test[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)])
+                totals['ym'] = len(y_test[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)])
+                totals['yf'] = len(y_test[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)])
+
+
+
+
+
                 #find number of incorrect predictions confusion matrix split along sex_Male and age54.0 variables
                 preds = tr_team_preds_with_reset.copy()
                 decs['t']['tr'].append((preds != y_test).sum()/total)
@@ -365,13 +391,18 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                                                 [mean(contras['ef']['tr']), mean(contras['yf']['tr']), mean(contras['f']['tr'])], 
                                                 [mean(contras['e']['tr']), mean(contras['y']['tr']), mean(contras['t']['tr'])]])
             
+            totals_confusion = pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
+            data = [[totals['em'], totals['ym'], totals['m']], 
+                    [totals['ef'], totals['yf'], totals['f']], 
+                    [totals['e'], totals['y'], totals['t']]])
+            
             brs_confusion_contras = pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
             data = [[mean(contras['em']['brs']), mean(contras['ym']['brs']), mean(contras['m']['brs'])], 
                     [mean(contras['ef']['brs']), mean(contras['yf']['brs']), mean(contras['f']['brs'])], 
                     [mean(contras['e']['brs']), mean(contras['y']['brs']), mean(contras['t']['brs'])]])
             
 
-            human.ADB(np.array([1, 0.8, 0.6, 0.4, 0.2]), np.array([0.9, 0.9, 0.9, 0.9, 0.9]), np.array([False,False,False,False,False]))
+            
             #append values to appropriate row in results
             results.loc[cost, 'tr_team_w_reset_decision_loss'].append(mean(tr_team_w_reset_decision_loss))
             results.loc[cost, 'tr_team_wo_reset_decision_loss'].append(mean(tr_team_wo_reset_decision_loss))
@@ -414,21 +445,49 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 
-costs = [0.1]
-num_runs = 1
+costs = [0, 0.2, 0.4, 0.6, 0.8, 1]
+num_runs = 10
 dataset = 'heart_disease'
 
 name = 'offset_01'
 #of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, costs, False)
+#pickle and write means, std, and rs to file
+#with open(f'results/{dataset}/offset_01_means.pkl', 'wb') as f:
+#    pickle.dump(of1_means, f)
+#with open(f'results/{dataset}/offset_01_std.pkl', 'wb') as f:
+#    pickle.dump(of1_std, f)
+#with open(f'results/{dataset}/offset_01_rs.pkl', 'wb') as f:
+#    pickle.dump(of1_rs, f)
 
 name = 'offset_02'
-#of2_means, of2_std, of2_rs = make_results(dataset, name, num_runs, costs, False)
+of2_means, of2_std, of2_rs = make_results(dataset, name, num_runs, costs, False)
+
+#pickle and write means, std, and rs to file
+with open(f'results/{dataset}/offset_02_means.pkl', 'wb') as f:
+    pickle.dump(of2_means, f)
+with open(f'results/{dataset}/offset_02_std.pkl', 'wb') as f:
+    pickle.dump(of2_std, f)
+with open(f'results/{dataset}/offset_02_rs.pkl', 'wb') as f:
+    pickle.dump(of2_rs, f)
+
+
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 #misr_means, misr_stderrs, misrs = make_results(dataset, name, num_runs, costs, False)
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 
+
+
 name = 'biased'
 bia_means, bia_std, bia_rs = make_results(dataset, name, num_runs, costs, validation=False)
+
+#pickle and write means, std, and rs to file
+with open(f'results/{dataset}/biased_means.pkl', 'wb') as f:
+    pickle.dump(bia_means, f)
+with open(f'results/{dataset}/biased_std.pkl', 'wb') as f:
+    pickle.dump(bia_std, f)
+with open(f'results/{dataset}/biased_rs.pkl', 'wb') as f:
+    pickle.dump(bia_rs, f)
+
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 #calr_means, calr_stderrs, calrs = make_results(dataset, name, num_runs, costs, False)
 #calval_r_means, calval_r_stderrs, calval_rs = make_results('heart_disease', name, num_runs, costs, True)

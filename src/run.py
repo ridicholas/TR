@@ -49,8 +49,7 @@ def evaluate_adb_model(adb_model, human, x_test, c_human_true, c_human_estimate,
     scores = []
     for i in range(100):
         p_accepts = human.ADB(c_human_true, c_model, agreement)
-        realized_accepts = bernoulli.rvs(p=p_accepts, size=len(p_accepts))
-        scores.append(roc_auc_score(realized_accepts, adb_model.predict_proba(pd.DataFrame({'human_conf': c_human_estimate, 'model_confs': c_model, 'agreement':agreement}))[:, 1]))
+        scores.append(np.abs(p_accepts - adb_model.predict_proba(pd.DataFrame({'human_conf': c_human_estimate, 'model_confs': c_model, 'agreement':agreement}))[:, 1]))
     return np.array(scores).mean()
 
 def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], contradiction_reg=0, remake_humans=False, human_decision_bias=False, custom_name=""):   
@@ -185,7 +184,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             tr_model.make_lite()
             pickle.dump(tr_model, f)
 
-#run('heart_disease', 0, 'biased', runtype='standard', which_models=['brs','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='_case1')
+#run('heart_disease', 2, 'biased', runtype='standard', which_models=['brs','tr'], contradiction_reg=0, remake_humans=True, human_decision_bias=False, custom_name='_case1')
 
 
 
