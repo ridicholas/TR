@@ -12,6 +12,7 @@ import progressbar
 from run import ADB
 from run import evaluate_adb_model
 from copy import deepcopy
+import os
 
 def load_datasets(dataset, run_num):
     x_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain.csv', index_col=0).reset_index(drop=True)
@@ -96,9 +97,9 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
         x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized = load_datasets(dataset, run)
 
         if validation==True:
-            x_test = x_train
-            y_test = y_train
-            x_test_non_binarized = x_train_non_binarized
+            x_test = x_val
+            y_test = y_val
+            x_test_non_binarized = x_val_non_binarized
         
         whichtype = whichtype + ''
         dataset = dataset
@@ -450,25 +451,41 @@ num_runs = 10
 dataset = 'heart_disease'
 
 name = 'offset_01'
-#of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, costs, False)
-#pickle and write means, std, and rs to file
-#with open(f'results/{dataset}/offset_01_means.pkl', 'wb') as f:
-#    pickle.dump(of1_means, f)
-#with open(f'results/{dataset}/offset_01_std.pkl', 'wb') as f:
-#    pickle.dump(of1_std, f)
-#with open(f'results/{dataset}/offset_01_rs.pkl', 'wb') as f:
-#    pickle.dump(of1_rs, f)
+
+if os.path.isfile(f'results/{dataset}/offset_01_rs.pkl'):
+    with open(f'results/{dataset}/offset_01_rs.pkl', 'rb') as f:
+        of1_rs = pickle.load(f)
+    with open(f'results/{dataset}/offset_01_means.pkl', 'rb') as f:
+        of1_means = pickle.load(f)
+    with open(f'results/{dataset}/offset_01_std.pkl', 'rb') as f:
+        of1_std = pickle.load(f)
+else:
+    of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, costs, False)
+    #pickle and write means, std, and rs to file
+    with open(f'results/{dataset}/offset_01_means.pkl', 'wb') as f:
+        pickle.dump(of1_means, f)
+    with open(f'results/{dataset}/offset_01_std.pkl', 'wb') as f:
+        pickle.dump(of1_std, f)
+    with open(f'results/{dataset}/offset_01_rs.pkl', 'wb') as f:
+        pickle.dump(of1_rs, f)
 
 name = 'offset_02'
-of2_means, of2_std, of2_rs = make_results(dataset, name, num_runs, costs, False)
-
-#pickle and write means, std, and rs to file
-with open(f'results/{dataset}/offset_02_means.pkl', 'wb') as f:
-    pickle.dump(of2_means, f)
-with open(f'results/{dataset}/offset_02_std.pkl', 'wb') as f:
-    pickle.dump(of2_std, f)
-with open(f'results/{dataset}/offset_02_rs.pkl', 'wb') as f:
-    pickle.dump(of2_rs, f)
+if os.path.isfile(f'results/{dataset}/offset_02_rs.pkl'):
+    with open(f'results/{dataset}/offset_02_rs.pkl', 'rb') as f:
+        of2_rs = pickle.load(f)
+    with open(f'results/{dataset}/offset_02_means.pkl', 'rb') as f:
+        of2_means = pickle.load(f)
+    with open(f'results/{dataset}/offset_02_std.pkl', 'rb') as f:
+        of2_std = pickle.load(f)
+else:
+    of2_means, of2_std, of2_rs = make_results(dataset, name, num_runs, costs, False)
+    #pickle and write means, std, and rs to file
+    with open(f'results/{dataset}/offset_02_means.pkl', 'wb') as f:
+        pickle.dump(of2_means, f)
+    with open(f'results/{dataset}/offset_02_std.pkl', 'wb') as f:
+        pickle.dump(of2_std, f)
+    with open(f'results/{dataset}/offset_02_rs.pkl', 'wb') as f:
+        pickle.dump(of2_rs, f)
 
 
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
@@ -478,15 +495,84 @@ with open(f'results/{dataset}/offset_02_rs.pkl', 'wb') as f:
 
 
 name = 'biased'
-bia_means, bia_std, bia_rs = make_results(dataset, name, num_runs, costs, validation=False)
+if os.path.isfile(f'results/{dataset}/biased_rs.pkl'):
+    with open(f'results/{dataset}/biased_rs.pkl', 'rb') as f:
+        bia_rs = pickle.load(f)
+    with open(f'results/{dataset}/biased_means.pkl', 'rb') as f:
+        bia_means = pickle.load(f)
+    with open(f'results/{dataset}/biased_std.pkl', 'rb') as f:
+        bia_std = pickle.load(f)
+else:
+    bia_means, bia_std, bia_rs = make_results(dataset, name, num_runs, costs, validation=False)
+    #pickle and write means, std, and rs to file
+    with open(f'results/{dataset}/biased_means.pkl', 'wb') as f:
+        pickle.dump(bia_means, f)
+    with open(f'results/{dataset}/biased_std.pkl', 'wb') as f:
+        pickle.dump(bia_std, f)
+    with open(f'results/{dataset}/biased_rs.pkl', 'wb') as f:
+        pickle.dump(bia_rs, f)
 
-#pickle and write means, std, and rs to file
-with open(f'results/{dataset}/biased_means.pkl', 'wb') as f:
-    pickle.dump(bia_means, f)
-with open(f'results/{dataset}/biased_std.pkl', 'wb') as f:
-    pickle.dump(bia_std, f)
-with open(f'results/{dataset}/biased_rs.pkl', 'wb') as f:
-    pickle.dump(bia_rs, f)
+name = 'offset_01'
+
+if os.path.isfile(f'results/{dataset}/val_offset_01_rs.pkl'):
+    with open(f'results/{dataset}/val_offset_01_rs.pkl', 'rb') as f:
+        val_of1_rs = pickle.load(f)
+    with open(f'results/{dataset}/val_offset_01_means.pkl', 'rb') as f:
+        val_of1_means = pickle.load(f)
+    with open(f'results/{dataset}/val_offset_01_std.pkl', 'rb') as f:
+        val_of1_std = pickle.load(f)
+else:
+    val_of1_means, val_of1_std, val_of1_rs = make_results(dataset, name, num_runs, costs, True)
+    #pickle and write means, std, and rs to file
+    with open(f'results/{dataset}/val_offset_01_means.pkl', 'wb') as f:
+        pickle.dump(val_of1_means, f)
+    with open(f'results/{dataset}/val_offset_01_std.pkl', 'wb') as f:
+        pickle.dump(val_of1_std, f)
+    with open(f'results/{dataset}/val_offset_01_rs.pkl', 'wb') as f:
+        pickle.dump(val_of1_rs, f)
+
+name = 'offset_02'
+if os.path.isfile(f'results/{dataset}/val_offset_02_rs.pkl'):
+    with open(f'results/{dataset}/val_offset_02_rs.pkl', 'rb') as f:
+        val_of2_rs = pickle.load(f)
+    with open(f'results/{dataset}/val_offset_02_means.pkl', 'rb') as f:
+        val_of2_means = pickle.load(f)
+    with open(f'results/{dataset}/val_offset_02_std.pkl', 'rb') as f:
+        val_of2_std = pickle.load(f)
+else:
+    val_of2_means, val_of2_std, val_of2_rs = make_results(dataset, name, num_runs, costs, True)
+    #pickle and write means, std, and rs to file
+    with open(f'results/{dataset}/val_offset_02_means.pkl', 'wb') as f:
+        pickle.dump(val_of2_means, f)
+    with open(f'results/{dataset}/val_offset_02_std.pkl', 'wb') as f:
+        pickle.dump(val_of2_std, f)
+    with open(f'results/{dataset}/val_offset_02_rs.pkl', 'wb') as f:
+        pickle.dump(val_of2_rs, f)
+
+
+#val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
+#misr_means, misr_stderrs, misrs = make_results(dataset, name, num_runs, costs, False)
+#val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
+
+
+
+name = 'biased'
+if os.path.isfile(f'results/{dataset}/val_biased_rs.pkl'):
+    with open(f'results/{dataset}/val_biased_rs.pkl', 'rb') as f:
+        val_bia_rs = pickle.load(f)
+    with open(f'results/{dataset}/val_biased_means.pkl', 'rb') as f:
+        val_bia_means = pickle.load(f)
+    with open(f'results/{dataset}/val_biased_std.pkl', 'rb') as f:
+        val_bia_std = pickle.load(f)
+else:
+    val_bia_means, val_bia_std, val_bia_rs = make_results(dataset, name, num_runs, costs, validation=True)
+    #pickle and write means, std, and rs to file
+    with open(f'results/{dataset}/val_biased_means.pkl', 'wb') as f:
+        pickle.dump(val_bia_means, f)
+    with open(f'results/{dataset}/val_biased_std.pkl', 'wb') as f:
+        pickle.dump(val_bia_std, f)
+    with open(f'results/{dataset}/val_biased_rs.pkl', 'wb') as f:
+        pickle.dump(val_bia_rs, f)
 
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 #calr_means, calr_stderrs, calrs = make_results(dataset, name, num_runs, costs, False)
