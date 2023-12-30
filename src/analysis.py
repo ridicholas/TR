@@ -185,7 +185,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             contras['yf'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
 
             totals = {}
-            for i in range(50):
+            for i in range(20):
                 
                 
 
@@ -234,6 +234,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
 
 
+
+                        
+
+                    
+
+                '''
                 total = len(y_test)
                 totals['t'] = len(y_test)
                 totals['e'] = len(y_test[x_test['age54.0'] == 1])
@@ -335,7 +341,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 
-
+                '''
                 tr_team_w_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_with_reset, y_test))
                 tr_team_wo_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_no_reset, y_test))
                 tr_model_w_reset_decision_loss.append(1 - accuracy_score(tr_model_preds_with_reset, y_test))
@@ -370,7 +376,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
                 print(i)
-            
+            '''
             tr_confusion = pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                         data = [[mean(decs['em']['tr']), mean(decs['ym']['tr']), mean(decs['m']['tr'])], 
                                                 [mean(decs['ef']['tr']), mean(decs['yf']['tr']), mean(decs['f']['tr'])], 
@@ -403,7 +409,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     [mean(contras['e']['brs']), mean(contras['y']['brs']), mean(contras['t']['brs'])]])
             
 
-            
+            '''
             #append values to appropriate row in results
             results.loc[cost, 'tr_team_w_reset_decision_loss'].append(mean(tr_team_w_reset_decision_loss))
             results.loc[cost, 'tr_team_wo_reset_decision_loss'].append(mean(tr_team_wo_reset_decision_loss))
@@ -447,8 +453,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 costs = [0, 0.2, 0.4, 0.6, 0.8, 1]
-num_runs = 10
-dataset = 'heart_disease'
+num_runs = 5
+dataset = 'fico'
 
 name = 'offset_01'
 
@@ -690,9 +696,37 @@ def make_contradictions_v_decisionloss_plot(results_means, results_stderrs, name
 
 
     
+def cost_validation(rs, val_rs):
+    new_rs = deepcopy(rs)
+    for cost in rs.index:
+        if cost==0.8:
+            print('pause')
+        for column in rs.columns:
+            new_rs.loc[cost, column] = deepcopy(rs.loc[cost, column])
+        for i in range(len(val_rs['tr_team_w_reset_objective'][cost])):
+            x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized= load_datasets(dataset, i)
+            curr_val_objective = val_rs['tr_team_w_reset_objective'][cost][i]
+            for alt_cost in rs.index:
+                alt_val_objective = val_rs['tr_team_w_reset_decision_loss'][alt_cost][i] + cost*(val_rs['tr_model_w_reset_contradictions'][alt_cost][i])/len(y_val)
+                if alt_val_objective < curr_val_objective:
+                    new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['tr_model_w_reset_contradictions'][alt_cost][i].copy()
+                    new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['tr_team_w_reset_decision_loss'][alt_cost][i].copy()
+                    new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][alt_cost][i] + cost*new_rs['tr_model_w_reset_contradictions'][alt_cost][i]/len(y_test)
+                    print(f"cost: {cost}, new cost: {alt_cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
+                    curr_val_objective = alt_val_objective
+    new_results_means = new_rs.apply(lambda x: x.apply(lambda y: mean(y)))
+    new_results_stderrs = new_rs.apply(lambda x: x.apply(lambda y: np.std(y)/np.sqrt(len(y))))
+
+    return new_results_means, new_results_stderrs, new_rs
+
+
 
     
-                            
+cval_of1_means, cval_of1_stderss, cval_of1_rs = cost_validation(of1_rs, val_of1_rs)        
+
+cval_of2_means, cval_of2_stderss, cval_of2_rs = cost_validation(of2_rs, val_of2_rs)   
+
+cval_bia_means, cval_bia_stderss, cval_bia_rs = cost_validation(bia_rs, val_bia_rs)     
                             
     
 

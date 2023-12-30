@@ -52,7 +52,7 @@ def make_heart_data(numQs=5, num_runs=50):
                                                                                                                               'Ytrain_start'],
                                                                                                                           startDict[
                                                                                                                               'Xtrain_non_binarized_start'],
-                                                                                                                          test_size=0.1,
+                                                                                                                          test_size=0.08,
                                                                                                                           stratify=startDict[
                                                                                                                               'Ytrain_start'],
                                                                                                                           random_state=i)
@@ -74,7 +74,7 @@ def make_heart_data(numQs=5, num_runs=50):
                                                                                                                                                                        'Ytrain'],
                                                                                                                                                                    startDict[
                                                                                                                                                                        'Xtrain_non_binarized'],
-                                                                                                                                                                   test_size=0.05,
+                                                                                                                                                                   test_size=0.12,
                                                                                                                                                                    stratify=startDict[
                                                                                                                                                                        'Ytrain'],
                                                                                                                                                                    random_state=i)
@@ -346,6 +346,6 @@ def make_hr_data(numQs=5, num_runs=50):
         startDict['Ylearning'].to_csv(f'{outdir}/ylearning.csv')
         startDict['Xlearning'].to_csv(f'{outdir}/xlearning.csv')
 
-#make_heart_data(numQs=5, num_runs=20)
+make_heart_data(numQs=5, num_runs=20)
 #make_fico_data(numQs=5, num_runs=20)
-make_hr_data(numQs=5, num_runs=20)
+#make_hr_data(numQs=5, num_runs=20)
