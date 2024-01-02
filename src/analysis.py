@@ -454,7 +454,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 costs = [0, 0.2, 0.4, 0.6, 0.8, 1]
 num_runs = 5
-dataset = 'fico'
+dataset = 'heart_disease'
 
 name = 'offset_01'
 
