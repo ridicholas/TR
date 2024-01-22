@@ -1,4 +1,8 @@
-from run import run
+from run import *
+import sys, getopt
+
+#making sure wd is file directory so hardcoded paths work
+os.chdir("..")
 
 run('heart_disease', 0, 'biased', runtype='standard', which_models=['brs','tr'], contradiction_reg=0.2, remake_humans=True, human_decision_bias=False, custom_name='_discretionTrue', use_true=True, subsplit=1)
 run('heart_disease', 1, 'biased', runtype='standard', which_models=['brs','tr'], contradiction_reg=0.2, remake_humans=True, human_decision_bias=False, custom_name='_discretionTrue', use_true=True, subsplit=1)
