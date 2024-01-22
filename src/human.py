@@ -37,7 +37,7 @@ class Human(object):
         if self.decision_bias:
             if self.dataset == 'heart_disease':
                 model_confidences = np.ones(X.shape[0])
-                model_confidences[X['age54.0'] == 0] = 0
+                model_confidences[X['sex_Male'] == 1] = 0
             if self.dataset == 'fico':
                 model_confidences = np.ones(X.shape[0])
                 model_confidences[X['ExternalRiskEstimate65.0'] == 0] = 0
@@ -55,14 +55,14 @@ class Human(object):
             high = bernoulli.rvs(p=0.00, size=len(decisions)).astype(bool)
         decisions[high] = 1-decisions[high]
         decisions[(model_confidences > self.confVal) & low] = 1-decisions[(model_confidences > self.confVal) & low]
-        if self.decision_bias & (self.dataset == 'heart_disease'):
-            mid = bernoulli.rvs(p=0.15, size=len(decisions)).astype(bool)
-            decisions[(X['sex_Male'] == 0) & (X['age54.0'] == 0)] = y[(X['sex_Male'] == 0) & (X['age54.0'] == 0)]
-            decisions[(X['sex_Male'] == 0) & (X['age54.0'] == 0) & mid] = 1-decisions[(X['sex_Male'] == 0) & (X['age54.0'] == 0) & mid]
+        #if self.decision_bias & (self.dataset == 'heart_disease'):
+            #mid = bernoulli.rvs(p=0.15, size=len(decisions)).astype(bool)
+            #decisions[(X['sex_Male'] == 0) & (X['age54.0'] == 0)] = y[(X['sex_Male'] == 0) & (X['age54.0'] == 0)]
+            #decisions[(X['sex_Male'] == 0) & (X['age54.0'] == 0) & mid] = 1-decisions[(X['sex_Male'] == 0) & (X['age54.0'] == 0) & mid]
 
-            mid = bernoulli.rvs(p=0.15, size=len(decisions)).astype(bool)
-            decisions[(X['sex_Male'] == 1) & (X['age54.0'] == 1)] = y[(X['sex_Male'] == 1) & (X['age54.0'] == 1)]
-            decisions[(X['sex_Male'] == 1) & (X['age54.0'] == 1) & mid] = 1-decisions[(X['sex_Male'] == 1) & (X['age54.0'] == 1) & mid]
+            #mid = bernoulli.rvs(p=0.15, size=len(decisions)).astype(bool)
+            #decisions[(X['sex_Male'] == 1) & (X['age54.0'] == 1)] = y[(X['sex_Male'] == 1) & (X['age54.0'] == 1)]
+            #decisions[(X['sex_Male'] == 1) & (X['age54.0'] == 1) & mid] = 1-decisions[(X['sex_Male'] == 1) & (X['age54.0'] == 1) & mid]
 
 
         return decisions
@@ -140,10 +140,10 @@ class Human(object):
                 confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
                 confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.2
             else:
-                confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal) ] = 0.9
-                confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 0.9
-                confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
-                confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.3
+                confidences[(X['sex_Male'] == 0)] = 0.3
+                #confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 0.9
+                #confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
+                confidences[(X['sex_Male'] == 1)] = 1
 
 
         if t_type=='offset_02':

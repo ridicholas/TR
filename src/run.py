@@ -18,7 +18,10 @@ class ADB(object):
         self.adb_model = adb_model
     def ADB_model_wrapper(self, human_conf, model_conf, agreement):
         X = pd.DataFrame({'human_conf': human_conf, 'model_confs': model_conf, 'agreement':agreement})
-        return self.adb_model.predict_proba(X)[:, 1]
+        try:
+            return self.adb_model.predict_proba(X)[:, 1]
+        except:
+            return self.adb_model(human_conf, model_conf, agreement)
     
 #a run of the experiment consists of: a dataset, a human, a set of models, and a set of parameters
 
@@ -52,7 +55,7 @@ def evaluate_adb_model(adb_model, human, x_test, c_human_true, c_human_estimate,
         scores.append(np.abs(p_accepts - adb_model.predict_proba(pd.DataFrame({'human_conf': c_human_estimate, 'model_confs': c_model, 'agreement':agreement}))[:, 1]))
     return np.array(scores).mean()
 
-def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], contradiction_reg=0, remake_humans=False, human_decision_bias=False, custom_name=""):   
+def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], contradiction_reg=0, remake_humans=False, human_decision_bias=False, custom_name="", use_true=False, subsplit=1):   
     # load data
     x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized = load_datasets(dataset, run_num)
     
@@ -72,14 +75,20 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
     #train confidence model
     if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/conf_model_{human_name}.pkl'):
+        if subsplit != 1:
+            x_learning_non_binarized, _, x_learning, _, y_learning, _ = train_test_split(x_learning_non_binarized, x_learning, y_learning, test_size=subsplit, stratify=y_learning)
         conf_model = xgb.XGBRegressor().fit(x_learning_non_binarized, human.get_confidence(x_learning))
         with open(f'results/{dataset}/run{run_num}/conf_model_{human_name}.pkl', 'wb') as f:
             pickle.dump(conf_model, f)
     else:
         with open(f'results/{dataset}/run{run_num}/conf_model_{human_name}.pkl', 'rb') as f:
             conf_model = pickle.load(f)
+    
+    if use_true:
+        conf_model = human.get_confidence
     #train ADB model
-
+    
+    
     _, x_initial, _, y_initial = train_test_split(x_train, y_train, test_size=100/len(y_train), stratify=y_train)
     initial_task_model = xgb.XGBClassifier().fit(x_initial, y_initial)
 
@@ -97,6 +106,9 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
     else:
         with open(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl', 'rb') as f:
             adb_model = pickle.load(f)
+    
+    if use_true:
+        adb_model = human.ADB
     
     adb = ADB(adb_model)
 
@@ -184,7 +196,8 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             tr_model.make_lite()
             pickle.dump(tr_model, f)
 
-#run('heart_disease', 2, 'biased', runtype='standard', which_models=['brs','tr'], contradiction_reg=0, remake_humans=True, human_decision_bias=False, custom_name='_case1')
+#run('heart_disease', 0, 'biased', runtype='standard', which_models=['tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=False, custom_name='_discretion', use_true=False, subsplit=0.2)
+
 
 
 
