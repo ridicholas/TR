@@ -35,7 +35,7 @@ class hyrs(object):
         self.coverage_reg = 0
         self.contradiction_reg = contradiction_reg
         self.force_complete_coverage = force_complete_coverage
-        self.asym_loss = [1,1]
+        self.asym_loss = asym_loss
 
     def generate_rulespace(self, supp, maxlen, N, need_negcode=False, njobs=5, method='fpgrowth', criteria='IG',
                            add_rules=[]):

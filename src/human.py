@@ -32,12 +32,14 @@ class Human(object):
     def set_confVal(self, val):
         self.confVal = val
 
+
+    #remember to update back to female for heart! 
     def get_decisions(self, X, y):
         decisions = y.copy()
         if self.decision_bias:
             if self.dataset == 'heart_disease':
                 model_confidences = np.ones(X.shape[0])
-                model_confidences[X['sex_Male'] == 1] = 0
+                model_confidences[(X['age54.0'] == 0) | (X['sex_Male'] == 0)] = 0
             if self.dataset == 'fico':
                 model_confidences = np.ones(X.shape[0])
                 model_confidences[X['ExternalRiskEstimate65.0'] == 0] = 0
@@ -140,10 +142,10 @@ class Human(object):
                 confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
                 confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.2
             else:
-                confidences[(X['sex_Male'] == 0)] = 0.3
+                confidences[(X['age54.0'] == 0)] = 1
                 #confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 0.9
                 #confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
-                confidences[(X['sex_Male'] == 1)] = 1
+                confidences[(X['age54.0'] == 1)] = 0.3
 
 
         if t_type=='offset_02':

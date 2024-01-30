@@ -76,7 +76,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
     #train confidence model
     if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/conf_model_{human_name}.pkl'):
         if subsplit != 1:
-            x_learning_non_binarized, _, x_learning, _, y_learning, _ = train_test_split(x_learning_non_binarized, x_learning, y_learning, test_size=subsplit, stratify=y_learning)
+            x_learning_non_binarized, _, x_learning, _, y_learning, _ = train_test_split(x_learning_non_binarized, x_learning, y_learning, test_size=1-subsplit, stratify=y_learning)
         conf_model = xgb.XGBRegressor().fit(x_learning_non_binarized, human.get_confidence(x_learning))
         with open(f'results/{dataset}/run{run_num}/conf_model_{human_name}.pkl', 'wb') as f:
             pickle.dump(conf_model, f)
@@ -100,15 +100,18 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         
         p_accepts = human.ADB(adb_learning_data['human_conf'], adb_learning_data['model_confs'], adb_learning_data['agreement'])
         realized_accepts = bernoulli.rvs(p=p_accepts, size=len(p_accepts))
-        adb_model = xgb.XGBClassifier().fit(adb_learning_data[adb_learning_data['agreement'] == False], realized_accepts[adb_learning_data['agreement'] == False])
+        if use_true:
+            adb_model = human.ADB
+        else:
+            adb_model = xgb.XGBClassifier().fit(adb_learning_data[adb_learning_data['agreement'] == False], realized_accepts[adb_learning_data['agreement'] == False])
+        
         with open(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl', 'wb') as f:
             pickle.dump(adb_model, f)
     else:
         with open(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl', 'rb') as f:
             adb_model = pickle.load(f)
     
-    if use_true:
-        adb_model = human.ADB
+
     
     adb = ADB(adb_model)
 
@@ -123,6 +126,11 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
     # load params
     with open(f'src/{runtype}_config.yaml', 'r') as file:
         config = yaml.safe_load(file)
+
+    if runtype != 'standard':
+        appendType = f'_{runtype}'
+    else:
+        appendType = ''
 
     Niteration = config['Niteration']
     Nchain = config['Nchain']
@@ -186,18 +194,26 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         _, _, _ = tr_model.train(Niteration=Niteration, T0=0.01, print_message=False)
 
         #write ey and eyb models
-        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name}.pkl', 'wb') as f:
+        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name}{appendType}.pkl', 'wb') as f:
             pickle.dump(e_y_mod, f)
-        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/eyb_model_{human_name}.pkl', 'wb') as f:
+        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/eyb_model_{human_name}{appendType}.pkl', 'wb') as f:
             pickle.dump(e_yb_mod, f)
 
         #write tr model
-        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr_model_{human_name}.pkl', 'wb') as f:
+        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr_model_{human_name}{appendType}.pkl', 'wb') as f:
             tr_model.make_lite()
             pickle.dump(tr_model, f)
 
-#run('heart_disease', 0, 'biased', runtype='standard', which_models=['tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=False, custom_name='_discretion', use_true=False, subsplit=0.2)
-
+#run('heart_disease', 0, 'biased', runtype='asym', which_models=['tr','brs','hyrs'], contradiction_reg=0.0, remake_humans=False, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
+#run('heart_disease', 1, 'biased', runtype='asym', which_models=['tr','brs','hyrs'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
+#run('heart_disease', 2, 'biased', runtype='asym', which_models=['tr','brs','hyrs'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
+#run('heart_disease', 3, 'biased', runtype='asym', which_models=['tr','brs','hyrs'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
+#run('heart_disease', 4, 'biased', runtype='asym', which_models=['tr','brs','hyrs'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
+#run('heart_disease', 5, 'biased', runtype='asym', which_models=['tr','brs','hyrs'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
+#run('heart_disease', 6, 'biased', runtype='asym', which_models=['tr','brs','hyrs'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
+#run('heart_disease', 7, 'biased', runtype='asym', which_models=['tr','brs','hyrs'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
+#run('heart_disease', 8, 'biased', runtype='asym', which_models=['tr','brs','hyrs'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
+#run('heart_disease', 9, 'biased', runtype='asym', which_models=['tr','brs','hyrs'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
 
 
 

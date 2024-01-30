@@ -33,16 +33,17 @@ def load_datasets(dataset, run_num):
 
     return x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized
 
-def load_results(dataset, setting, run_num, cost, model):
+def load_discretion_results(dataset, setting, run_num, cost, model, size):
     if model == 'brs':
         setting = ''
     else:
-        setting = '_' + setting
+        setting = '_' + setting + f'_discretion{size}'
     with open(f'results/{dataset}/run{run_num}/cost{float(cost)}/{model}_model{setting}.pkl', 'rb') as f:
         result = pickle.load(f)
         return result
     
-def load_humans(dataset, setting, run_num):
+def load_discretion_humans(dataset, setting, run_num, size):
+    setting = setting + f'_discretion{size}'
     with open(f'results/{dataset}/run{run_num}/{setting}.pkl', 'rb') as f:
         human = pickle.load(f)
     with open(f'results/{dataset}/run{run_num}/adb_model_{setting}.pkl', 'rb') as f:
@@ -53,13 +54,15 @@ def load_humans(dataset, setting, run_num):
 
 
 
-def make_results(dataset, whichtype, num_runs, costs, validation=False):
+def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False):
 
     #create dataframe of empty lists with column headers below
 
-
+    sizes = ['True', '1', '05', '01']
     
-    results = pd.DataFrame(data={'tr_team_w_reset_decision_loss': [[]],
+    results = pd.DataFrame(data={'ADB MSE': [[]],
+                                 'num_learning_instances': [[]],
+                                'tr_team_w_reset_decision_loss': [[]],
                                 'tr_team_wo_reset_decision_loss': [[]],
                                 'tr_model_w_reset_decision_loss': [[]],
                                 'tr_model_wo_reset_decision_loss': [[]],
@@ -83,15 +86,16 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                                 'hyrs_norecon_objective': [[]],
                                 'hyrs_norecon_model_decision_loss': [[]],
                                 'hyrs_norecon_team_decision_loss': [[]], 
-                               'hyrs_norecon_model_contradictions': [[]]}, index=[costs[0]]
+                               'hyrs_norecon_model_contradictions': [[]]}, index=[sizes[0]]
                             )
 
-    for cost in costs[1:]:
-        results.loc[cost] = [[] for i in range(len(results.columns))]
+    for size in sizes[1:]:
+        results.loc[size] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype
+    
     for run in bar(range(num_runs)):
+        
 
         
         bar=progressbar.ProgressBar()
@@ -104,19 +108,21 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
         
         
         dataset = dataset
-        human, adb_mod, conf_mod = load_humans(dataset, whichtype, run)
-
-        brs_mod = load_results(dataset, whichtype , run, 0.0, 'brs')
 
 
-        for cost in costs:
+
+        for size in sizes:
+            human, adb_mod, conf_mod = load_discretion_humans(dataset, whichtype, run, size)
+
+            brs_mod = load_discretion_results(dataset, whichtype , run, 0.0, 'brs', size)
+             
             print(f'producing for cost {cost} run {run}.....')
-            tr_mod = load_results(dataset, whichtype, run, cost, 'tr')
-            hyrs_mod = load_results(dataset, whichtype, run, cost, 'hyrs')
+            tr_mod = load_discretion_results(dataset, whichtype, run, cost, 'tr', size)
+            hyrs_mod = load_discretion_results(dataset, whichtype, run, cost, 'tr', size)
             #load e_y and e_yb mods
-            with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype}.pkl', 'rb') as f:
+            with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype}_discretion{size}.pkl', 'rb') as f:
                 e_yb_mod = pickle.load(f)
-            with open(f'results/{dataset}/run{run}/cost{float(cost)}/ey_model_{whichtype}.pkl', 'rb') as f:
+            with open(f'results/{dataset}/run{run}/cost{float(cost)}/ey_model_{whichtype}_discretion{size}.pkl', 'rb') as f:
                 e_y_mod = pickle.load(f)
 
             tr_mod.df = x_train
@@ -154,6 +160,9 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             hyrs_norecon_model_decision_loss = []
             hyrs_norecon_team_decision_loss = []
             hyrs_norecon_model_contradictions = []
+            adb_MSE = []
+            num_learning_instances = []
+
             
             if cost == 0.0:
                 brs_mod.df = x_train
@@ -201,47 +210,52 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
                     tr_model_preds_with_reset, tr_mod_covered_w_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))
                     tr_model_preds_no_reset, tr_mod_covered_no_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))
-                    tr_mod_confs = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)[0]
+                    tr_mod_confs, tr_agreement = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)
                 
 
-                    hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
-                    hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
+                    #hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
+                    #hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
 
-                    hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
-                    hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, human.ADB, x_test)
+                    #hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
+                    #hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, human.ADB, x_test)
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
-                        
+                
 
+                human_adb = human.ADB(human_conf, tr_mod_confs, tr_agreement)
+                adb_MSE.append(mean_squared_error(human_adb, learned_adb.ADB_model_wrapper(human_conf, tr_mod_confs, tr_agreement)))
+                size_dict = {'True': 1, '1': 1, '05': 0.5, '01': 0.1}
+                num_learning_instances.append(len(y_learning) * (1-size_dict[size]))
                 tr_team_w_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_with_reset, y_test))
                 tr_team_wo_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_no_reset, y_test))
                 tr_model_w_reset_decision_loss.append(1 - accuracy_score(tr_model_preds_with_reset, y_test))
                 tr_model_wo_reset_decision_loss.append(1 - accuracy_score(tr_model_preds_no_reset, y_test))
-                hyrs_model_decision_loss.append(1 - accuracy_score(hyrs_model_preds, y_test))
-                hyrs_team_decision_loss.append(1 - accuracy_score(hyrs_team_preds, y_test))
+                #hyrs_model_decision_loss.append(1 - accuracy_score(hyrs_model_preds, y_test))
+                #hyrs_team_decision_loss.append(1 - accuracy_score(hyrs_team_preds, y_test))
                 brs_model_decision_loss.append(1 - accuracy_score(brs_model_preds, y_test))
                 brs_team_decision_loss.append(1 - accuracy_score(brs_team_preds, y_test))
 
                 tr_model_w_reset_contradictions.append((tr_model_preds_with_reset != human_decisions).sum())
                 tr_model_wo_reset_contradictions.append((tr_model_preds_no_reset != human_decisions).sum())
-                hyrs_model_contradictions.append((hyrs_model_preds != human_decisions).sum())
+                #hyrs_model_contradictions.append((hyrs_model_preds != human_decisions).sum())
                 brs_model_contradictions.append((brs_model_preds != human_decisions).sum())
 
                 tr_team_w_reset_objective.append(tr_team_w_reset_decision_loss[-1] + cost*(tr_model_w_reset_contradictions[-1])/len(y_test))
                 tr_team_wo_reset_objective.append(tr_team_wo_reset_decision_loss[-1] + cost*(tr_model_wo_reset_contradictions[-1])/len(y_test))
                 tr_model_w_reset_objective.append(tr_model_w_reset_decision_loss[-1] + cost*(tr_model_w_reset_contradictions[-1])/len(y_test))
                 tr_model_wo_reset_objective.append(tr_model_wo_reset_decision_loss[-1] + cost*(tr_model_wo_reset_contradictions[-1])/len(y_test))
-                hyrs_model_objective.append(hyrs_model_decision_loss[-1] + cost*(hyrs_model_contradictions[-1])/len(y_test))
-                hyrs_team_objective.append(hyrs_team_decision_loss[-1] + cost*(hyrs_model_contradictions[-1])/len(y_test))
+                #hyrs_model_objective.append(hyrs_model_decision_loss[-1] + cost*(hyrs_model_contradictions[-1])/len(y_test))
+                #hyrs_team_objective.append(hyrs_team_decision_loss[-1] + cost*(hyrs_model_contradictions[-1])/len(y_test))
                 brs_model_objective.append(brs_model_decision_loss[-1] + cost*(brs_model_contradictions[-1])/len(y_test))
                 brs_team_objective.append(brs_team_decision_loss[-1] + cost*(brs_model_contradictions[-1])/len(y_test))
 
                 human_decision_loss.append(1 - accuracy_score(human_decisions, y_test))
 
-                hyrs_norecon_model_decision_loss.append(1 - accuracy_score(hyrs_norecon_model_preds, y_test))
-                hyrs_norecon_team_decision_loss.append(1 - accuracy_score(hyrs_norecon_team_preds, y_test))
-                hyrs_norecon_model_contradictions.append((hyrs_norecon_model_preds != human_decisions).sum())
-                hyrs_norecon_objective.append(hyrs_norecon_team_decision_loss[-1] + cost*(hyrs_norecon_model_contradictions[-1])/len(y_test))
+                #hyrs_norecon_model_decision_loss.append(1 - accuracy_score(hyrs_norecon_model_preds, y_test))
+                #hyrs_norecon_team_decision_loss.append(1 - accuracy_score(hyrs_norecon_team_preds, y_test))
+                #hyrs_norecon_model_contradictions.append((hyrs_norecon_model_preds != human_decisions).sum())
+                #hyrs_norecon_objective.append(hyrs_norecon_team_decision_loss[-1] + cost*(hyrs_norecon_model_contradictions[-1])/len(y_test))
+                
 
                 
 
@@ -252,31 +266,33 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
             
             #append values to appropriate row in results
-            results.loc[cost, 'tr_team_w_reset_decision_loss'].append(mean(tr_team_w_reset_decision_loss))
-            results.loc[cost, 'tr_team_wo_reset_decision_loss'].append(mean(tr_team_wo_reset_decision_loss))
-            results.loc[cost, 'tr_model_w_reset_decision_loss'].append(mean(tr_model_w_reset_decision_loss))
-            results.loc[cost, 'tr_model_wo_reset_decision_loss'].append(mean(tr_model_wo_reset_decision_loss))
-            results.loc[cost, 'hyrs_model_decision_loss'].append(mean(hyrs_model_decision_loss))
-            results.loc[cost, 'hyrs_team_decision_loss'].append(mean(hyrs_team_decision_loss))
-            results.loc[cost, 'brs_model_decision_loss'].append(mean(brs_model_decision_loss))
-            results.loc[cost, 'brs_team_decision_loss'].append(mean(brs_team_decision_loss))
-            results.loc[cost, 'tr_model_w_reset_contradictions'].append(mean(tr_model_w_reset_contradictions))
-            results.loc[cost, 'tr_model_wo_reset_contradictions'].append(mean(tr_model_wo_reset_contradictions))
-            results.loc[cost, 'hyrs_model_contradictions'].append(mean(hyrs_model_contradictions))
-            results.loc[cost, 'brs_model_contradictions'].append(mean(brs_model_contradictions))
-            results.loc[cost, 'tr_team_w_reset_objective'].append(mean(tr_team_w_reset_objective))
-            results.loc[cost, 'tr_team_wo_reset_objective'].append(mean(tr_team_wo_reset_objective))
-            results.loc[cost, 'tr_model_w_reset_objective'].append(mean(tr_model_w_reset_objective))
-            results.loc[cost, 'tr_model_wo_reset_objective'].append(mean(tr_model_wo_reset_objective))
-            results.loc[cost, 'hyrs_model_objective'].append(mean(hyrs_model_objective))
-            results.loc[cost, 'hyrs_team_objective'].append(mean(hyrs_team_objective))
-            results.loc[cost, 'brs_model_objective'].append(mean(brs_model_objective))
-            results.loc[cost, 'brs_team_objective'].append(mean(brs_team_objective))
-            results.loc[cost, 'human_decision_loss'].append(mean(human_decision_loss))
-            results.loc[cost, 'hyrs_norecon_objective'].append(mean(hyrs_norecon_objective))
-            results.loc[cost, 'hyrs_norecon_model_decision_loss'].append(mean(hyrs_norecon_model_decision_loss))
-            results.loc[cost, 'hyrs_norecon_team_decision_loss'].append(mean(hyrs_norecon_team_decision_loss))
-            results.loc[cost, 'hyrs_norecon_model_contradictions'].append(mean(hyrs_norecon_model_contradictions))
+            results.loc[size, 'tr_team_w_reset_decision_loss'].append(mean(tr_team_w_reset_decision_loss))
+            results.loc[size, 'tr_team_wo_reset_decision_loss'].append(mean(tr_team_wo_reset_decision_loss))
+            results.loc[size, 'tr_model_w_reset_decision_loss'].append(mean(tr_model_w_reset_decision_loss))
+            results.loc[size, 'tr_model_wo_reset_decision_loss'].append(mean(tr_model_wo_reset_decision_loss))
+            #results.loc[size, 'hyrs_model_decision_loss'].append(mean(hyrs_model_decision_loss))
+            #results.loc[size, 'hyrs_team_decision_loss'].append(mean(hyrs_team_decision_loss))
+            results.loc[size, 'brs_model_decision_loss'].append(mean(brs_model_decision_loss))
+            results.loc[size, 'brs_team_decision_loss'].append(mean(brs_team_decision_loss))
+            results.loc[size, 'tr_model_w_reset_contradictions'].append(mean(tr_model_w_reset_contradictions))
+            results.loc[size, 'tr_model_wo_reset_contradictions'].append(mean(tr_model_wo_reset_contradictions))
+            #results.loc[size, 'hyrs_model_contradictions'].append(mean(hyrs_model_contradictions))
+            results.loc[size, 'brs_model_contradictions'].append(mean(brs_model_contradictions))
+            results.loc[size, 'tr_team_w_reset_objective'].append(mean(tr_team_w_reset_objective))
+            results.loc[size, 'tr_team_wo_reset_objective'].append(mean(tr_team_wo_reset_objective))
+            results.loc[size, 'tr_model_w_reset_objective'].append(mean(tr_model_w_reset_objective))
+            results.loc[size, 'tr_model_wo_reset_objective'].append(mean(tr_model_wo_reset_objective))
+            #results.loc[size, 'hyrs_model_objective'].append(mean(hyrs_model_objective))
+            #results.loc[size, 'hyrs_team_objective'].append(mean(hyrs_team_objective))
+            results.loc[size, 'brs_model_objective'].append(mean(brs_model_objective))
+            results.loc[size, 'brs_team_objective'].append(mean(brs_team_objective))
+            results.loc[size, 'human_decision_loss'].append(mean(human_decision_loss))
+            #results.loc[size, 'hyrs_norecon_objective'].append(mean(hyrs_norecon_objective))
+            #results.loc[size, 'hyrs_norecon_model_decision_loss'].append(mean(hyrs_norecon_model_decision_loss))
+            #results.loc[size, 'hyrs_norecon_team_decision_loss'].append(mean(hyrs_norecon_team_decision_loss))
+            #results.loc[size, 'hyrs_norecon_model_contradictions'].append(mean(hyrs_norecon_model_contradictions))
+            results.loc[size, 'ADB MSE'].append(mean(adb_MSE))
+            results.loc[size, 'num_learning_instances'].append(mean(num_learning_instances))
             
             
     
@@ -291,12 +307,13 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 
 
-costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+cost = 0.0
 num_runs = 5
 dataset = 'heart_disease'
 
 
-name = 'offset_01'
+
+'''
 if os.path.isfile(f'results/{dataset}/offset_01_rs.pkl') and False:
     with open(f'results/{dataset}/offset_01_rs.pkl', 'rb') as f:
         of1_rs = pickle.load(f)
@@ -305,7 +322,7 @@ if os.path.isfile(f'results/{dataset}/offset_01_rs.pkl') and False:
     with open(f'results/{dataset}/offset_01_std.pkl', 'rb') as f:
         of1_std = pickle.load(f)
 else:
-    of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, costs, False)
+    of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, cost, False)
     #pickle and write means, std, and rs to file
     with open(f'results/{dataset}/offset_01_means.pkl', 'wb') as f:
         pickle.dump(of1_means, f)
@@ -338,9 +355,9 @@ else:
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 
 
-
+'''
 name = 'biased'
-if os.path.isfile(f'results/{dataset}/biased_rs.pkl'):
+if os.path.isfile(f'results/{dataset}/biased_rs.pkl') and False:
     with open(f'results/{dataset}/biased_rs.pkl', 'rb') as f:
         bia_rs = pickle.load(f)
     with open(f'results/{dataset}/biased_means.pkl', 'rb') as f:
@@ -348,7 +365,7 @@ if os.path.isfile(f'results/{dataset}/biased_rs.pkl'):
     with open(f'results/{dataset}/biased_std.pkl', 'rb') as f:
         bia_std = pickle.load(f)
 else:
-    bia_means, bia_std, bia_rs = make_results(dataset, name, num_runs, costs, validation=False)
+    bia_means, bia_std, bia_rs = make_discretion_results(dataset, name, num_runs, cost, validation=False)
     #pickle and write means, std, and rs to file
     with open(f'results/{dataset}/biased_means.pkl', 'wb') as f:
         pickle.dump(bia_means, f)
