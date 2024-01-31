@@ -27,3 +27,4 @@ run('heart_disease', 1, 'biased', runtype='standard', which_models=['brs','hyrs'
 run('heart_disease', 2, 'biased', runtype='standard', which_models=['brs','hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=False, custom_name='_discretion01', use_true=False, subsplit=0.2)
 run('heart_disease', 3, 'biased', runtype='standard', which_models=['brs','hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=False, custom_name='_discretion01', use_true=False, subsplit=0.2)
 run('heart_disease', 4, 'biased', runtype='standard', which_models=['brs','hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=False, custom_name='_discretion01', use_true=False, subsplit=0.2)
+#
