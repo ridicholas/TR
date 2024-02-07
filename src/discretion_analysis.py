@@ -187,6 +187,7 @@ def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False
 
                     tr_model_preds_with_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr_mod_confs, tr_agreement = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)
 
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
@@ -308,7 +309,7 @@ def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False
 
 
 cost = 0.0
-num_runs = 15
+num_runs = 10
 dataset = 'heart_disease'
 
 
@@ -366,6 +367,7 @@ if os.path.isfile(f'results/{dataset}/biased_rs.pkl') and False:
         bia_std = pickle.load(f)
 else:
     bia_means, bia_std, bia_rs = make_discretion_results(dataset, name, num_runs, cost, validation=False)
+    val_bia_means, val_bia_std, val_bia_rs = make_discretion_results(dataset, name, num_runs, cost, validation=True)
     #pickle and write means, std, and rs to file
     with open(f'results/{dataset}/biased_means.pkl', 'wb') as f:
         pickle.dump(bia_means, f)
@@ -561,13 +563,13 @@ def robust_rules(rs, val_rs):
             if val_rs['hyrs_team_objective'][cost][i] < curr_val_objective:
                 new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['hyrs_model_contradictions'][cost][i].copy()
                 new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['hyrs_team_decision_loss'][cost][i].copy()
-                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][cost][i] + cost*new_rs['tr_model_w_reset_contradictions'][cost][i]/len(y_test)
+                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][cost][i] + 0*new_rs['tr_model_w_reset_contradictions'][cost][i]/len(y_test)
                 print(f"cost: {cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
                 curr_val_objective = val_rs['hyrs_team_objective'][cost][i]
             if val_rs['brs_team_objective'][cost][i] < curr_val_objective:
                 new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['brs_model_contradictions'][cost][i].copy()
                 new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['brs_team_decision_loss'][cost][i].copy()
-                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][cost][i] + cost*new_rs['tr_model_w_reset_contradictions'][cost][i]/len(y_test)
+                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][cost][i] + 0*new_rs['tr_model_w_reset_contradictions'][cost][i]/len(y_test)
                 print(f"cost: {cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
                 curr_val_objective = val_rs['brs_team_objective'][cost][i]
                 
