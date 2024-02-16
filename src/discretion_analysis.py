@@ -309,7 +309,7 @@ def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False
 
 
 cost = 0.0
-num_runs = 10
+num_runs = 15
 dataset = 'heart_disease'
 
 
@@ -358,23 +358,37 @@ else:
 
 '''
 name = 'biased'
-if os.path.isfile(f'results/{dataset}/biased_rs.pkl') and False:
-    with open(f'results/{dataset}/biased_rs.pkl', 'rb') as f:
+if os.path.isfile(f'results/{dataset}/biased_rs_discretion.pkl'):
+    with open(f'results/{dataset}/biased_rs_discretion.pkl', 'rb') as f:
         bia_rs = pickle.load(f)
-    with open(f'results/{dataset}/biased_means.pkl', 'rb') as f:
+    with open(f'results/{dataset}/biased_means_discretion.pkl', 'rb') as f:
         bia_means = pickle.load(f)
-    with open(f'results/{dataset}/biased_std.pkl', 'rb') as f:
+    with open(f'results/{dataset}/biased_std_discretion.pkl', 'rb') as f:
         bia_std = pickle.load(f)
 else:
     bia_means, bia_std, bia_rs = make_discretion_results(dataset, name, num_runs, cost, validation=False)
     val_bia_means, val_bia_std, val_bia_rs = make_discretion_results(dataset, name, num_runs, cost, validation=True)
     #pickle and write means, std, and rs to file
-    with open(f'results/{dataset}/biased_means.pkl', 'wb') as f:
+    with open(f'results/{dataset}/biased_means_discretion.pkl', 'wb') as f:
         pickle.dump(bia_means, f)
-    with open(f'results/{dataset}/biased_std.pkl', 'wb') as f:
+    with open(f'results/{dataset}/biased_std_discretion.pkl', 'wb') as f:
         pickle.dump(bia_std, f)
-    with open(f'results/{dataset}/biased_rs.pkl', 'wb') as f:
+    with open(f'results/{dataset}/biased_rs_discretion.pkl', 'wb') as f:
         pickle.dump(bia_rs, f)
+
+for size in ['True', '1', '05', '01']:
+    if size == 'True':
+        plt.scatter(bia_rs['ADB MSE'][size], np.array(bia_rs['tr_team_w_reset_objective'][size]), c='b', label='TR')
+        #plt.scatter(bia_rs['ADB MSE'][size], np.array(bia_rs['hyrs_team_objective'][size]), c='r', label='HYRS')
+        plt.scatter(bia_rs['ADB MSE'][size], np.array(bia_rs['brs_team_objective'][size]), c='g', label='BRS')
+    else:
+        plt.scatter(bia_rs['ADB MSE'][size], np.array(bia_rs['tr_team_w_reset_objective'][size]), c='b')
+        #plt.scatter(bia_rs['ADB MSE'][size], np.array(bia_rs['hyrs_team_objective'][size]), c='r')
+        plt.scatter(bia_rs['ADB MSE'][size], np.array(bia_rs['brs_team_objective'][size]), c='g')
+    plt.legend()
+    plt.xlabel('ADB MSE')
+    plt.ylabel('Objective')
+
 
 name = 'offset_01'
 

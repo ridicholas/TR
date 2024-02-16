@@ -18,6 +18,7 @@ class Human(object):
         elif dataset == 'hr':
             self.confVal = 0.8
         self.decision_bias = decision_bias
+        self.learning_indexes = None
 
 
     

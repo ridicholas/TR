@@ -34,10 +34,7 @@ def load_datasets(dataset, run_num):
     return x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized
 
 def load_results(dataset, setting, run_num, cost, model):
-    if model == 'brs':
-        setting = ''
-    else:
-        setting = '_' + setting
+    setting = '_' + setting
     with open(f'results/{dataset}/run{run_num}/cost{float(cost)}/{model}_model{setting}.pkl', 'rb') as f:
         result = pickle.load(f)
         return result
@@ -173,6 +170,17 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
             decs['ym'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
             decs['yf'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
 
+            model_decs = {}
+            model_decs['t']={'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            model_decs['e'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            model_decs['y'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            model_decs['m'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}    
+            model_decs['f'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            model_decs['em'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            model_decs['ef'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            model_decs['ym'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            model_decs['yf'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+
 
             contras = {}
             contras['t']={'tr': [], 'hyrs': [], 'brs': [], 'human': []}
@@ -298,10 +306,13 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                 #find number of incorrect predictions confusion matrix split along sex_Male and age54.0 variables
                     if which =='tr':
                         preds = tr_team_preds_with_reset.copy()
+                        
                     elif which == 'hyrs':
                         preds = hyrs_team_preds.copy()
+                        
                     elif which == 'brs':
                         preds = brs_team_preds.copy()
+                        
                     elif which == 'human':
                         preds = human_decisions.copy()
                     
@@ -316,6 +327,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     decs['ef'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (y_test == 0)].sum())
                     decs['ym'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (y_test == 1)].sum())
                     decs['yf'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (y_test == 0)].sum())
+
+
 
 
 
@@ -344,6 +357,17 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     contras['ef'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 1) & (y_test == 0)].sum())
                     contras['ym'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 0) & (y_test == 1)].sum())
                     contras['yf'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 0) & (y_test == 0)].sum())
+
+                    model_decs['t'][which].append(((model_preds != y_test)*asymCosts).sum())
+                    model_decs['e'][which].append(((model_preds != y_test)*asymCosts)[x_test['age54.0'] == 1].sum())
+                    model_decs['y'][which].append(((model_preds != y_test)*asymCosts)[x_test['age54.0'] == 0].sum())
+                    model_decs['m'][which].append(((model_preds != y_test)*asymCosts)[y_test == 1].sum())
+                    model_decs['f'][which].append(((model_preds != y_test)*asymCosts)[y_test == 0].sum())
+
+                    model_decs['em'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (y_test == 1)].sum())
+                    model_decs['ef'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (y_test == 0)].sum())
+                    model_decs['ym'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (y_test == 1)].sum())
+                    model_decs['yf'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (y_test == 0)].sum())
 
                     correct_contras['t'][which].append(((model_preds != human_decisions) & (model_preds == y_test)).sum())
                     correct_contras['e'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[x_test['age54.0'] == 1].sum())
@@ -428,6 +452,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                                      tr_mod_confs[(x_test['age54.0'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(), 
                                                      tr_mod_confs[(tr_model_preds_with_reset != human_decisions)].mean()]])]
                 
+                
+                
                 brs_conf_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                 data = [[brs_conf[(x_test['age54.0'] == 1) &(y_test == 1) & (brs_model_preds != human_decisions)].mean(), 
                                          brs_conf[(x_test['age54.0'] == 0) & (y_test == 1) & (brs_model_preds != human_decisions)].mean(),
@@ -450,15 +476,30 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                                     [mean(decs['ef']['tr']), mean(decs['yf']['tr']), mean(decs['f']['tr'])], 
                                                     [mean(decs['e']['tr']), mean(decs['y']['tr']), mean(decs['t']['tr'])]])]
                 
+                tr_model_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(model_decs['em']['tr']), mean(model_decs['ym']['tr']), mean(model_decs['m']['tr'])], 
+                                                    [mean(model_decs['ef']['tr']), mean(model_decs['yf']['tr']), mean(model_decs['f']['tr'])], 
+                                                    [mean(model_decs['e']['tr']), mean(model_decs['y']['tr']), mean(model_decs['t']['tr'])]])]
+                
                 hyrs_confusion = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(decs['em']['hyrs']), mean(decs['ym']['hyrs']), mean(decs['m']['hyrs'])], 
                                                     [mean(decs['ef']['hyrs']), mean(decs['yf']['hyrs']), mean(decs['f']['hyrs'])], 
                                                     [mean(decs['e']['hyrs']), mean(decs['y']['hyrs']), mean(decs['t']['hyrs'])]])]
                 
+                hyrs_model_confusion = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(model_decs['em']['hyrs']), mean(model_decs['ym']['hyrs']), mean(model_decs['m']['hyrs'])], 
+                                                    [mean(model_decs['ef']['hyrs']), mean(model_decs['yf']['hyrs']), mean(model_decs['f']['hyrs'])], 
+                                                    [mean(model_decs['e']['hyrs']), mean(model_decs['y']['hyrs']), mean(model_decs['t']['hyrs'])]])]
+                
                 brs_confusion = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
                 data = [[mean(decs['em']['brs']), mean(decs['ym']['brs']), mean(decs['m']['brs'])], 
                         [mean(decs['ef']['brs']), mean(decs['yf']['brs']), mean(decs['f']['brs'])], 
                         [mean(decs['e']['brs']), mean(decs['y']['brs']), mean(decs['t']['brs'])]])]
+                
+                brs_model_confusion = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
+                data = [[mean(model_decs['em']['brs']), mean(model_decs['ym']['brs']), mean(model_decs['m']['brs'])], 
+                        [mean(model_decs['ef']['brs']), mean(model_decs['yf']['brs']), mean(model_decs['f']['brs'])], 
+                        [mean(model_decs['e']['brs']), mean(model_decs['y']['brs']), mean(model_decs['t']['brs'])]])]
                 
 
                 human_confusion = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
@@ -544,10 +585,25 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                          brs_conf[(x_test['age54.0'] == 0) & (brs_model_preds != human_decisions)].mean(), 
                                          brs_conf[(brs_model_preds != human_decisions)].mean()]]))
                 
+                brs_model_confusion.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
+                data = [[mean(model_decs['em']['brs']), mean(model_decs['ym']['brs']), mean(model_decs['m']['brs'])], 
+                        [mean(model_decs['ef']['brs']), mean(model_decs['yf']['brs']), mean(model_decs['f']['brs'])], 
+                        [mean(model_decs['e']['brs']), mean(model_decs['y']['brs']), mean(model_decs['t']['brs'])]]))
+                
+                tr_model_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(model_decs['em']['tr']), mean(model_decs['ym']['tr']), mean(model_decs['m']['tr'])], 
+                                                    [mean(model_decs['ef']['tr']), mean(model_decs['yf']['tr']), mean(model_decs['f']['tr'])], 
+                                                    [mean(model_decs['e']['tr']), mean(model_decs['y']['tr']), mean(model_decs['t']['tr'])]]))
+                
                 hyrs_confusion.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(decs['em']['hyrs']), mean(decs['ym']['hyrs']), mean(decs['m']['hyrs'])], 
                                                     [mean(decs['ef']['hyrs']), mean(decs['yf']['hyrs']), mean(decs['f']['hyrs'])], 
                                                     [mean(decs['e']['hyrs']), mean(decs['y']['hyrs']), mean(decs['t']['hyrs'])]]))
+                
+                hyrs_model_confusion.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(model_decs['em']['hyrs']), mean(model_decs['ym']['hyrs']), mean(model_decs['m']['hyrs'])], 
+                                                    [mean(model_decs['ef']['hyrs']), mean(model_decs['yf']['hyrs']), mean(model_decs['f']['hyrs'])], 
+                                                    [mean(model_decs['e']['hyrs']), mean(model_decs['y']['hyrs']), mean(model_decs['t']['hyrs'])]]))
                 
                 hyrs_confusion_contras.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                             data = [[mean(contras['em']['hyrs']), mean(contras['ym']['hyrs']), mean(contras['m']['hyrs'])], 
@@ -636,6 +692,10 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
             
     
     tr_confusion = pd.concat(tr_confusion)
+    tr_model_confusion = pd.concat(tr_model_confusion)
+    hyrs_model_confusion = pd.concat(hyrs_model_confusion)
+    brs_model_confusion = pd.concat(brs_model_confusion)
+    
     tr_conf_confusion = pd.concat(tr_conf_confusion)
     tr_covered_confusion = pd.concat(tr_covered_confusion)
     brs_confusion = pd.concat(brs_confusion)

@@ -134,13 +134,13 @@ class brs(object):
             self.alpha_l = [1] + list(al)
             self.beta_l = [1] + list(bl)
 
-    def fit(self, Niteration=300, Nchain=1, q=0.1, init=[], keep_most_accurate_model=True, print_message=True):
+    def fit(self, Niteration=300, Nchain=1, q=0.1, init=[], keep_most_accurate_model=True, print_message=True, asym_loss=[1,1]):
         # print('Searching for an optimal solution...')
         start_time = time.time()
         nRules = len(self.rules)
         self.rules_len = [len(rule) for rule in self.rules]
         maps = defaultdict(list)
-        T0 = 1000
+        T0 = 0.01
         split = 0.7 * Niteration
         acc = {}
         most_accurate_model = defaultdict(list)
@@ -153,9 +153,10 @@ class brs(object):
                 rules_curr = sample(range(nRules), N)
             rules_curr_norm = self.normalize(rules_curr)
             pt_curr = -100000000000
+            obj_curr = 10000000000
             maps[chain].append(
                 [-1, [pt_curr / 3, pt_curr / 3, pt_curr / 3], rules_curr, [self.rules[i] for i in rules_curr]])
-            acc[chain] = 0
+            acc[chain] = 100000000000
             for iter in range(Niteration):
                 if iter >= split:
                     p = np.array(range(1 + len(maps[chain])))
@@ -166,28 +167,33 @@ class brs(object):
                     rules_curr_norm = maps[chain][index][2].copy()
                 rules_new, rules_norm = self.propose(rules_curr.copy(), rules_curr_norm.copy(), q)
                 cfmatrix, prob = self.compute_prob(rules_new)
-                T = T0 ** (1 - iter / Niteration)
-                pt_new = sum(prob)
-                alpha = np.exp(float(pt_new - pt_curr) / T)
+                T = T0 ** (iter / Niteration)
+                pt_new = sum(prob) 
+                obj_new = ((asym_loss[1]*cfmatrix[1]) + (asym_loss[0]*cfmatrix[3])) / sum(cfmatrix)
+                #alpha = np.exp(float(pt_new - pt_curr) / T) #switch to pt_curr - pt_new
+                alpha = np.exp(float(obj_curr - obj_new) / T)
 
-                if (cfmatrix[0] + cfmatrix[2]) / sum(cfmatrix) > acc[chain]:
+                if (obj_new) < acc[chain]:
                     most_accurate_model[chain] = rules_new[:]
-                    acc[chain] = (cfmatrix[0] + cfmatrix[2]) / sum(cfmatrix)
+                    acc[chain] = obj_new #(cfmatrix[0] + cfmatrix[2]) / sum(cfmatrix)
                     if print_message:
                         print('found a more accurate model: accuracy = {}'.format(acc[chain]))
 
-                if pt_new > sum(maps[chain][-1][1]):
-                    maps[chain].append([iter, prob, rules_new, [self.rules[i] for i in rules_new]])
-                    if print_message:
-                        print(
-                            '\n** chain = {}, max at iter = {} ** \n accuracy = {}, TP = {},FP = {}, TN = {}, FN = {}\n pt_new is {}, prior_ChsRules={}, likelihood_1 = {}, likelihood_2 = {}\n '.format(
-                                chain, iter, (cfmatrix[0] + cfmatrix[2] + 0.0) / len(self.Y), cfmatrix[0], cfmatrix[1],
-                                cfmatrix[2], cfmatrix[3], sum(prob), prob[0], prob[1], prob[2]))
+                #if pt_new > sum(maps[chain][-1][1]):
+                #if (obj_new) < obj_curr:
+                #    maps[chain].append([iter, prob, rules_new, [self.rules[i] for i in rules_new]])
+                #    if print_message:
+                #        print(
+                #            '\n** chain = {}, max at iter = {} ** \n accuracy = {}, TP = {},FP = {}, TN = {}, FN = {}\n pt_new is {}, prior_ChsRules={}, likelihood_1 = {}, likelihood_2 = {}\n '.format(
+                #                chain, iter, (cfmatrix[0] + cfmatrix[2] + 0.0) / len(self.Y), cfmatrix[0], cfmatrix[1],
+                #                cfmatrix[2], cfmatrix[3], sum(prob), prob[0], prob[1], prob[2])) #change this
                         # print '\n** chain = {}, max at iter = {} ** \n obj = {}, prior = {}, llh = {} '.format(chain, iter,prior+llh,prior,llh)
-                        self.print_rules(rules_new)
-                        print(rules_new)
+                        #self.print_rules(rules_new)
+                        #print(rules_new)
+                #print('alpha = {}'.format(alpha))
                 if random() <= alpha:
                     rules_curr_norm, rules_curr, pt_curr = rules_norm.copy(), rules_new.copy(), pt_new
+                    obj_curr = obj_new
         # print('\tTook %0.3fs to generate an optimal rule set' % (time.time() - start_time))
         if keep_most_accurate_model:
             acc_list = [acc[chain] for chain in range(Nchain)]

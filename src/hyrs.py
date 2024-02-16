@@ -320,6 +320,7 @@ class hyrs(object):
                 print('covered_new: {}'.format(covered_new.sum()))
                 print('covered_opt: {}'.format(covered_opt.sum()))
                 print('prs = {}, nrs = {}'.format(prs_new, nrs_new))
+            print(f'alpha: {alpha}')
             if random() <= alpha:
                 prs_curr, nrs_curr, obj_curr, pcovered_curr, ncovered_curr, overlap_curr, covered_curr, Yhat_curr = prs_new[
                                                                                                                     :], nrs_new[
