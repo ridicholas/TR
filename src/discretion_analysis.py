@@ -308,8 +308,8 @@ def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False
 
 
 
-cost = 0.0
-num_runs = 15
+costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+num_runs = 5
 dataset = 'heart_disease'
 
 
