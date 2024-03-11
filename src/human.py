@@ -3,13 +3,15 @@ import numpy as np
 import pandas as pd
 from scipy.stats import bernoulli, uniform
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.preprocessing import StandardScaler
 
 class Human(object):
     def __init__(self, name, X, y, dataset=None, decision_bias=False) -> None:
         self.name = name
         self.X = X.dropna(axis=1)
         self.y = y
-        self.model = LogisticRegression().fit(self.X, y)
+        self.scaler = StandardScaler().fit(self.X)
+        self.model = LogisticRegression().fit(self.scaler.transform(self.X), y)
         self.dataset = dataset
         if dataset == 'heart_disease':
             self.confVal = 0.6
@@ -17,6 +19,8 @@ class Human(object):
             self.confVal = 0.3
         elif dataset == 'hr':
             self.confVal = 0.8
+        elif dataset == 'adult':
+            self.confVal = 0.6
         self.decision_bias = decision_bias
         self.learning_indexes = None
 
@@ -29,6 +33,8 @@ class Human(object):
             return self.fico_confidence_transformation(X=X, t_type=self.name)
         elif self.dataset == 'hr':
             return self.hr_confidence_transformation(X=X, t_type=self.name)
+        elif self.dataset == 'adult':
+            return self.adult_confidence_transformation(X=X, t_type=self.name)
         
     def set_confVal(self, val):
         self.confVal = val
@@ -40,20 +46,33 @@ class Human(object):
         if self.decision_bias:
             if self.dataset == 'heart_disease':
                 model_confidences = np.ones(X.shape[0])
+                ###asymmetric case version###############
                 model_confidences[(X['age54.0'] == 0) | (X['sex_Male'] == 0)] = 0
+                #########################################
+                ###feature decision and confidence bias###
+                #model_confidences[(X['age54.0'] == 0)] = 0
+                #########################################
             if self.dataset == 'fico':
-                model_confidences = np.ones(X.shape[0])
+                model_confidences = np.ones(X.shape[0]) 
                 model_confidences[X['ExternalRiskEstimate65.0'] == 0] = 0
+            if self.dataset == 'adult':
+                model_confidences = np.ones(X.shape[0])
+                model_confidences[(X['race_White'] == 1) | (X['sex_Male'] == 0)] = 0
             
                 
                 
         else:
-            model_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+            model_confidences = np.abs(self.model.predict_proba(self.scaler.transform(X))[:, 1] - 0.5)*2
         #low accuracy 60%
         low = bernoulli.rvs(p=0.4, size=len(decisions)).astype(bool)
         #high accuracy 100%
         if self.decision_bias == True:
+            #for confidence and decision bias general example
+            high = bernoulli.rvs(p=0.01, size=len(decisions)).astype(bool)
+
+            #for all other
             high = bernoulli.rvs(p=0.05, size=len(decisions)).astype(bool)
+
         else:
             high = bernoulli.rvs(p=0.00, size=len(decisions)).astype(bool)
         decisions[high] = 1-decisions[high]
@@ -123,7 +142,7 @@ class Human(object):
                 start_confidences = np.ones(X.shape[0])
                 start_confidences[X['age54.0'] == 0] = 0       
         else:
-            start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+            start_confidences = np.abs(self.model.predict_proba(self.scaler.transform(X))[:, 1] - 0.5)*2
 
         if t_type==None or t_type=='calibrated':
             
@@ -143,10 +162,22 @@ class Human(object):
                 confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
                 confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.2
             else:
-                confidences[(X['age54.0'] == 0)] = 1
+                ####for asymmetric case study#############
+                #confidences[(X['age54.0'] == 0)] = 1
+                #confidences[(X['age54.0'] == 1)] = 0.3
+                ##########################################
+                ####for feature decision and confidence bias#############
+                confidences[(X['sex_Male'] == 0) & (X['age54.0'] == 1)] = 1
+                confidences[(X['sex_Male'] == 1) & (X['age54.0'] == 0)] = 1
+                confidences[(X['sex_Male'] == 0) & (X['age54.0'] == 0)] = 0.2
+                confidences[(X['sex_Male'] == 1) & (X['age54.0'] == 1)] = 0.2
+                #########################################################
+
+                ####for regular case study#######################
+                #confidences[(X['age54.0'] == 0)] = 1
+                #confidences[(X['age54.0'] == 1)] = 0.3
                 #confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 0.9
                 #confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
-                confidences[(X['age54.0'] == 1)] = 0.3
 
 
         if t_type=='offset_02':
@@ -181,7 +212,7 @@ class Human(object):
                     start_confidences = np.ones(X.shape[0])
                     start_confidences[X['age54.0'] == 1] = 0       
             else:
-                start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+                start_confidences = np.abs(self.model.predict_proba(self.scaler.transform(X))[:, 1] - 0.5)*2
 
             if t_type==None or t_type=='calibrated':
                 
@@ -232,7 +263,7 @@ class Human(object):
                 start_confidences = np.ones(X.shape[0])
                 start_confidences[X['age54.0'] == 1] = 0       
         else:
-            start_confidences = np.abs(self.model.predict_proba(X)[:, 1] - 0.5)*2
+            start_confidences = np.abs(self.model.predict_proba(self.scaler.transform(X))[:, 1] - 0.5)*2
 
         if t_type==None or t_type=='calibrated':
             
@@ -250,6 +281,77 @@ class Human(object):
             confidences[(X['ExternalRiskEstimate65.0'] == 1) & (start_confidences > self.confVal)] = 1
             confidences[(X['ExternalRiskEstimate65.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
             confidences[(X['ExternalRiskEstimate65.0'] == 0) & (start_confidences > self.confVal)] = 0.2
+
+        if t_type=='offset_02':
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.8
+            confidences[start_confidences > self.confVal] = 0.4
+        if t_type=='offset_01':
+            
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.9
+            confidences[start_confidences > self.confVal] = 0.3
+        if t_type=='offset_03':
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.7
+            confidences[start_confidences > self.confVal] = 0.3
+        if t_type=='offset_05':
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.5
+            confidences[start_confidences > self.confVal] = 0.5
+        if t_type=='offset_08':
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences <= self.confVal] = 0.2
+            confidences[start_confidences > self.confVal] = 0.8
+
+
+        
+        return confidences
+    
+
+    def adult_confidence_transformation(self, X=None, t_type=None):
+        if self.decision_bias:
+            if self.dataset == 'adult':
+                start_confidences = np.ones(X.shape[0])
+                start_confidences[X['race_White'] == 1] = 0       
+        else:
+            start_confidences = np.abs(self.model.predict_proba(self.scaler.transform(X))[:, 1] - 0.5)*2
+
+        if t_type==None or t_type=='calibrated':
+            
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences > self.confVal] = 0.2
+            confidences[start_confidences <= self.confVal] = 1
+        if t_type=='miscalibrated':
+            
+            confidences = np.ones(X.shape[0])
+            confidences[start_confidences > self.confVal] = 1
+            confidences[start_confidences <= self.confVal] = 0.2
+        if t_type=='biased':
+            confidences = np.ones(X.shape[0])
+            if self.decision_bias == False:
+                confidences[(X['race_White'] == 1) & (start_confidences <= self.confVal)] = 0.9
+                confidences[(X['race_White'] == 1) & (start_confidences > self.confVal)] = 1
+                confidences[(X['race_White'] == 0) & (start_confidences <= self.confVal)] = 0.9
+                confidences[(X['race_White'] == 0) & (start_confidences > self.confVal)] = 0.2
+            else:
+                ####for asymmetric case study#############
+                #confidences[(X['age54.0'] == 0)] = 1
+                #confidences[(X['age54.0'] == 1)] = 0.3
+                ##########################################
+                ####for feature decision and confidence bias#############
+                confidences[(X['sex_Male'] == 0) & (X['race_White'] == 1)] = 1 #weak
+                confidences[(X['sex_Male'] == 1) & (X['race_White'] == 0)] = 1 #weak
+                confidences[(X['sex_Male'] == 0) & (X['race_White'] == 0)] = 0.2 #weak
+                confidences[(X['sex_Male'] == 1) & (X['race_White'] == 1)] = 0.2 #strong
+                #########################################################
+
+                ####for regular case study#######################
+                #confidences[(X['age54.0'] == 0)] = 1
+                #confidences[(X['age54.0'] == 1)] = 0.3
+                #confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 0.9
+                #confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
+
 
         if t_type=='offset_02':
             confidences = np.ones(X.shape[0])

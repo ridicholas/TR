@@ -5,7 +5,7 @@ from tr import *
 from hyrs import *
 from brs import *
 import pickle
-from sklearn.metrics import accuracy_score, auc, roc_auc_score, roc_curve, mean_squared_error
+from sklearn.metrics import accuracy_score, auc, roc_auc_score, roc_curve, mean_squared_error, mean_absolute_error
 from util_BOA import *
 from numpy import mean 
 import progressbar
@@ -15,21 +15,21 @@ from copy import deepcopy
 import os
 
 def load_datasets(dataset, run_num):
-    x_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain.csv', index_col=0).reset_index(drop=True)
-    y_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/ytrain.csv', index_col=0).iloc[:, 0].reset_index(drop=True)
-    x_train_non_binarized = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain_non_binarized.csv', index_col=0).reset_index(drop=True)
-    x_learning_non_binarized = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xlearning_non_binarized.csv', index_col=0).reset_index(drop=True)
-    x_learning = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xlearning.csv', index_col=0).reset_index(drop=True)
-    y_learning = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/ylearning.csv', index_col=0).iloc[:, 0].reset_index(drop=True)
-    x_human_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xhumantrain.csv', index_col=0).reset_index(drop=True)
-    y_human_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/yhumantrain.csv', index_col=0).iloc[:, 0].reset_index(drop=True)
+    x_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain.csv', index_col=0)
+    y_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/ytrain.csv', index_col=0).iloc[:, 0]
+    x_train_non_binarized = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain_non_binarized.csv', index_col=0)
+    x_learning_non_binarized = pd.read_csv(f'datasets/{dataset}/processed/run{0}/xlearning_non_binarized.csv', index_col=0)
+    x_learning = pd.read_csv(f'datasets/{dataset}/processed/run{0}/xlearning.csv', index_col=0)
+    y_learning = pd.read_csv(f'datasets/{dataset}/processed/run{0}/ylearning.csv', index_col=0).iloc[:, 0]
+    x_human_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xhumantrain.csv', index_col=0)
+    y_human_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/yhumantrain.csv', index_col=0).iloc[:, 0]
 
-    x_val = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xval.csv', index_col=0).reset_index(drop=True)
-    y_val = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/yval.csv', index_col=0).iloc[:, 0].reset_index(drop=True)
-    x_test = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtest.csv', index_col=0).reset_index(drop=True)
-    y_test = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/ytest.csv', index_col=0).iloc[:, 0].reset_index(drop=True)
-    x_val_non_binarized = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xval_non_binarized.csv', index_col=0).reset_index(drop=True)
-    x_test_non_binarized = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtest_non_binarized.csv', index_col=0).reset_index(drop=True)
+    x_val = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xval.csv', index_col=0)
+    y_val = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/yval.csv', index_col=0).iloc[:, 0]
+    x_test = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtest.csv', index_col=0)
+    y_test = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/ytest.csv', index_col=0).iloc[:, 0]
+    x_val_non_binarized = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xval_non_binarized.csv', index_col=0)
+    x_test_non_binarized = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtest_non_binarized.csv', index_col=0)
 
     return x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized
 
@@ -44,25 +44,21 @@ def load_discretion_results(dataset, setting, run_num, cost, model, size):
     
 def load_discretion_humans(dataset, setting, run_num, size):
     setting = setting + f'_discretion{size}'
-    with open(f'results/{dataset}/run{run_num}/{setting}.pkl', 'rb') as f:
+    with open(f'results/{dataset}/run{0}/{setting}.pkl', 'rb') as f:
         human = pickle.load(f)
-    with open(f'results/{dataset}/run{run_num}/adb_model_{setting}.pkl', 'rb') as f:
+    with open(f'results/{dataset}/run{0}/adb_model_{setting}.pkl', 'rb') as f:
         adb_model = pickle.load(f)
-    with open(f'results/{dataset}/run{run_num}/conf_model_{setting}.pkl', 'rb') as f:
+    with open(f'results/{dataset}/run{0}/conf_model_{setting}.pkl', 'rb') as f:
         conf_model = pickle.load(f)
     return human, adb_model, conf_model
 
-
-
-def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False):
+def make_discretion_results(dataset, whichtype, num_runs, costs, validation=False, size='True'):
 
     #create dataframe of empty lists with column headers below
 
-    sizes = ['True', '1', '05', '01']
+
     
-    results = pd.DataFrame(data={'ADB MSE': [[]],
-                                 'num_learning_instances': [[]],
-                                'tr_team_w_reset_decision_loss': [[]],
+    results = pd.DataFrame(data={'tr_team_w_reset_decision_loss': [[]],
                                 'tr_team_wo_reset_decision_loss': [[]],
                                 'tr_model_w_reset_decision_loss': [[]],
                                 'tr_model_wo_reset_decision_loss': [[]],
@@ -86,16 +82,15 @@ def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False
                                 'hyrs_norecon_objective': [[]],
                                 'hyrs_norecon_model_decision_loss': [[]],
                                 'hyrs_norecon_team_decision_loss': [[]], 
-                               'hyrs_norecon_model_contradictions': [[]]}, index=[sizes[0]]
+                               'hyrs_norecon_model_contradictions': [[]]}, index=[costs[0]]
                             )
 
-    for size in sizes[1:]:
-        results.loc[size] = [[] for i in range(len(results.columns))]
+    for cost in costs[1:]:
+        results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    
+    whichtype = whichtype
     for run in bar(range(num_runs)):
-        
 
         
         bar=progressbar.ProgressBar()
@@ -106,16 +101,18 @@ def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False
             y_test = y_val
             x_test_non_binarized = x_val_non_binarized
         
-        
+        x_test = x_test[~x_test.index.isin(x_learning.index)].reset_index(drop=True)
+        y_test = y_test[~y_test.index.isin(y_learning.index)].reset_index(drop=True)
+        x_test_non_binarized = x_test_non_binarized[~x_test_non_binarized.index.isin(x_learning_non_binarized.index)].reset_index(drop=True)
+
         dataset = dataset
+        human, adb_mod, conf_mod = load_discretion_humans(dataset, whichtype, run, size)
 
 
+        brs_mod = load_discretion_results(dataset, whichtype , run, 0.0, 'brs', size)
 
-        for size in sizes:
-            human, adb_mod, conf_mod = load_discretion_humans(dataset, whichtype, run, size)
 
-            brs_mod = load_discretion_results(dataset, whichtype , run, 0.0, 'brs', size)
-             
+        for cost in costs:
             print(f'producing for cost {cost} run {run}.....')
             tr_mod = load_discretion_results(dataset, whichtype, run, cost, 'tr', size)
             hyrs_mod = load_discretion_results(dataset, whichtype, run, cost, 'hyrs', size)
@@ -160,9 +157,6 @@ def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False
             hyrs_norecon_model_decision_loss = []
             hyrs_norecon_team_decision_loss = []
             hyrs_norecon_model_contradictions = []
-            adb_MSE = []
-            num_learning_instances = []
-
             
             if cost == 0.0:
                 brs_mod.df = x_train
@@ -170,7 +164,8 @@ def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False
                 brs_model_preds = brs_predict(brs_mod.opt_rules, x_test)
                 brs_conf = brs_predict_conf(brs_mod.opt_rules, x_test, brs_mod)
                 hyrs_norecon_mod = deepcopy(hyrs_mod)
-            
+            auc_scores = []
+            mae_scores = []
             for i in range(50):
                 
                 
@@ -187,7 +182,6 @@ def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False
 
                     tr_model_preds_with_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    tr_mod_confs, tr_agreement = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)
 
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
@@ -212,6 +206,16 @@ def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False
                     tr_model_preds_with_reset, tr_mod_covered_w_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))
                     tr_model_preds_no_reset, tr_mod_covered_no_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized))
                     tr_mod_confs, tr_agreement = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)
+
+                    human_adb = human.ADB(human_conf, tr_mod_confs, tr_agreement)
+                    if cost==0.0:
+                        mae_scores.append(mean_absolute_error(human_adb[~tr_agreement], learned_adb.ADB_model_wrapper(human_conf, tr_mod_confs, tr_agreement)[~tr_agreement]))
+                    
+                    
+                        realized_accepts = np.random.binomial(1, human_adb)
+                        auc_scores.append(roc_auc_score(realized_accepts[~tr_agreement], learned_adb.ADB_model_wrapper(human_conf, tr_mod_confs, tr_agreement)[~tr_agreement]))
+                    
+
                 
 
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
@@ -221,12 +225,8 @@ def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False
                     hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
                     hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, human.ADB, x_test)
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
-                
+                        
 
-                human_adb = human.ADB(human_conf, tr_mod_confs, tr_agreement)
-                adb_MSE.append(mean_squared_error(human_adb, learned_adb.ADB_model_wrapper(human_conf, tr_mod_confs, tr_agreement)))
-                size_dict = {'True': 1, '1': 1, '05': 0.5, '01': 0.1}
-                num_learning_instances.append(len(y_learning) * (size_dict[size]))
                 tr_team_w_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_with_reset, y_test))
                 tr_team_wo_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_no_reset, y_test))
                 tr_model_w_reset_decision_loss.append(1 - accuracy_score(tr_model_preds_with_reset, y_test))
@@ -256,7 +256,6 @@ def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False
                 hyrs_norecon_team_decision_loss.append(1 - accuracy_score(hyrs_norecon_team_preds, y_test))
                 hyrs_norecon_model_contradictions.append((hyrs_norecon_model_preds != human_decisions).sum())
                 hyrs_norecon_objective.append(hyrs_norecon_team_decision_loss[-1] + cost*(hyrs_norecon_model_contradictions[-1])/len(y_test))
-                
 
                 
 
@@ -267,33 +266,31 @@ def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False
 
             
             #append values to appropriate row in results
-            results.loc[size, 'tr_team_w_reset_decision_loss'].append(mean(tr_team_w_reset_decision_loss))
-            results.loc[size, 'tr_team_wo_reset_decision_loss'].append(mean(tr_team_wo_reset_decision_loss))
-            results.loc[size, 'tr_model_w_reset_decision_loss'].append(mean(tr_model_w_reset_decision_loss))
-            results.loc[size, 'tr_model_wo_reset_decision_loss'].append(mean(tr_model_wo_reset_decision_loss))
-            results.loc[size, 'hyrs_model_decision_loss'].append(mean(hyrs_model_decision_loss))
-            results.loc[size, 'hyrs_team_decision_loss'].append(mean(hyrs_team_decision_loss))
-            results.loc[size, 'brs_model_decision_loss'].append(mean(brs_model_decision_loss))
-            results.loc[size, 'brs_team_decision_loss'].append(mean(brs_team_decision_loss))
-            results.loc[size, 'tr_model_w_reset_contradictions'].append(mean(tr_model_w_reset_contradictions))
-            results.loc[size, 'tr_model_wo_reset_contradictions'].append(mean(tr_model_wo_reset_contradictions))
-            results.loc[size, 'hyrs_model_contradictions'].append(mean(hyrs_model_contradictions))
-            results.loc[size, 'brs_model_contradictions'].append(mean(brs_model_contradictions))
-            results.loc[size, 'tr_team_w_reset_objective'].append(mean(tr_team_w_reset_objective))
-            results.loc[size, 'tr_team_wo_reset_objective'].append(mean(tr_team_wo_reset_objective))
-            results.loc[size, 'tr_model_w_reset_objective'].append(mean(tr_model_w_reset_objective))
-            results.loc[size, 'tr_model_wo_reset_objective'].append(mean(tr_model_wo_reset_objective))
-            results.loc[size, 'hyrs_model_objective'].append(mean(hyrs_model_objective))
-            results.loc[size, 'hyrs_team_objective'].append(mean(hyrs_team_objective))
-            results.loc[size, 'brs_model_objective'].append(mean(brs_model_objective))
-            results.loc[size, 'brs_team_objective'].append(mean(brs_team_objective))
-            results.loc[size, 'human_decision_loss'].append(mean(human_decision_loss))
-            results.loc[size, 'hyrs_norecon_objective'].append(mean(hyrs_norecon_objective))
-            results.loc[size, 'hyrs_norecon_model_decision_loss'].append(mean(hyrs_norecon_model_decision_loss))
-            results.loc[size, 'hyrs_norecon_team_decision_loss'].append(mean(hyrs_norecon_team_decision_loss))
-            results.loc[size, 'hyrs_norecon_model_contradictions'].append(mean(hyrs_norecon_model_contradictions))
-            results.loc[size, 'ADB MSE'].append(mean(adb_MSE))
-            results.loc[size, 'num_learning_instances'].append(mean(num_learning_instances))
+            results.loc[cost, 'tr_team_w_reset_decision_loss'].append(mean(tr_team_w_reset_decision_loss))
+            results.loc[cost, 'tr_team_wo_reset_decision_loss'].append(mean(tr_team_wo_reset_decision_loss))
+            results.loc[cost, 'tr_model_w_reset_decision_loss'].append(mean(tr_model_w_reset_decision_loss))
+            results.loc[cost, 'tr_model_wo_reset_decision_loss'].append(mean(tr_model_wo_reset_decision_loss))
+            results.loc[cost, 'hyrs_model_decision_loss'].append(mean(hyrs_model_decision_loss))
+            results.loc[cost, 'hyrs_team_decision_loss'].append(mean(hyrs_team_decision_loss))
+            results.loc[cost, 'brs_model_decision_loss'].append(mean(brs_model_decision_loss))
+            results.loc[cost, 'brs_team_decision_loss'].append(mean(brs_team_decision_loss))
+            results.loc[cost, 'tr_model_w_reset_contradictions'].append(mean(tr_model_w_reset_contradictions))
+            results.loc[cost, 'tr_model_wo_reset_contradictions'].append(mean(tr_model_wo_reset_contradictions))
+            results.loc[cost, 'hyrs_model_contradictions'].append(mean(hyrs_model_contradictions))
+            results.loc[cost, 'brs_model_contradictions'].append(mean(brs_model_contradictions))
+            results.loc[cost, 'tr_team_w_reset_objective'].append(mean(tr_team_w_reset_objective))
+            results.loc[cost, 'tr_team_wo_reset_objective'].append(mean(tr_team_wo_reset_objective))
+            results.loc[cost, 'tr_model_w_reset_objective'].append(mean(tr_model_w_reset_objective))
+            results.loc[cost, 'tr_model_wo_reset_objective'].append(mean(tr_model_wo_reset_objective))
+            results.loc[cost, 'hyrs_model_objective'].append(mean(hyrs_model_objective))
+            results.loc[cost, 'hyrs_team_objective'].append(mean(hyrs_team_objective))
+            results.loc[cost, 'brs_model_objective'].append(mean(brs_model_objective))
+            results.loc[cost, 'brs_team_objective'].append(mean(brs_team_objective))
+            results.loc[cost, 'human_decision_loss'].append(mean(human_decision_loss))
+            results.loc[cost, 'hyrs_norecon_objective'].append(mean(hyrs_norecon_objective))
+            results.loc[cost, 'hyrs_norecon_model_decision_loss'].append(mean(hyrs_norecon_model_decision_loss))
+            results.loc[cost, 'hyrs_norecon_team_decision_loss'].append(mean(hyrs_norecon_team_decision_loss))
+            results.loc[cost, 'hyrs_norecon_model_contradictions'].append(mean(hyrs_norecon_model_contradictions))
             
             
     
@@ -309,209 +306,173 @@ def make_discretion_results(dataset, whichtype, num_runs, cost, validation=False
 
 
 costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+ADB_sizes = ['True', '1', '02']
 num_runs = 5
 dataset = 'heart_disease'
-
-
-
-'''
-if os.path.isfile(f'results/{dataset}/offset_01_rs.pkl') and False:
-    with open(f'results/{dataset}/offset_01_rs.pkl', 'rb') as f:
-        of1_rs = pickle.load(f)
-    with open(f'results/{dataset}/offset_01_means.pkl', 'rb') as f:
-        of1_means = pickle.load(f)
-    with open(f'results/{dataset}/offset_01_std.pkl', 'rb') as f:
-        of1_std = pickle.load(f)
-else:
-    of1_means, of1_std, of1_rs = make_results(dataset, name, num_runs, cost, False)
-    #pickle and write means, std, and rs to file
-    with open(f'results/{dataset}/offset_01_means.pkl', 'wb') as f:
-        pickle.dump(of1_means, f)
-    with open(f'results/{dataset}/offset_01_std.pkl', 'wb') as f:
-        pickle.dump(of1_std, f)
-    with open(f'results/{dataset}/offset_01_rs.pkl', 'wb') as f:
-        pickle.dump(of1_rs, f)
-
-name = 'offset_02'
-if os.path.isfile(f'results/{dataset}/offset_02_rs.pkl'):
-    with open(f'results/{dataset}/offset_02_rs.pkl', 'rb') as f:
-        of2_rs = pickle.load(f)
-    with open(f'results/{dataset}/offset_02_means.pkl', 'rb') as f:
-        of2_means = pickle.load(f)
-    with open(f'results/{dataset}/offset_02_std.pkl', 'rb') as f:
-        of2_std = pickle.load(f)
-else:
-    of2_means, of2_std, of2_rs = make_results(dataset, name, num_runs, costs, False)
-    #pickle and write means, std, and rs to file
-    with open(f'results/{dataset}/offset_02_means.pkl', 'wb') as f:
-        pickle.dump(of2_means, f)
-    with open(f'results/{dataset}/offset_02_std.pkl', 'wb') as f:
-        pickle.dump(of2_std, f)
-    with open(f'results/{dataset}/offset_02_rs.pkl', 'wb') as f:
-        pickle.dump(of2_rs, f)
-
-
-#val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
-#misr_means, misr_stderrs, misrs = make_results(dataset, name, num_runs, costs, False)
-#val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
-
-
-'''
 name = 'biased'
-if os.path.isfile(f'results/{dataset}/biased_rs_discretion.pkl'):
-    with open(f'results/{dataset}/biased_rs_discretion.pkl', 'rb') as f:
-        bia_rs = pickle.load(f)
-    with open(f'results/{dataset}/biased_means_discretion.pkl', 'rb') as f:
-        bia_means = pickle.load(f)
-    with open(f'results/{dataset}/biased_std_discretion.pkl', 'rb') as f:
-        bia_std = pickle.load(f)
+
+#bia_meansTrue, bia_stdTrue, bia_rsTrue = make_discretion_results(dataset, name, num_runs, costs, validation=False, size='True')
+#val_bia_meansTrue, val_bia_stdTrue, val_bia_rsTrue = make_discretion_results(dataset, name, num_runs, costs, validation=True, size='True')
+
+#bia_means1, bia_std1, bia_rs1 = make_discretion_results(dataset, name, num_runs, costs, validation=False, size='1')
+#val_bia_means1, val_bia_std1, val_bia_rs1 = make_discretion_results(dataset, name, num_runs, costs, validation=True, size='1')
+
+#bia_means02, bia_std02, bia_rs02 = make_discretion_results(dataset, name, num_runs, costs, validation=False, size='02')
+#val_bia_means02, val_bia_std02, val_bia_rs02 = make_discretion_results(dataset, name, num_runs, costs, validation=True, size='02')
+
+sizes = ['True', '1', '02']
+
+
+#########TRUE_RESULTS###############
+if os.path.isfile(f'results/{dataset}/biased_rs_discretionTrue.pkl'):
+    with open(f'results/{dataset}/biased_rs_discretionTrue.pkl', 'rb') as f:
+        bia_rsTrue = pickle.load(f)
+    with open(f'results/{dataset}/biased_means_discretionTrue.pkl', 'rb') as f:
+        bia_meansTrue = pickle.load(f)
+    with open(f'results/{dataset}/biased_std_discretionTrue.pkl', 'rb') as f:
+        bia_stdTrue = pickle.load(f)
 else:
-    bia_means, bia_std, bia_rs = make_discretion_results(dataset, name, num_runs, cost, validation=False)
-    val_bia_means, val_bia_std, val_bia_rs = make_discretion_results(dataset, name, num_runs, cost, validation=True)
-    #pickle and write means, std, and rs to file
-    with open(f'results/{dataset}/biased_means_discretion.pkl', 'wb') as f:
-        pickle.dump(bia_means, f)
-    with open(f'results/{dataset}/biased_std_discretion.pkl', 'wb') as f:
-        pickle.dump(bia_std, f)
-    with open(f'results/{dataset}/biased_rs_discretion.pkl', 'wb') as f:
-        pickle.dump(bia_rs, f)
-
-for size in ['True', '1', '05', '01']:
-    if size == 'True':
-        plt.scatter(bia_rs['ADB MSE'][size], np.array(bia_rs['tr_team_w_reset_objective'][size]), c='b', label='TR')
-        #plt.scatter(bia_rs['ADB MSE'][size], np.array(bia_rs['hyrs_team_objective'][size]), c='r', label='HYRS')
-        plt.scatter(bia_rs['ADB MSE'][size], np.array(bia_rs['brs_team_objective'][size]), c='g', label='BRS')
-    else:
-        plt.scatter(bia_rs['ADB MSE'][size], np.array(bia_rs['tr_team_w_reset_objective'][size]), c='b')
-        #plt.scatter(bia_rs['ADB MSE'][size], np.array(bia_rs['hyrs_team_objective'][size]), c='r')
-        plt.scatter(bia_rs['ADB MSE'][size], np.array(bia_rs['brs_team_objective'][size]), c='g')
-    plt.legend()
-    plt.xlabel('ADB MSE')
-    plt.ylabel('Objective')
+    bia_meansTrue, bia_stdTrue, bia_rsTrue = make_discretion_results(dataset, name, num_runs, costs, validation=False, size='True')
+    with open(f'results/{dataset}/biased_means_discretionTrue.pkl', 'wb') as f:
+        pickle.dump(bia_meansTrue, f)
+    with open(f'results/{dataset}/biased_std_discretionTrue.pkl', 'wb') as f:
+        pickle.dump(bia_stdTrue, f)
+    with open(f'results/{dataset}/biased_rs_discretionTrue.pkl', 'wb') as f:
+        pickle.dump(bia_rsTrue, f)
 
 
-name = 'offset_01'
-
-if os.path.isfile(f'results/{dataset}/val_offset_01_rs.pkl'):
-    with open(f'results/{dataset}/val_offset_01_rs.pkl', 'rb') as f:
-        val_of1_rs = pickle.load(f)
-    with open(f'results/{dataset}/val_offset_01_means.pkl', 'rb') as f:
-        val_of1_means = pickle.load(f)
-    with open(f'results/{dataset}/val_offset_01_std.pkl', 'rb') as f:
-        val_of1_std = pickle.load(f)
+if os.path.isfile(f'results/{dataset}/val_biased_rsTrue.pkl'):
+    with open(f'results/{dataset}/val_biased_rsTrue.pkl', 'rb') as f:
+        val_bia_rsTrue = pickle.load(f)
+    with open(f'results/{dataset}/val_biased_meansTrue.pkl', 'rb') as f:
+        val_bia_meansTrue = pickle.load(f)
+    with open(f'results/{dataset}/val_biased_stdTrue.pkl', 'rb') as f:
+        val_bia_stdTrue = pickle.load(f)
 else:
-    val_of1_means, val_of1_std, val_of1_rs = make_results(dataset, name, num_runs, costs, True)
+    val_bia_meansTrue, val_bia_stdTrue, val_bia_rsTrue = make_discretion_results(dataset, name, num_runs, costs, validation=True, size='True')
     #pickle and write means, std, and rs to file
-    with open(f'results/{dataset}/val_offset_01_means.pkl', 'wb') as f:
-        pickle.dump(val_of1_means, f)
-    with open(f'results/{dataset}/val_offset_01_std.pkl', 'wb') as f:
-        pickle.dump(val_of1_std, f)
-    with open(f'results/{dataset}/val_offset_01_rs.pkl', 'wb') as f:
-        pickle.dump(val_of1_rs, f)
+    with open(f'results/{dataset}/val_biased_meansTrue.pkl', 'wb') as f:
+        pickle.dump(val_bia_meansTrue, f)
+    with open(f'results/{dataset}/val_biased_stdTrue.pkl', 'wb') as f:
+        pickle.dump(val_bia_stdTrue, f)
+    with open(f'results/{dataset}/val_biased_rsTrue.pkl', 'wb') as f:
+        pickle.dump(val_bia_rsTrue, f)
 
-name = 'offset_02'
-if os.path.isfile(f'results/{dataset}/val_offset_02_rs.pkl'):
-    with open(f'results/{dataset}/val_offset_02_rs.pkl', 'rb') as f:
-        val_of2_rs = pickle.load(f)
-    with open(f'results/{dataset}/val_offset_02_means.pkl', 'rb') as f:
-        val_of2_means = pickle.load(f)
-    with open(f'results/{dataset}/val_offset_02_std.pkl', 'rb') as f:
-        val_of2_std = pickle.load(f)
+        #########1_RESULTS###############
+if os.path.isfile(f'results/{dataset}/biased_rs_discretion1.pkl'):
+    with open(f'results/{dataset}/biased_rs_discretion1.pkl', 'rb') as f:
+        bia_rs1 = pickle.load(f)
+    with open(f'results/{dataset}/biased_means_discretion1.pkl', 'rb') as f:
+        bia_means1 = pickle.load(f)
+    with open(f'results/{dataset}/biased_std_discretion1.pkl', 'rb') as f:
+        bia_std1 = pickle.load(f)
 else:
-    val_of2_means, val_of2_std, val_of2_rs = make_results(dataset, name, num_runs, costs, True)
-    #pickle and write means, std, and rs to file
-    with open(f'results/{dataset}/val_offset_02_means.pkl', 'wb') as f:
-        pickle.dump(val_of2_means, f)
-    with open(f'results/{dataset}/val_offset_02_std.pkl', 'wb') as f:
-        pickle.dump(val_of2_std, f)
-    with open(f'results/{dataset}/val_offset_02_rs.pkl', 'wb') as f:
-        pickle.dump(val_of2_rs, f)
+    bia_means1, bia_std1, bia_rs1 = make_discretion_results(dataset, name, num_runs, costs, validation=False, size='1')
+    with open(f'results/{dataset}/biased_means_discretion1.pkl', 'wb') as f:
+        pickle.dump(bia_means1, f)
+    with open(f'results/{dataset}/biased_std_discretion1.pkl', 'wb') as f:
+        pickle.dump(bia_std1, f)
+    with open(f'results/{dataset}/biased_rs_discretion1.pkl', 'wb') as f:
+        pickle.dump(bia_rs1, f)
 
 
-#val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
-#misr_means, misr_stderrs, misrs = make_results(dataset, name, num_runs, costs, False)
-#val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
-
-
-
-name = 'biased'
-if os.path.isfile(f'results/{dataset}/val_biased_rs.pkl'):
-    with open(f'results/{dataset}/val_biased_rs.pkl', 'rb') as f:
-        val_bia_rs = pickle.load(f)
-    with open(f'results/{dataset}/val_biased_means.pkl', 'rb') as f:
-        val_bia_means = pickle.load(f)
-    with open(f'results/{dataset}/val_biased_std.pkl', 'rb') as f:
-        val_bia_std = pickle.load(f)
+if os.path.isfile(f'results/{dataset}/val_biased_rs1.pkl'):
+    with open(f'results/{dataset}/val_biased_rs1.pkl', 'rb') as f:
+        val_bia_rs1 = pickle.load(f)
+    with open(f'results/{dataset}/val_biased_means1.pkl', 'rb') as f:
+        val_bia_means1 = pickle.load(f)
+    with open(f'results/{dataset}/val_biased_std1.pkl', 'rb') as f:
+        val_bia_std1 = pickle.load(f)
 else:
-    val_bia_means, val_bia_std, val_bia_rs = make_results(dataset, name, num_runs, costs, validation=True)
+    val_bia_means1, val_bia_std1, val_bia_rs1 = make_discretion_results(dataset, name, num_runs, costs, validation=True, size='1')
     #pickle and write means, std, and rs to file
-    with open(f'results/{dataset}/val_biased_means.pkl', 'wb') as f:
-        pickle.dump(val_bia_means, f)
-    with open(f'results/{dataset}/val_biased_std.pkl', 'wb') as f:
-        pickle.dump(val_bia_std, f)
-    with open(f'results/{dataset}/val_biased_rs.pkl', 'wb') as f:
-        pickle.dump(val_bia_rs, f)
-
-#val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
-#calr_means, calr_stderrs, calrs = make_results(dataset, name, num_runs, costs, False)
-#calval_r_means, calval_r_stderrs, calval_rs = make_results('heart_disease', name, num_runs, costs, True)
+    with open(f'results/{dataset}/val_biased_means1.pkl', 'wb') as f:
+        pickle.dump(val_bia_means1, f)
+    with open(f'results/{dataset}/val_biased_std1.pkl', 'wb') as f:
+        pickle.dump(val_bia_std1, f)
+    with open(f'results/{dataset}/val_biased_rs1.pkl', 'wb') as f:
+        pickle.dump(val_bia_rs1, f)
 
 
-#offval_r_means, offval_r_stderrs, offval_rs = make_results('heart_disease', name, num_runs, costs, True)
-
-#cost = 0.2
-#robust_rs = rs.copy()
-#for i in range(len(val_rs['tr_team_w_reset_objective'][cost])):
-#    if val_rs['tr_team_w_reset_objective'][cost][i] > val_rs['hyrs_team_objective'][cost][i]:
-#        if val_rs['hyrs_team_objective'][cost][i] > val_rs['brs_team_objective'][cost][i]:
-#            robust_rs['tr_team_w_reset_objective'][cost][i] = rs['brs_team_objective'][cost][i]
-#            robust_rs['tr_model_w_reset_contradictions'][cost][i] = rs['brs_model_contradictions'][cost][i]
-#            robust_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['brs_team_decision_loss'][cost][i]#
-
-
-#        else:
-#            robust_rs['tr_team_w_reset_objective'][cost][i] = rs['hyrs_team_objective'][cost][i]
-#            robust_rs['tr_model_w_reset_contradictions'][cost][i] = rs['hyrs_model_contradictions'][cost][i]
-#            robust_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['hyrs_team_decision_loss'][cost][i]#
-#
-#robust_rs.apply(lambda x: x.apply(lambda y: mean(y)))[['tr_team_w_reset_objective', 'tr_team_wo_reset_objective', 'hyrs_team_objective', 'brs_team_objective', 'human_decision_loss']]
-
-#mis_r_means, mis_r_stderrs, mis_rs = make_results('heart_disease', 'miscalibrated', num_runs, costs, False)
+#########02_RESULTS###############
+if os.path.isfile(f'results/{dataset}/biased_rs_discretion02.pkl'):
+    with open(f'results/{dataset}/biased_rs_discretion02.pkl', 'rb') as f:
+        bia_rs02 = pickle.load(f)
+    with open(f'results/{dataset}/biased_means_discretion02.pkl', 'rb') as f:
+        bia_means02 = pickle.load(f)
+    with open(f'results/{dataset}/biased_std_discretion02.pkl', 'rb') as f:
+        bia_std02 = pickle.load(f)
+else:
+    bia_means02, bia_std02, bia_rs02 = make_discretion_results(dataset, name, num_runs, costs, validation=False, size='02')
+    with open(f'results/{dataset}/biased_means_discretion02.pkl', 'wb') as f:
+        pickle.dump(bia_means02, f)
+    with open(f'results/{dataset}/biased_std_discretion02.pkl', 'wb') as f:
+        pickle.dump(bia_std02, f)
+    with open(f'results/{dataset}/biased_rs_discretion02.pkl', 'wb') as f:
+        pickle.dump(bia_rs02, f)
 
 
+if os.path.isfile(f'results/{dataset}/val_biased_rs02.pkl'):
+    with open(f'results/{dataset}/val_biased_rs02.pkl', 'rb') as f:
+        val_bia_rs02 = pickle.load(f)
+    with open(f'results/{dataset}/val_biased_means02.pkl', 'rb') as f:
+        val_bia_means02 = pickle.load(f)
+    with open(f'results/{dataset}/val_biased_std02.pkl', 'rb') as f:
+        val_bia_std02 = pickle.load(f)
+else:
+    val_bia_means02, val_bia_std02, val_bia_rs02 = make_discretion_results(dataset, name, num_runs, costs, validation=True, size='02')
+    #pickle and write means, std, and rs to file
+    with open(f'results/{dataset}/val_biased_means02.pkl', 'wb') as f:
+        pickle.dump(val_bia_means02, f)
+    with open(f'results/{dataset}/val_biased_std02.pkl', 'wb') as f:
+        pickle.dump(val_bia_std02, f)
+    with open(f'results/{dataset}/val_biased_rs02.pkl', 'wb') as f:
+        pickle.dump(val_bia_rs02, f)
 
 
-def make_TL_v_cost_plot(results_means, results_stderrs, name):
-    fig = plt.figure(figsize=(3, 2), dpi=200)
+
+
+
+def make_TL_v_cost_plot(results_means, results_stderrs, name, sizes = ['True', '1', '02']):
+    fig = plt.figure(figsize=(3, 2), dpi=400)
     color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42'}
-    plt.plot(results_means.index[0:6], results_means['hyrs_norecon_objective'].iloc[0:6], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
-    plt.plot(results_means.index[0:6], results_means['hyrs_team_objective'].iloc[0:6], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
-    plt.plot(results_means.index[0:6], results_means['tr_team_w_reset_objective'].iloc[0:6], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
-    plt.plot(results_means.index[0:6], results_means['brs_team_objective'].iloc[0:6], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
     
-    plt.plot(results_means.index[0:6], results_means['human_decision_loss'].iloc[0:6], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
+    #plt.plot(results_means[0].index[0:6], results_means[0]['hyrs_norecon_objective'].iloc[0:6], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
+    plt.plot(results_means[0].index[0:6], results_means[0]['hyrs_team_objective'].iloc[0:6], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
+    #plt.plot(results_means[0].index[0:6], results_means[0]['brs_team_objective'].iloc[0:6], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
+    plt.plot(results_means[0].index[0:6], results_means[0]['human_decision_loss'].iloc[0:6], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
     
-    plt.fill_between(results_means.index[0:6], 
-                results_means['human_decision_loss'].iloc[0:6]-(results_stderrs['human_decision_loss'].iloc[0:6]),
-                results_means['human_decision_loss'].iloc[0:6]+(results_stderrs['human_decision_loss'].iloc[0:6]) ,
+    plt.fill_between(results_means[0].index[0:6], 
+                results_means[0]['human_decision_loss'].iloc[0:6]-(results_stderrs[0]['human_decision_loss'].iloc[0:6]),
+                results_means[0]['human_decision_loss'].iloc[0:6]+(results_stderrs[0]['human_decision_loss'].iloc[0:6]) ,
                 color=color_dict['Human'], alpha=0.2)
-    plt.fill_between(results_means.index[0:6], 
-                results_means['hyrs_team_objective'].iloc[0:6]-(results_stderrs['hyrs_team_objective'].iloc[0:6]),
-                results_means['hyrs_team_objective'].iloc[0:6]+(results_stderrs['hyrs_team_objective'].iloc[0:6]) ,
+    plt.fill_between(results_means[0].index[0:6], 
+                results_means[0]['hyrs_team_objective'].iloc[0:6]-(results_stderrs[0]['hyrs_team_objective'].iloc[0:6]),
+                results_means[0]['hyrs_team_objective'].iloc[0:6]+(results_stderrs[0]['hyrs_team_objective'].iloc[0:6]) ,
                 color=color_dict['HYRSRecon'], alpha=0.2)
     
-    plt.fill_between(results_means.index[0:6], 
-                results_means['hyrs_norecon_objective'].iloc[0:6]-(results_stderrs['hyrs_norecon_objective'].iloc[0:6]),
-                results_means['hyrs_norecon_objective'].iloc[0:6]+(results_stderrs['hyrs_norecon_objective'].iloc[0:6]) ,
-                color=color_dict['HYRS'], alpha=0.2)
-    plt.fill_between(results_means.index[0:6], 
-                results_means['brs_team_objective'].iloc[0:6]-(results_stderrs['brs_team_objective'].iloc[0:6]),
-                results_means['brs_team_objective'].iloc[0:6]+(results_stderrs['brs_team_objective'].iloc[0:6]) ,
-                color=color_dict['BRS'], alpha=0.2)
-    plt.fill_between(results_means.index[0:6], 
-                results_means['tr_team_w_reset_objective'].iloc[0:6]-(results_stderrs['tr_team_w_reset_objective'].iloc[0:6]),
-                results_means['tr_team_w_reset_objective'].iloc[0:6]+(results_stderrs['tr_team_w_reset_objective'].iloc[0:6]),
-                color=color_dict['TR'], alpha=0.2)
+    #plt.fill_between(results_means[0].index[0:6], 
+    #            results_means[0]['hyrs_norecon_objective'].iloc[0:6]-(results_stderrs[0]['hyrs_norecon_objective'].iloc[0:6]),
+    #            results_means[0]['hyrs_norecon_objective'].iloc[0:6]+(results_stderrs[0]['hyrs_norecon_objective'].iloc[0:6]) ,
+    #            color=color_dict['HYRS'], alpha=0.2)
+    #plt.fill_between(results_means[0].index[0:6], 
+    #            results_means[0]['brs_team_objective'].iloc[0:6]-(results_stderrs[0]['brs_team_objective'].iloc[0:6]),
+    #            results_means[0]['brs_team_objective'].iloc[0:6]+(results_stderrs[0]['brs_team_objective'].iloc[0:6]) ,
+    #            color=color_dict['BRS'], alpha=0.2)
+
+    
+    sizes_marker_dict = {'True': 'o', '1': 'x', '02': 's'}
+    sizes_lines_dict = {'True': '-', '1': '--', '02': '-.'}
+    auc_dict = {'True': 0.952, '1': 0.944, '02': 0.778}
+    mae_dict = {'True': 0.0, '1': 0.046, '02': 0.374}
+
+    sizes = ['1', '02']
+    for i in range(len(sizes)):
+        c=color_dict['TR']
+        plt.plot(results_means[i].index[0:6], results_means[i]['tr_team_w_reset_objective'].iloc[0:6], marker = sizes_marker_dict[sizes[i]], label=f'TR, AUC: {auc_dict[sizes[i]]}, MAE: {mae_dict[sizes[i]]}', markersize=1.8, linewidth=0.9, linestyle=sizes_lines_dict[sizes[i]])
+        plt.fill_between(results_means[i].index[0:6], 
+                    results_means[i]['tr_team_w_reset_objective'].iloc[0:6]-(results_stderrs[i]['tr_team_w_reset_objective'].iloc[0:6]),
+                    results_means[i]['tr_team_w_reset_objective'].iloc[0:6]+(results_stderrs[i]['tr_team_w_reset_objective'].iloc[0:6]), alpha=0.2)
    
     plt.xlabel('Reconciliation Cost', fontsize=12)
     plt.ylabel('Total Team Loss', fontsize=12)
@@ -520,49 +481,13 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name):
     plt.legend(prop={'size': 5})
     plt.grid('on', linestyle='dotted', linewidth=0.2, color='black')
 
-    fig.savefig(f'results/{dataset}/plots/TL_{dataset}_{name}.png', bbox_inches='tight')
+    fig.savefig(f'results/{dataset}/plots/discretion_TL_{dataset}_{name}.png', bbox_inches='tight')
     #plt.show()
 
     #plt.clf()
 
 
-def make_contradictions_v_decisionloss_plot(results_means, results_stderrs, name):
-    fig = plt.figure(figsize=(3, 2), dpi=200)
-    color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42'}
-    plt.plot(results_means['brs_model_contradictions'], results_means['brs_team_decision_loss'].iloc[0:6], marker = 'v', c=color_dict['BRS'], label = 'Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
-    #plt.plot(results_means['hyrs_model_contradictions'], results_means['hyrs_team_objective'].iloc[0:6], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
-    plt.plot(results_means['tr_model_w_reset_contradictions'], results_means['tr_team_w_reset_decision_loss'].iloc[0:6], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
-    
-    
-    
-    plt.plot([0,0,0,0,0, 0], results_means['human_decision_loss'].iloc[0:6], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
-    
-    for cost in results_stderrs.index:
-        plt.fill_between(np.linspace(results_means.loc[cost, 'brs_model_contradictions'] - results_stderrs.loc[cost, 'brs_model_contradictions'], 
-                                     results_means.loc[cost, 'brs_model_contradictions'] + results_stderrs.loc[cost, 'brs_model_contradictions'], 50), 
-                    results_means.loc[cost, 'brs_team_decision_loss']-(results_stderrs.loc[cost, 'brs_team_decision_loss']),
-                    results_means.loc[cost, 'brs_team_decision_loss']+(results_stderrs.loc[cost, 'brs_team_decision_loss']),
-                    color=color_dict['BRS'], alpha=0.2)
-        
-        #plt.text(results_means.loc[cost, 'tr_model_w_reset_contradictions'], results_means.loc[cost, 'tr_team_w_reset_decision_loss'], f'cost = {str(cost)}', fontsize=4)
-        
-        plt.fill_between(np.linspace(results_means.loc[cost, 'tr_model_w_reset_contradictions'] - results_stderrs.loc[cost, 'tr_model_w_reset_contradictions'], 
-                                    results_means.loc[cost, 'tr_model_w_reset_contradictions'] + results_stderrs.loc[cost, 'tr_model_w_reset_contradictions'], 50), 
-                    results_means.loc[cost, 'tr_team_w_reset_decision_loss']-(results_stderrs.loc[cost, 'tr_team_w_reset_decision_loss']),
-                    results_means.loc[cost, 'tr_team_w_reset_decision_loss']+(results_stderrs.loc[cost, 'tr_team_w_reset_decision_loss']),
-                    color=color_dict['TR'], alpha=0.2)
-   
-    plt.xlabel('Contradictions', fontsize=12)
-    plt.ylabel('Team Decision Loss', fontsize=12)
-    plt.tick_params(labelrotation=45, labelsize=10)
-    #plt.title('{} Setting'.format(setting), fontsize=15)
-    plt.legend(prop={'size': 5})
-    plt.grid('on', linestyle='dotted', linewidth=0.2, color='black')
 
-    fig.savefig(f'results/{dataset}/plots/TDL_{dataset}_{name}.png', bbox_inches='tight')
-    #plt.show()
-
-    #plt.clf()
 
 
 
@@ -595,12 +520,13 @@ def robust_rules(rs, val_rs):
 def cost_validation(rs, val_rs):
     new_rs = deepcopy(rs)
     for cost in rs.index:
-        if cost==0.8:
+        if cost==1:
             print('pause')
         for column in rs.columns:
             new_rs.loc[cost, column] = deepcopy(rs.loc[cost, column])
         for i in range(len(val_rs['tr_team_w_reset_objective'][cost])):
             x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized= load_datasets(dataset, i)
+            y_val = y_val[~y_val.index.isin(y_learning.index)]
             curr_val_objective = val_rs['tr_team_w_reset_objective'][cost][i]
             for alt_cost in rs.index:
                 if alt_cost == cost:
@@ -611,6 +537,7 @@ def cost_validation(rs, val_rs):
                     new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['tr_team_w_reset_decision_loss'][alt_cost][i].copy()
                     new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][alt_cost][i] + cost*new_rs['tr_model_w_reset_contradictions'][alt_cost][i]/len(y_test)
                     print(f"cost: {cost}, new cost: {alt_cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
+                    print(f"cost: {cost}, new cost: {alt_cost}, i: {i}, replacing val of {curr_val_objective} with new of {alt_val_objective}")
                     curr_val_objective = alt_val_objective
     new_results_means = new_rs.apply(lambda x: x.apply(lambda y: mean(y)))
     new_results_stderrs = new_rs.apply(lambda x: x.apply(lambda y: np.std(y)/np.sqrt(len(y))))
@@ -620,24 +547,21 @@ def cost_validation(rs, val_rs):
 
 
     
-cval_of1_means, cval_of1_stderss, cval_of1_rs = cost_validation(of1_rs, val_of1_rs)        
-cval_of2_means, cval_of2_stderss, cval_of2_rs = cost_validation(of2_rs, val_of2_rs)   
-cval_bia_means, cval_bia_stderss, cval_bia_rs = cost_validation(bia_rs, val_bia_rs)     
 
+cval_bia_meansTrue, cval_bia_stdTrue, cval_bia_rsTrue = cost_validation(bia_rsTrue, val_bia_rsTrue)      
+rval_bia_meansTrue, rval_bia_stdTrue, rval_bia_rsTrue = robust_rules(bia_rsTrue, val_bia_rsTrue)    
+ccval_bia_meansTrue, ccval_bia_stdTrue, ccval_bia_rsTrue = cost_validation(val_bia_rsTrue, val_bia_rsTrue)     
+rcval_bia_meansTrue, rcval_bia_stdTrue, rcval_bia_rsTrue = robust_rules(cval_bia_rsTrue, ccval_bia_rsTrue)     
 
-rval_of1_means, rval_of1_stderss, rval_of1_rs = robust_rules(of1_rs, val_of1_rs)        
-rval_of2_means, rval_of2_stderss, rval_of1_rs = robust_rules(of2_rs, val_of2_rs)     
-rval_bia_means, rval_bia_stderss, rval_bia_rs = robust_rules(bia_rs, val_bia_rs)    
+cval_bia_means1, cval_bia_std1, cval_bia_rs1 = cost_validation(bia_rs1, val_bia_rs1)      
+rval_bia_means1, rval_bia_std1, rval_bia_rs1 = robust_rules(bia_rs1, val_bia_rs1)    
+ccval_bia_means1, ccval_bia_std1, ccval_bia_rs1 = cost_validation(val_bia_rs1, val_bia_rs1)     
+rcval_bia_means1, rcval_bia_std1, rcval_bia_rs1 = robust_rules(cval_bia_rs1, ccval_bia_rs1)   
 
-ccval_of1_means, ccval_of1_stderss, ccval_of1_rs = cost_validation(val_of1_rs, val_of1_rs)        
-ccval_of2_means, ccval_of2_stderss, ccval_of2_rs = cost_validation(val_of2_rs, val_of2_rs)   
-ccval_bia_means, ccval_bia_stderss, ccval_bia_rs = cost_validation(val_bia_rs, val_bia_rs)  
-
-
-
-rcval_of1_means, rcval_of1_stderss, rcval_of1_rs = robust_rules(cval_of1_rs, ccval_of1_rs)        
-rcval_of2_means, rcval_of2_stderss, rcval_of1_rs = robust_rules(cval_of2_rs, ccval_of2_rs)     
-rcval_bia_means, rcval_bia_stderss, rcval_bia_rs = robust_rules(cval_bia_rs, ccval_bia_rs)     
+cval_bia_means02, cval_bia_std02, cval_bia_rs02 = cost_validation(bia_rs02, val_bia_rs02)      
+rval_bia_means02, rval_bia_std02, rval_bia_rs02 = robust_rules(bia_rs02, val_bia_rs02)    
+ccval_bia_means02, ccval_bia_std02, ccval_bia_rs02 = cost_validation(val_bia_rs02, val_bia_rs02)     
+rcval_bia_means02, rcval_bia_std02, rcval_bia_rs02 = robust_rules(cval_bia_rs02, ccval_bia_rs02)   
 
     
 

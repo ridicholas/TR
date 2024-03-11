@@ -137,3 +137,33 @@ def extract_rules(tree, feature_names):
             rule.append(node)
         rules.append(rule)
     return rules
+
+
+def brs_expected_loss_filter(brs_mod, x, y_rules, conf_human, p_yb=None, p_y=None, e_human_responses=None, conf_model=None, fA=None, asym_loss=[1,1], contradiction_reg=0.0):
+    if e_human_responses is None:
+        e_human_responses = p_yb.argmax(axis=1)
+   
+    conf_model = brs_predict_conf(brs_mod.opt_rules, x, brs_mod)
+    
+    agreement0 = (y_rules == 0) #hypothetical if human chooses 0
+    agreement1 = (y_rules == 1) #hypothetical if human chooses 1
+    conf_human0 = conf_human.copy()
+    conf_human1 = conf_human.copy()
+    conf_human0[e_human_responses == 1] = -conf_human0[e_human_responses == 1] #confidence inverted if human expected to choose 1 because situation is hypothetical human chooses 0
+    conf_human1[e_human_responses == 0] = -conf_human1[e_human_responses == 0] #confidence inverted if human expected to choose 0 because situation is hypothetical human chooses 1
+
+    p_a = (p_yb[:, 0]*fA(conf_human0, conf_model, agreement0)) + (p_yb[:, 1]*fA(conf_human1, conf_model, agreement1))
+
+    
+
+    e_loss_from_accept = p_a*((p_y[:, 0]*(y_rules == 1).astype(int)*asym_loss[1]) + p_y[:, 1]*(y_rules == 0).astype(int)*asym_loss[0])
+    e_loss_from_reject = (1-p_a)*((p_y[:,0]*p_yb[:,1]*asym_loss[1]) + p_y[:, 1]*p_yb[:,0]*asym_loss[0])
+    e_loss_from_contradict = contradiction_reg*((p_yb[:,0]*(y_rules==1).astype(int)) + p_yb[:,1]*(y_rules==0).astype(int))
+
+    e_loss_from_advising = e_loss_from_accept + e_loss_from_reject + e_loss_from_contradict
+
+    e_loss_from_withholding = p_y[:,0]*p_yb[:,1]*asym_loss[1] + p_y[:,1]*p_yb[:,0]*asym_loss[0]
+
+    reset = e_loss_from_withholding < e_loss_from_advising
+
+    return reset

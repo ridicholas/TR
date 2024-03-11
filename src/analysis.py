@@ -207,6 +207,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
+                    
 
                     hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
                     hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, human.ADB, x_test)
@@ -297,7 +298,7 @@ dataset = 'heart_disease'
 
 
 name = 'offset_01'
-if os.path.isfile(f'results/{dataset}/offset_01_rs.pkl') and False:
+if os.path.isfile(f'results/{dataset}/offset_01_rs.pkl'):
     with open(f'results/{dataset}/offset_01_rs.pkl', 'rb') as f:
         of1_rs = pickle.load(f)
     with open(f'results/{dataset}/offset_01_means.pkl', 'rb') as f:
@@ -494,7 +495,7 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name):
 
 
 def make_contradictions_v_decisionloss_plot(results_means, results_stderrs, name):
-    fig = plt.figure(figsize=(3, 2), dpi=200)
+    fig = plt.figure(figsize=(3, 2), dpi=400)
     color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42'}
     plt.plot(results_means['brs_model_contradictions'], results_means['brs_team_decision_loss'].iloc[0:6], marker = 'v', c=color_dict['BRS'], label = 'Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
     #plt.plot(results_means['hyrs_model_contradictions'], results_means['hyrs_team_objective'].iloc[0:6], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
@@ -526,7 +527,7 @@ def make_contradictions_v_decisionloss_plot(results_means, results_stderrs, name
     plt.legend(prop={'size': 5})
     plt.grid('on', linestyle='dotted', linewidth=0.2, color='black')
 
-    fig.savefig(f'results/{dataset}/plots/TDL_{dataset}_{name}.png', bbox_inches='tight')
+    fig.savefig(f'results/{dataset}/plots/TDL_{dataset}_{name}.png', bbox_inches='tight', format='svg', dpi=1200)
     #plt.show()
 
     #plt.clf()

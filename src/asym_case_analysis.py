@@ -87,7 +87,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype + 'quickTest'
+    whichtype = whichtype + 'asymTest'
     for run in bar(range(num_runs)):
 
         
@@ -108,12 +108,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
         for cost in costs:
             print(f'producing for cost {cost} run {run}.....')
-            tr_mod = load_results(dataset, whichtype, run, cost, 'tr')
+            tr_mod = load_results(dataset, whichtype+"_asym", run, cost, 'tr')
             hyrs_mod = load_results(dataset, whichtype, run, cost, 'hyrs')
             #load e_y and e_yb mods
-            with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype}.pkl', 'rb') as f:
+            with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype+"_asym"}.pkl', 'rb') as f:
                 e_yb_mod = pickle.load(f)
-            with open(f'results/{dataset}/run{run}/cost{float(cost)}/ey_model_{whichtype}.pkl', 'rb') as f:
+            with open(f'results/{dataset}/run{run}/cost{float(cost)}/ey_model_{whichtype+"_asym"}.pkl', 'rb') as f:
                 e_y_mod = pickle.load(f)
 
             tr_mod.df = x_train
@@ -274,8 +274,6 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
-                    #brs_reset = brs_expected_loss_filter(brs_mod, x_test, brs_model_preds, conf_human=human_conf, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized), conf_model=brs_conf, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=0.0)
-                    #brs_team_preds[brs_reset] == human_decisions[brs_reset]
 
                     hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
                     hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, human.ADB, x_test)
@@ -292,12 +290,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                 totals['t'] = len(y_test)
                 totals['e'] = len(y_test[x_test['age54.0'] == 1])
                 totals['y'] = len(y_test[x_test['age54.0'] == 0])
-                totals['m'] = len(y_test[x_test['sex_Male'] == 1])
-                totals['f'] = len(y_test[x_test['sex_Male'] == 0])
-                totals['em'] = len(y_test[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)])
-                totals['ef'] = len(y_test[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)])
-                totals['ym'] = len(y_test[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)])
-                totals['yf'] = len(y_test[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)])
+                totals['m'] = len(y_test[y_test == 1])
+                totals['f'] = len(y_test[y_test == 0])
+                totals['em'] = len(y_test[(x_test['age54.0'] == 1) & (y_test == 1)])
+                totals['ef'] = len(y_test[(x_test['age54.0'] == 1) & (y_test == 0)])
+                totals['ym'] = len(y_test[(x_test['age54.0'] == 0) & (y_test == 1)])
+                totals['yf'] = len(y_test[(x_test['age54.0'] == 0) & (y_test == 0)])
 
 
 
@@ -322,13 +320,13 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     decs['t'][which].append(((preds != y_test)*asymCosts).sum())
                     decs['e'][which].append(((preds != y_test)*asymCosts)[x_test['age54.0'] == 1].sum())
                     decs['y'][which].append(((preds != y_test)*asymCosts)[x_test['age54.0'] == 0].sum())
-                    decs['m'][which].append(((preds != y_test)*asymCosts)[x_test['sex_Male'] == 1].sum())
-                    decs['f'][which].append(((preds != y_test)*asymCosts)[x_test['sex_Male'] == 0].sum())
+                    decs['m'][which].append(((preds != y_test)*asymCosts)[y_test == 1].sum())
+                    decs['f'][which].append(((preds != y_test)*asymCosts)[y_test == 0].sum())
 
-                    decs['em'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)].sum())
-                    decs['ef'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)].sum())
-                    decs['ym'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
-                    decs['yf'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
+                    decs['em'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (y_test == 1)].sum())
+                    decs['ef'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (y_test == 0)].sum())
+                    decs['ym'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (y_test == 1)].sum())
+                    decs['yf'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (y_test == 0)].sum())
 
 
 
@@ -352,58 +350,58 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     contras['t'][which].append((model_preds != human_decisions).sum())
                     contras['e'][which].append((model_preds != human_decisions)[x_test['age54.0'] == 1].sum())
                     contras['y'][which].append((model_preds != human_decisions)[x_test['age54.0'] == 0].sum())
-                    contras['m'][which].append((model_preds != human_decisions)[x_test['sex_Male'] == 1].sum())
-                    contras['f'][which].append((model_preds != human_decisions)[x_test['sex_Male'] == 0].sum())
+                    contras['m'][which].append((model_preds != human_decisions)[y_test == 1].sum())
+                    contras['f'][which].append((model_preds != human_decisions)[y_test == 0].sum())
 
-                    contras['em'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)].sum())
-                    contras['ef'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)].sum())
-                    contras['ym'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
-                    contras['yf'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
+                    contras['em'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 1) & (y_test == 1)].sum())
+                    contras['ef'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 1) & (y_test == 0)].sum())
+                    contras['ym'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 0) & (y_test == 1)].sum())
+                    contras['yf'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 0) & (y_test == 0)].sum())
 
                     model_decs['t'][which].append(((model_preds != y_test)*asymCosts).sum())
                     model_decs['e'][which].append(((model_preds != y_test)*asymCosts)[x_test['age54.0'] == 1].sum())
                     model_decs['y'][which].append(((model_preds != y_test)*asymCosts)[x_test['age54.0'] == 0].sum())
-                    model_decs['m'][which].append(((model_preds != y_test)*asymCosts)[x_test['sex_Male'] == 1].sum())
-                    model_decs['f'][which].append(((model_preds != y_test)*asymCosts)[x_test['sex_Male'] == 0].sum())
+                    model_decs['m'][which].append(((model_preds != y_test)*asymCosts)[y_test == 1].sum())
+                    model_decs['f'][which].append(((model_preds != y_test)*asymCosts)[y_test == 0].sum())
 
-                    model_decs['em'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)].sum())
-                    model_decs['ef'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)].sum())
-                    model_decs['ym'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
-                    model_decs['yf'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
+                    model_decs['em'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (y_test == 1)].sum())
+                    model_decs['ef'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (y_test == 0)].sum())
+                    model_decs['ym'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (y_test == 1)].sum())
+                    model_decs['yf'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (y_test == 0)].sum())
 
                     correct_contras['t'][which].append(((model_preds != human_decisions) & (model_preds == y_test)).sum())
                     correct_contras['e'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[x_test['age54.0'] == 1].sum())
                     correct_contras['y'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[x_test['age54.0'] == 0].sum())
-                    correct_contras['m'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[x_test['sex_Male'] == 1].sum())
-                    correct_contras['f'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[x_test['sex_Male'] == 0].sum())
+                    correct_contras['m'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[y_test == 1].sum())
+                    correct_contras['f'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[y_test == 0].sum())
 
-                    correct_contras['em'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)].sum())
-                    correct_contras['ef'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)].sum())
-                    correct_contras['ym'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
-                    correct_contras['yf'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
+                    correct_contras['em'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 1) & (y_test == 1)].sum())
+                    correct_contras['ef'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 1) & (y_test == 0)].sum())
+                    correct_contras['ym'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 0) & (y_test == 1)].sum())
+                    correct_contras['yf'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 0) & (y_test == 0)].sum())
 
                     accepted_condition = (model_preds != human_decisions) & (model_preds == preds)
 
                     accepted_contras['t'][which].append(accepted_condition.sum())
                     accepted_contras['e'][which].append(accepted_condition[x_test['age54.0'] == 1].sum())
                     accepted_contras['y'][which].append(accepted_condition[x_test['age54.0'] == 0].sum())
-                    accepted_contras['m'][which].append(accepted_condition[x_test['sex_Male'] == 1].sum())
-                    accepted_contras['f'][which].append(accepted_condition[x_test['sex_Male'] == 0].sum())
-                    accepted_contras['em'][which].append(accepted_condition[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)].sum())
-                    accepted_contras['ef'][which].append(accepted_condition[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)].sum())
-                    accepted_contras['ym'][which].append(accepted_condition[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
-                    accepted_contras['yf'][which].append(accepted_condition[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
+                    accepted_contras['m'][which].append(accepted_condition[y_test == 1].sum())
+                    accepted_contras['f'][which].append(accepted_condition[y_test == 0].sum())
+                    accepted_contras['em'][which].append(accepted_condition[(x_test['age54.0'] == 1) & (y_test == 1)].sum())
+                    accepted_contras['ef'][which].append(accepted_condition[(x_test['age54.0'] == 1) & (y_test == 0)].sum())
+                    accepted_contras['ym'][which].append(accepted_condition[(x_test['age54.0'] == 0) & (y_test == 1)].sum())
+                    accepted_contras['yf'][which].append(accepted_condition[(x_test['age54.0'] == 0) & (y_test == 0)].sum())
 
                     if which =='tr':
                         covereds['t'][which].append(model_covereds.sum())
                         covereds['e'][which].append(model_covereds[x_test['age54.0'] == 1].sum())
                         covereds['y'][which].append(model_covereds[x_test['age54.0'] == 0].sum())
-                        covereds['m'][which].append(model_covereds[x_test['sex_Male'] == 1].sum())
-                        covereds['f'][which].append(model_covereds[x_test['sex_Male'] == 0].sum())
-                        covereds['em'][which].append(model_covereds[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)].sum())
-                        covereds['ef'][which].append(model_covereds[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)].sum())
-                        covereds['ym'][which].append(model_covereds[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
-                        covereds['yf'][which].append(model_covereds[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
+                        covereds['m'][which].append(model_covereds[y_test == 1].sum())
+                        covereds['f'][which].append(model_covereds[y_test == 0].sum())
+                        covereds['em'][which].append(model_covereds[(x_test['age54.0'] == 1) & (y_test == 1)].sum())
+                        covereds['ef'][which].append(model_covereds[(x_test['age54.0'] == 1) & (y_test == 0)].sum())
+                        covereds['ym'][which].append(model_covereds[(x_test['age54.0'] == 0) & (y_test == 1)].sum())
+                        covereds['yf'][which].append(model_covereds[(x_test['age54.0'] == 0) & (y_test == 0)].sum())
                         
 
                 tr_team_w_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_with_reset, y_test))
@@ -444,12 +442,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
             if run==0:
 
                 tr_conf_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
-                                            data = [[tr_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(), 
-                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(),
-                                                     tr_mod_confs[(x_test['sex_Male'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean()], 
-                                                     [tr_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
-                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
-                                                     tr_mod_confs[(x_test['sex_Male'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean()], 
+                                            data = [[tr_mod_confs[(x_test['age54.0'] == 1) & (y_test == 1) & (tr_model_preds_with_reset != human_decisions)].mean(), 
+                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (y_test == 1) & (tr_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr_mod_confs[(y_test == 1) & (tr_model_preds_with_reset != human_decisions)].mean()], 
+                                                     [tr_mod_confs[(x_test['age54.0'] == 1) & (y_test == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (y_test == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr_mod_confs[(y_test == 0) & (tr_model_preds_with_reset != human_decisions)].mean()], 
                                                      [tr_mod_confs[(x_test['age54.0'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(),
                                                      tr_mod_confs[(x_test['age54.0'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(), 
                                                      tr_mod_confs[(tr_model_preds_with_reset != human_decisions)].mean()]])]
@@ -457,12 +455,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                 
                 
                 brs_conf_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
-                                data = [[brs_conf[(x_test['age54.0'] == 1) &(x_test['sex_Male'] == 1) & (brs_model_preds != human_decisions)].mean(), 
-                                         brs_conf[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1) & (brs_model_preds != human_decisions)].mean(),
-                                         brs_conf[(x_test['sex_Male'] == 1) & (brs_model_preds != human_decisions)].mean()], 
-                                         [brs_conf[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0) & (brs_model_preds != human_decisions)].mean(),
-                                         brs_conf[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0) & (brs_model_preds != human_decisions)].mean(),
-                                         brs_conf[(x_test['sex_Male'] == 0) & (brs_model_preds != human_decisions)].mean()], 
+                                data = [[brs_conf[(x_test['age54.0'] == 1) &(y_test == 1) & (brs_model_preds != human_decisions)].mean(), 
+                                         brs_conf[(x_test['age54.0'] == 0) & (y_test == 1) & (brs_model_preds != human_decisions)].mean(),
+                                         brs_conf[(y_test == 1) & (brs_model_preds != human_decisions)].mean()], 
+                                         [brs_conf[(x_test['age54.0'] == 1) & (y_test == 0) & (brs_model_preds != human_decisions)].mean(),
+                                         brs_conf[(x_test['age54.0'] == 0) & (y_test == 0) & (brs_model_preds != human_decisions)].mean(),
+                                         brs_conf[(y_test == 0) & (brs_model_preds != human_decisions)].mean()], 
                                          [brs_conf[(x_test['age54.0'] == 1) & (brs_model_preds != human_decisions)].mean(),
                                          brs_conf[(x_test['age54.0'] == 0) & (brs_model_preds != human_decisions)].mean(), 
                                          brs_conf[(brs_model_preds != human_decisions)].mean()]])]
@@ -561,12 +559,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                                     [mean(decs['e']['tr']), mean(decs['y']['tr']), mean(decs['t']['tr'])]]))
                 
                 tr_conf_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
-                                            data = [[tr_mod_confs[(x_test['age54.0'] == 1) &(x_test['sex_Male'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(), 
-                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(),
-                                                     tr_mod_confs[(x_test['sex_Male'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean()], 
-                                                     [tr_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
-                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
-                                                     tr_mod_confs[(x_test['sex_Male'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean()], 
+                                            data = [[tr_mod_confs[(x_test['age54.0'] == 1) &(y_test == 1) & (tr_model_preds_with_reset != human_decisions)].mean(), 
+                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (y_test == 1) & (tr_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr_mod_confs[(y_test == 1) & (tr_model_preds_with_reset != human_decisions)].mean()], 
+                                                     [tr_mod_confs[(x_test['age54.0'] == 1) & (y_test == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (y_test == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr_mod_confs[(y_test == 0) & (tr_model_preds_with_reset != human_decisions)].mean()], 
                                                      [tr_mod_confs[(x_test['age54.0'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(),
                                                      tr_mod_confs[(x_test['age54.0'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(), 
                                                      tr_mod_confs[(tr_model_preds_with_reset != human_decisions)].mean()]]))
@@ -577,12 +575,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                                     [mean(decs['e']['tr']), mean(decs['y']['tr']), mean(decs['t']['tr'])]]))
                 
                 brs_conf_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
-                                data = [[brs_conf[(x_test['age54.0'] == 1) &(x_test['sex_Male'] == 1) & (brs_model_preds != human_decisions)].mean(), 
-                                         brs_conf[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1) & (brs_model_preds != human_decisions)].mean(),
-                                         brs_conf[(x_test['sex_Male'] == 1) & (brs_model_preds != human_decisions)].mean()], 
-                                         [brs_conf[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0) & (brs_model_preds != human_decisions)].mean(),
-                                         brs_conf[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0) & (brs_model_preds != human_decisions)].mean(),
-                                         brs_conf[(x_test['sex_Male'] == 0) & (brs_model_preds != human_decisions)].mean()], 
+                                data = [[brs_conf[(x_test['age54.0'] == 1) &(y_test == 1) & (brs_model_preds != human_decisions)].mean(), 
+                                         brs_conf[(x_test['age54.0'] == 0) & (y_test == 1) & (brs_model_preds != human_decisions)].mean(),
+                                         brs_conf[(y_test == 1) & (brs_model_preds != human_decisions)].mean()], 
+                                         [brs_conf[(x_test['age54.0'] == 1) & (y_test == 0) & (brs_model_preds != human_decisions)].mean(),
+                                         brs_conf[(x_test['age54.0'] == 0) & (y_test == 0) & (brs_model_preds != human_decisions)].mean(),
+                                         brs_conf[(y_test == 0) & (brs_model_preds != human_decisions)].mean()], 
                                          [brs_conf[(x_test['age54.0'] == 1) & (brs_model_preds != human_decisions)].mean(),
                                          brs_conf[(x_test['age54.0'] == 0) & (brs_model_preds != human_decisions)].mean(), 
                                          brs_conf[(brs_model_preds != human_decisions)].mean()]]))
@@ -729,9 +727,9 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
 
 costs = [0.0]
-num_runs = 3
+num_runs = 10
 dataset = 'heart_disease'
-case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, costs, False, asym_costs=[1,1])
+case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, costs, False, asym_costs=[3,1])
    
 
 print('pause')

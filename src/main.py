@@ -8,13 +8,13 @@ os.chdir("..")
 
 def main(argv):
     """
-    specify run parameters. d is dataset, i is run_num,  h is human name (type), r is runtype, c is cost, rh is remake humans, brs is brs, hyrs is hyrs, tr is tr
+    specify run parameters. d is dataset, i is run_num,  h is human name (type), r is runtype, c is cost, n is remake humans, p is custom name, brs is brs, hyrs is hyrs, tr is tr
     """
 
     
     print(os.getcwd())
 
-    opts, args = getopt.getopt(argv, "d:i:h:r:c:n:w:")
+    opts, args = getopt.getopt(argv, "d:i:h:r:c:n:p:b:w:")
 
     which_models = []
 
@@ -34,6 +34,13 @@ def main(argv):
                 remake_humans = False
             else:
                 remake_humans=True
+        elif opt == "-p":
+            custom_name = arg
+        elif opt == "-b":
+            if arg == 'False':
+                decision_bias = False
+            else:
+                decision_bias=True
         elif opt == "-w":
             models = arg.split(',')
             for model in models:
@@ -46,7 +53,7 @@ def main(argv):
     #print(which_models)
 
     
-    run(dataset, run_num, human_name, runtype=runtype, which_models=which_models, contradiction_reg=contradiction_reg, remake_humans=remake_humans)
+    run(dataset, run_num, human_name, runtype=runtype, which_models=which_models, contradiction_reg=contradiction_reg, remake_humans=remake_humans, human_decision_bias=decision_bias, custom_name=custom_name)
 
 
 
