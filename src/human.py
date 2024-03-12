@@ -57,7 +57,7 @@ class Human(object):
                 model_confidences[X['ExternalRiskEstimate65.0'] == 0] = 0
             if self.dataset == 'adult':
                 model_confidences = np.ones(X.shape[0])
-                model_confidences[(X['race_White'] == 1) | (X['sex_Male'] == 0)] = 0
+                model_confidences[(X['race_White'] == 1) & (X['sex_Male'] == 1)] = 0
             
                 
                 
@@ -340,8 +340,8 @@ class Human(object):
                 #confidences[(X['age54.0'] == 1)] = 0.3
                 ##########################################
                 ####for feature decision and confidence bias#############
-                confidences[(X['sex_Male'] == 0) & (X['race_White'] == 1)] = 1 #weak
-                confidences[(X['sex_Male'] == 1) & (X['race_White'] == 0)] = 1 #weak
+                confidences[(X['sex_Male'] == 0) & (X['race_White'] == 1)] = 0.9 #weak
+                confidences[(X['sex_Male'] == 1) & (X['race_White'] == 0)] = 0.9 #weak
                 confidences[(X['sex_Male'] == 0) & (X['race_White'] == 0)] = 0.2 #weak
                 confidences[(X['sex_Male'] == 1) & (X['race_White'] == 1)] = 0.2 #strong
                 #########################################################
