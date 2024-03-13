@@ -57,7 +57,7 @@ class Human(object):
                 model_confidences[X['ExternalRiskEstimate65.0'] == 0] = 0
             if self.dataset == 'adult':
                 model_confidences = np.ones(X.shape[0])
-                model_confidences[(X['sex_Male'] == 1)] = 0
+                model_confidences[(X['race_White'] == 1)] = 0
             
                 
                 
@@ -330,7 +330,7 @@ class Human(object):
         if t_type=='biased':
             confidences = np.ones(X.shape[0])
             if self.decision_bias == False:
-                confidences[(X['race_White'] == 1) & (start_confidences <= self.confVal)] = 0.9
+                confidences[(X['race_White'] == 1) & (start_confidences <= self.confVal)] = 0.2
                 confidences[(X['race_White'] == 1) & (start_confidences > self.confVal)] = 1
                 confidences[(X['race_White'] == 0) & (start_confidences <= self.confVal)] = 0.9
                 confidences[(X['race_White'] == 0) & (start_confidences > self.confVal)] = 0.2
@@ -340,10 +340,10 @@ class Human(object):
                 #confidences[(X['age54.0'] == 1)] = 0.3
                 ##########################################
                 ####for feature decision and confidence bias#############
-                confidences[(X['sex_Male'] == 0) & (X['race_White'] == 1)] = 1 #weak
-                confidences[(X['sex_Male'] == 1) & (X['race_White'] == 0)] = 0.2 #strong
-                confidences[(X['sex_Male'] == 0) & (X['race_White'] == 0)] = 0.2 #weak
-                confidences[(X['sex_Male'] == 1) & (X['race_White'] == 1)] = 1 #strong
+                confidences[(X['sex_Male'] == 0)] = 0.3 #weak
+                confidences[(X['sex_Male'] == 1)] = 0.9 #strong
+                #confidences[(X['sex_Male'] == 0) & (X['race_White'] == 0)] = 0.2 #weak
+                #confidences[(X['sex_Male'] == 1) & (X['race_White'] == 1)] = 1 #strong
                 #########################################################
 
                 ####for regular case study#######################
