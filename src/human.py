@@ -340,10 +340,10 @@ class Human(object):
                 #confidences[(X['age54.0'] == 1)] = 0.3
                 ##########################################
                 ####for feature decision and confidence bias#############
-                confidences[(X['sex_Male'] == 0)] = 0.3 #weak
-                confidences[(X['sex_Male'] == 1)] = 0.9 #strong
-                #confidences[(X['sex_Male'] == 0) & (X['race_White'] == 0)] = 0.2 #weak
-                #confidences[(X['sex_Male'] == 1) & (X['race_White'] == 1)] = 1 #strong
+                confidences[(X['sex_Male'] == 0) & (X['race_White'] == 1)] = 0.2 #weak
+                confidences[(X['sex_Male'] == 1) & (X['race_White'] == 0)] = 0.2 #strong
+                confidences[(X['sex_Male'] == 0) & (X['race_White'] == 0)] = 1 #weak
+                confidences[(X['sex_Male'] == 1) & (X['race_White'] == 1)] = 1 #strong
                 #########################################################
 
                 ####for regular case study#######################
