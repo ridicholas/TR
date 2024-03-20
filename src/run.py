@@ -222,9 +222,9 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             tr_model.make_lite()
             pickle.dump(tr_model, f)
 
-#run('adult', 0, 'biased', runtype='standard', which_models=['brs', 'hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='', use_true=False, subsplit=1)
-#run('heart_disease', 1, 'biased', runtype='standard', which_models=['hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
-#run('heart_disease', 2, 'biased', runtype='standard', which_models=['hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
+#run('fico', 0, 'biased', runtype='standard', which_models=['hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
+#run('fico', 1, 'biased', runtype='standard', which_models=['brs', 'hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
+#run('fico', 2, 'biased', runtype='standard', which_models=['brs', 'hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
 #run('heart_disease', 3, 'biased', runtype='standard', which_models=['brs', 'hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
 #run('heart_disease', 4, 'biased', runtype='standard', which_models=['brs','hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
 

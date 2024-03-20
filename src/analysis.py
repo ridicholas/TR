@@ -35,7 +35,7 @@ def load_datasets(dataset, run_num):
 
 def load_results(dataset, setting, run_num, cost, model):
     if model == 'brs':
-        setting = ''
+        setting = '_' + setting
     else:
         setting = '_' + setting
     with open(f'results/{dataset}/run{run_num}/cost{float(cost)}/{model}_model{setting}.pkl', 'rb') as f:
@@ -90,7 +90,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype
+    whichtype = whichtype #+ '_dec_bias'
     for run in bar(range(num_runs)):
 
         
@@ -162,7 +162,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                 brs_conf = brs_predict_conf(brs_mod.opt_rules, x_test, brs_mod)
                 hyrs_norecon_mod = deepcopy(hyrs_mod)
             
-            for i in range(20):
+            for i in range(50):
                 
                 
 
@@ -296,7 +296,7 @@ costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 num_runs = 5
 dataset = 'heart_disease'
 
-
+'''
 name = 'offset_01'
 if os.path.isfile(f'results/{dataset}/offset_01_rs.pkl'):
     with open(f'results/{dataset}/offset_01_rs.pkl', 'rb') as f:
@@ -339,9 +339,9 @@ else:
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 
 
-
+'''
 name = 'biased'
-if os.path.isfile(f'results/{dataset}/biased_rs.pkl'):
+if os.path.isfile(f'results/{dataset}/biased_rs.pkl') and False:
     with open(f'results/{dataset}/biased_rs.pkl', 'rb') as f:
         bia_rs = pickle.load(f)
     with open(f'results/{dataset}/biased_means.pkl', 'rb') as f:
@@ -357,7 +357,7 @@ else:
         pickle.dump(bia_std, f)
     with open(f'results/{dataset}/biased_rs.pkl', 'wb') as f:
         pickle.dump(bia_rs, f)
-
+'''
 name = 'offset_01'
 
 if os.path.isfile(f'results/{dataset}/val_offset_01_rs.pkl'):
@@ -401,9 +401,9 @@ else:
 #val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
 
 
-
+'''
 name = 'biased'
-if os.path.isfile(f'results/{dataset}/val_biased_rs.pkl'):
+if os.path.isfile(f'results/{dataset}/val_biased_rs.pkl') and False:
     with open(f'results/{dataset}/val_biased_rs.pkl', 'rb') as f:
         val_bia_rs = pickle.load(f)
     with open(f'results/{dataset}/val_biased_means.pkl', 'rb') as f:
@@ -419,34 +419,6 @@ else:
         pickle.dump(val_bia_std, f)
     with open(f'results/{dataset}/val_biased_rs.pkl', 'wb') as f:
         pickle.dump(val_bia_rs, f)
-
-#val_r_means, val_r_stderrs, val_rs = make_results('heart_disease', name, num_runs, costs, True)
-#calr_means, calr_stderrs, calrs = make_results(dataset, name, num_runs, costs, False)
-#calval_r_means, calval_r_stderrs, calval_rs = make_results('heart_disease', name, num_runs, costs, True)
-
-
-#offval_r_means, offval_r_stderrs, offval_rs = make_results('heart_disease', name, num_runs, costs, True)
-
-#cost = 0.2
-#robust_rs = rs.copy()
-#for i in range(len(val_rs['tr_team_w_reset_objective'][cost])):
-#    if val_rs['tr_team_w_reset_objective'][cost][i] > val_rs['hyrs_team_objective'][cost][i]:
-#        if val_rs['hyrs_team_objective'][cost][i] > val_rs['brs_team_objective'][cost][i]:
-#            robust_rs['tr_team_w_reset_objective'][cost][i] = rs['brs_team_objective'][cost][i]
-#            robust_rs['tr_model_w_reset_contradictions'][cost][i] = rs['brs_model_contradictions'][cost][i]
-#            robust_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['brs_team_decision_loss'][cost][i]#
-
-
-#        else:
-#            robust_rs['tr_team_w_reset_objective'][cost][i] = rs['hyrs_team_objective'][cost][i]
-#            robust_rs['tr_model_w_reset_contradictions'][cost][i] = rs['hyrs_model_contradictions'][cost][i]
-#            robust_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['hyrs_team_decision_loss'][cost][i]#
-#
-#robust_rs.apply(lambda x: x.apply(lambda y: mean(y)))[['tr_team_w_reset_objective', 'tr_team_wo_reset_objective', 'hyrs_team_objective', 'brs_team_objective', 'human_decision_loss']]
-
-#mis_r_means, mis_r_stderrs, mis_rs = make_results('heart_disease', 'miscalibrated', num_runs, costs, False)
-
-
 
 
 def make_TL_v_cost_plot(results_means, results_stderrs, name):
@@ -485,6 +457,7 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name):
     plt.ylabel('Total Team Loss', fontsize=12)
     plt.tick_params(labelrotation=45, labelsize=10)
     #plt.title('{} Setting'.format(setting), fontsize=15)
+    #plt.title('Income Prediction (Adult Dataset)', fontsize=15)
     plt.legend(prop={'size': 5})
     plt.grid('on', linestyle='dotted', linewidth=0.2, color='black')
 
@@ -587,29 +560,27 @@ def cost_validation(rs, val_rs):
 
 
 
-    
-cval_of1_means, cval_of1_stderss, cval_of1_rs = cost_validation(of1_rs, val_of1_rs)        
-cval_of2_means, cval_of2_stderss, cval_of2_rs = cost_validation(of2_rs, val_of2_rs)   
+
+#cval_of1_means, cval_of1_stderss, cval_of1_rs = cost_validation(of1_rs, val_of1_rs)        
+#cval_of2_means, cval_of2_stderss, cval_of2_rs = cost_validation(of2_rs, val_of2_rs)   
 cval_bia_means, cval_bia_stderss, cval_bia_rs = cost_validation(bia_rs, val_bia_rs)     
 
 
-rval_of1_means, rval_of1_stderss, rval_of1_rs = robust_rules(of1_rs, val_of1_rs)        
-rval_of2_means, rval_of2_stderss, rval_of1_rs = robust_rules(of2_rs, val_of2_rs)     
+#rval_of1_means, rval_of1_stderss, rval_of1_rs = robust_rules(of1_rs, val_of1_rs)        
+#rval_of2_means, rval_of2_stderss, rval_of1_rs = robust_rules(of2_rs, val_of2_rs)     
 rval_bia_means, rval_bia_stderss, rval_bia_rs = robust_rules(bia_rs, val_bia_rs)    
 
-ccval_of1_means, ccval_of1_stderss, ccval_of1_rs = cost_validation(val_of1_rs, val_of1_rs)        
-ccval_of2_means, ccval_of2_stderss, ccval_of2_rs = cost_validation(val_of2_rs, val_of2_rs)   
+#ccval_of1_means, ccval_of1_stderss, ccval_of1_rs = cost_validation(val_of1_rs, val_of1_rs)        
+#ccval_of2_means, ccval_of2_stderss, ccval_of2_rs = cost_validation(val_of2_rs, val_of2_rs)   
 ccval_bia_means, ccval_bia_stderss, ccval_bia_rs = cost_validation(val_bia_rs, val_bia_rs)  
 
 
 
-rcval_of1_means, rcval_of1_stderss, rcval_of1_rs = robust_rules(cval_of1_rs, ccval_of1_rs)        
-rcval_of2_means, rcval_of2_stderss, rcval_of1_rs = robust_rules(cval_of2_rs, ccval_of2_rs)     
+#rcval_of1_means, rcval_of1_stderss, rcval_of1_rs = robust_rules(cval_of1_rs, ccval_of1_rs)        
+#rcval_of2_means, rcval_of2_stderss, rcval_of1_rs = robust_rules(cval_of2_rs, ccval_of2_rs)     
 rcval_bia_means, rcval_bia_stderss, rcval_bia_rs = robust_rules(cval_bia_rs, ccval_bia_rs)     
 
     
-
-
 
     
 

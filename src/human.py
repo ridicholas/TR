@@ -54,7 +54,7 @@ class Human(object):
                 #########################################
             if self.dataset == 'fico':
                 model_confidences = np.ones(X.shape[0]) 
-                model_confidences[X['ExternalRiskEstimate65.0'] == 0] = 0
+                model_confidences[(X['ExternalRiskEstimate65.0'] == 0) | (X['NumSatisfactoryTrades24.0'] == 1)] = 0
             if self.dataset == 'adult':
                 model_confidences = np.ones(X.shape[0])
                 model_confidences[(X['race_White'] == 1)] = 0
@@ -258,12 +258,9 @@ class Human(object):
             return confidences
         
     def fico_confidence_transformation(self, X=None, t_type=None):
-        if self.decision_bias:
-            if self.dataset == 'heart_disease':
-                start_confidences = np.ones(X.shape[0])
-                start_confidences[X['age54.0'] == 1] = 0       
-        else:
-            start_confidences = np.abs(self.model.predict_proba(self.scaler.transform(X))[:, 1] - 0.5)*2
+
+
+        start_confidences = np.abs(self.model.predict_proba(self.scaler.transform(X))[:, 1] - 0.5)*2
 
         if t_type==None or t_type=='calibrated':
             
@@ -281,6 +278,13 @@ class Human(object):
             confidences[(X['ExternalRiskEstimate65.0'] == 1) & (start_confidences > self.confVal)] = 1
             confidences[(X['ExternalRiskEstimate65.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
             confidences[(X['ExternalRiskEstimate65.0'] == 0) & (start_confidences > self.confVal)] = 0.2
+
+            if self.decision_bias==True:
+                
+                confidences[(X['ExternalRiskEstimate65.0'] == 1) & (X['NumSatisfactoryTrades24.0'] == 0)] = 0.2 #weak
+                confidences[(X['ExternalRiskEstimate65.0'] == 1) & (X['NumSatisfactoryTrades24.0'] == 1)] = 0.2 #strong
+                confidences[(X['ExternalRiskEstimate65.0'] == 0) & (X['NumSatisfactoryTrades24.0'] == 0)] = 1 #strong
+                confidences[(X['ExternalRiskEstimate65.0'] == 0) & (X['NumSatisfactoryTrades24.0'] == 1)] = 1 #strong
 
         if t_type=='offset_02':
             confidences = np.ones(X.shape[0])

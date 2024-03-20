@@ -1,30 +1,24 @@
-nohup python3 -u main.py -d 'adult' -i 0 -h 'biased' -r 'standard' -c 0 -n True -p '_dec_bias' -b True -w '' > ../logs/log0_adult_biasedDec_standard_nomodels.out &
-nohup python3 -u main.py -d 'adult' -i 1 -h 'biased' -r 'standard' -c 0 -n True -p '_dec_bias' -b True -w '' > ../logs/log1_adult_biasedDec_standard_nomodels.out &
-nohup python3 -u main.py -d 'adult' -i 2 -h 'biased' -r 'standard' -c 0 -n True -p '_dec_bias' -b True -w '' > ../logs/log2_adult_biasedDec_standard_nomodels.out &
-nohup python3 -u main.py -d 'adult' -i 3 -h 'biased' -r 'standard' -c 0 -n True -p '_dec_bias' -b True -w '' > ../logs/log3_adult_biasedDec_standard_nomodels.out &
-nohup python3 -u main.py -d 'adult' -i 4 -h 'biased' -r 'standard' -c 0 -n True -p '_dec_bias' -b True -w '' > ../logs/log4_adult_biasedDec_standard_nomodels.out &
-
-#nohup python3 -u main.py -d 'adult' -i 0 -h 'biased' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log0_adult_biased_standard_nomodels.out &
-#nohup python3 -u main.py -d 'adult' -i 1 -h 'biased' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log1_adult_biased_standard_nomodels.out &
-#nohup python3 -u main.py -d 'adult' -i 2 -h 'biased' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log2_adult_biased_standard_nomodels.out &
-#nohup python3 -u main.py -d 'adult' -i 3 -h 'biased' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log3_adult_biased_standard_nomodels.out &
-#nohup python3 -u main.py -d 'adult' -i 4 -h 'biased' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log4_adult_biased_standard_nomodels.out &
+nohup python3 -u main.py -d 'fico' -i 0 -h 'offset_01' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log0_fico_offset01_standard_nomodels.out &
+nohup python3 -u main.py -d 'fico' -i 1 -h 'offset_01' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log1_fico_offset01_standard_nomodels.out &
+nohup python3 -u main.py -d 'fico' -i 2 -h 'offset_01' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log2_fico_offset01_standard_nomodels.out &
+nohup python3 -u main.py -d 'fico' -i 3 -h 'offset_01' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log3_fico_offset01_standard_nomodels.out &
+nohup python3 -u main.py -d 'fico' -i 4 -h 'offset_01' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log4_fico_offset01_standard_nomodels.out &
 
 
 
 
-#nohup python3 -u main.py -d 'heart_disease' -i 0 -h 'biased' -r 'standard' -c 0 -n True -p '_dec_bias' -b True -w '' > ../logs/log0_heart_disease_biasedDec_standard_nomodels.out &
-#nohup python3 -u main.py -d 'heart_disease' -i 1 -h 'biased' -r 'standard' -c 0 -n True -p '_dec_bias' -b True -w '' > ../logs/log1_heart_disease_biasedDec_standard_nomodels.out &
-#nohup python3 -u main.py -d 'heart_disease' -i 2 -h 'biased' -r 'standard' -c 0 -n True -p '_dec_bias' -b True -w '' > ../logs/log2_heart_disease_biasedDec_standard_nomodels.out &
-#nohup python3 -u main.py -d 'heart_disease' -i 3 -h 'biased' -r 'standard' -c 0 -n True -p '_dec_bias' -b True -w '' > ../logs/log3_heart_disease_biasedDec_standard_nomodels.out &
-#nohup python3 -u main.py -d 'heart_disease' -i 4 -h 'biased' -r 'standard' -c 0 -n True -p '_dec_bias' -b True -w '' > ../logs/log4_heart_disease_biasedDec_standard_nomodels.out &
+nohup python3 -u main.py -d 'fico' -i 0 -h 'biased' -r 'standard' -c 0 -n True -p '_dec_bias' -b True -w '' > ../logs/log0_fico_biasedDec_standard_nomodels.out &
+nohup python3 -u main.py -d 'fico' -i 1 -h 'biased' -r 'standard' -c 0 -n True -p '_dec_bias' -b True -w '' > ../logs/log1_fico_biasedDec_standard_nomodels.out &
+nohup python3 -u main.py -d 'fico' -i 2 -h 'biased' -r 'standard' -c 0 -n True -p '_dec_bias' -b True -w '' > ../logs/log2_fico_biasedDec_standard_nomodels.out &
+nohup python3 -u main.py -d 'fico' -i 3 -h 'biased' -r 'standard' -c 0 -n True -p '_dec_bias' -b True -w '' > ../logs/log3_fico_biasedDec_standard_nomodels.out &
+nohup python3 -u main.py -d 'fico' -i 4 -h 'biased' -r 'standard' -c 0 -n True -p '_dec_bias' -b True -w '' > ../logs/log4_fico_biasedDec_standard_nomodels.out &
 
 
 
 
 
-#nohup python3 -u main.py -d 'heart_disease' -i 0 -h 'biased' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log0_heart_disease_biased_standard_nomodels.out &
-#nohup python3 -u main.py -d 'heart_disease' -i 1 -h 'biased' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log1_heart_disease_biased_standard_nomodels.out &
-#nohup python3 -u main.py -d 'heart_disease' -i 2 -h 'biased' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log2_heart_disease_biased_standard_nomodels.out &
-#nohup python3 -u main.py -d 'heart_disease' -i 3 -h 'biased' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log3_heart_disease_biased_standard_nomodels.out &
-#nohup python3 -u main.py -d 'heart_disease' -i 4 -h 'biased' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log4_heart_disease_biased_standard_nomodels.out &
+nohup python3 -u main.py -d 'fico' -i 0 -h 'biased' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log0_fico_biased_standard_nomodels.out &
+nohup python3 -u main.py -d 'fico' -i 1 -h 'biased' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log1_fico_biased_standard_nomodels.out &
+nohup python3 -u main.py -d 'fico' -i 2 -h 'biased' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log2_fico_biased_standard_nomodels.out &
+nohup python3 -u main.py -d 'fico' -i 3 -h 'biased' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log3_fico_biased_standard_nomodels.out &
+nohup python3 -u main.py -d 'fico' -i 4 -h 'biased' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log4_fico_biased_standard_nomodels.out &
