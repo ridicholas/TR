@@ -35,7 +35,7 @@ def load_datasets(dataset, run_num):
 
 def load_results(dataset, setting, run_num, cost, model):
     if model == 'brs':
-        setting = '_' + setting
+        setting = '_' + setting + '_dec_bias'
     else:
         setting = '_' + setting
     with open(f'results/{dataset}/run{run_num}/cost{float(cost)}/{model}_model{setting}.pkl', 'rb') as f:
@@ -294,7 +294,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 num_runs = 5
-dataset = 'heart_disease'
+dataset = 'fico'
 
 '''
 name = 'offset_01'
