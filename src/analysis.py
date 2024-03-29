@@ -90,7 +90,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype #+ '_dec_bias'
+    whichtype = whichtype # + '_dec_bias'
     for run in bar(range(num_runs)):
 
         
@@ -294,7 +294,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
 costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 num_runs = 5
-dataset = 'fico'
+dataset = 'hr'
 
 '''
 name = 'offset_01'

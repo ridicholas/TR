@@ -54,13 +54,13 @@ class Human(object):
                 #########################################
             if self.dataset == 'fico':
                 model_confidences = np.ones(X.shape[0]) 
-                model_confidences[(X['ExternalRiskEstimate65.0'] == 0) | (X['NumSatisfactoryTrades24.0'] == 1)] = 0
+                model_confidences[(X['NumSatisfactoryTrades24.0'] == 1)] = 0
             if self.dataset == 'adult':
                 model_confidences = np.ones(X.shape[0])
                 model_confidences[(X['race_White'] == 1)] = 0
             if self.dataset == 'hr':
                 model_confidences = np.ones(X.shape[0])
-                model_confidences[(X['Gender_Male'] == 1)] = 0
+                model_confidences[(X['﻿Age32.0'] == 0)] = 0
             
                 
                 
