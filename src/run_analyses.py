@@ -38,15 +38,28 @@ def load_datasets(dataset, run_num):
 
 def load_results(dataset, setting, run_num, cost, model):
     if model == 'brs':
+        
         try:
             setting = '_' + setting
-        except:
-            setting = '_' + setting
+            with open(f'results/{dataset}/run{run_num}/cost{float(cost)}/{model}_model{setting}.pkl', 'rb') as f:
+                result = pickle.load(f)
+                return result
+        except: 
+            if setting == 'biased':
+                setting = '_' + 'biased_dec_biased'
+            else:
+                setting = '_biased'
+            with open(f'results/{dataset}/run{run_num}/cost{float(cost)}/{model}_model{setting}.pkl', 'rb') as f:
+                result = pickle.load(f)
+                return result
+
+        
+            
     else:
         setting = '_' + setting
-    with open(f'results/{dataset}/run{run_num}/cost{float(cost)}/{model}_model{setting}.pkl', 'rb') as f:
-        result = pickle.load(f)
-        return result
+        with open(f'results/{dataset}/run{run_num}/cost{float(cost)}/{model}_model{setting}.pkl', 'rb') as f:
+            result = pickle.load(f)
+            return result
     
 def load_humans(dataset, setting, run_num):
     with open(f'results/{dataset}/run{run_num}/{setting}.pkl', 'rb') as f:
