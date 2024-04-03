@@ -14,6 +14,9 @@ from run import evaluate_adb_model
 from copy import deepcopy
 import os
 
+#making sure wd is file directory so hardcoded paths work
+os.chdir("..")
+
 def load_datasets(dataset, run_num):
     x_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain.csv', index_col=0).reset_index(drop=True)
     y_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/ytrain.csv', index_col=0).iloc[:, 0].reset_index(drop=True)
