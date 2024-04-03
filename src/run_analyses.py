@@ -39,7 +39,7 @@ def load_datasets(dataset, run_num):
 def load_results(dataset, setting, run_num, cost, model):
     if model == 'brs':
         try:
-            setting = '_' + setting + '_dec_bias'
+            setting = '_' + setting
         except:
             setting = '_' + setting
     else:
@@ -336,6 +336,8 @@ names = ['biased', 'biased_dec_bias', 'offset_01']
 
 for dataset in datasets:
     for name in names:
+        if (name == 'biased') and (datasets == 'heart_disease'):
+            continue
         print(f'running for {dataset} {name}')
         means, std, rs = make_results(dataset, name, num_runs, costs, validation=False)
         #pickle and write means, std, and rs to file
