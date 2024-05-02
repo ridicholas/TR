@@ -82,7 +82,8 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
     if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/conf_model_{human_name}.pkl'):
         if subsplit != 1:
             x_learning_non_binarized, _, x_learning, _, y_learning, _ = train_test_split(x_learning_non_binarized, x_learning, y_learning, test_size=1-subsplit, stratify=y_learning)
-        conf_model = xgb.XGBRegressor().fit(x_learning_non_binarized, human.get_confidence(x_learning))
+        #conf_model = xgb.XGBRegressor().fit(x_learning_non_binarized, human.get_confidence(x_learning))
+        conf_model = human.get_confidence
         if shared_human and run_num == 0:
             human.learning_indexes = x_learning.index
             with open(f'results/{dataset}/run{run_num}/{human_name}.pkl', 'wb') as f:
@@ -98,8 +99,8 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             with open(f'results/{dataset}/run{run_num}/conf_model_{human_name}.pkl', 'rb') as f:
                 conf_model = pickle.load(f)
     
-    if use_true:
-        conf_model = human.get_confidence
+    #if use_true:
+    #conf_model = human.get_confidence
     #train ADB model
     
     
@@ -198,13 +199,12 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
     if 'tr' in which_models:
         #train estimates
         e_y_mod = xgb.XGBClassifier().fit(x_train_non_binarized, y_train)
-        e_yb_mod = xgb.XGBClassifier().fit(x_train_non_binarized, human.get_decisions(x_train, y_train))
+        #e_yb_mod = xgb.XGBClassifier().fit(x_train_non_binarized, human.get_decisions(x_train, y_train))
 
         tr_model = tr(x_train, y_train,
                     human.get_decisions(x_train, y_train),
                     human.get_confidence(x_train), 
-                    p_y=e_y_mod.predict_proba(x_train_non_binarized),
-                    p_yb=e_yb_mod.predict_proba(x_train_non_binarized))
+                    p_y=e_y_mod.predict_proba(x_train_non_binarized))
 
         tr_model.set_parameters(alpha = alpha, beta=beta, contradiction_reg=contradiction_reg, fairness_reg=fairness_reg, force_complete_coverage=False, asym_loss=asym_loss, fA=adb.ADB_model_wrapper)
 
@@ -214,15 +214,15 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         #write ey and eyb models
         with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name}{appendType}.pkl', 'wb') as f:
             pickle.dump(e_y_mod, f)
-        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/eyb_model_{human_name}{appendType}.pkl', 'wb') as f:
-            pickle.dump(e_yb_mod, f)
+        #with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/eyb_model_{human_name}{appendType}.pkl', 'wb') as f:
+        #    pickle.dump(e_yb_mod, f)
 
         #write tr model
         with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr_model_{human_name}{appendType}.pkl', 'wb') as f:
             tr_model.make_lite()
             pickle.dump(tr_model, f)
 
-#run('fico', 0, 'biased', runtype='standard', which_models=['hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
+#run('heart_disease', 0, 'biased', runtype='standard', which_models=['tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
 #run('fico', 1, 'biased', runtype='standard', which_models=['hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
 #run('fico', 2, 'biased', runtype='standard', which_models=['hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
 #run('heart_disease', 3, 'biased', runtype='standard', which_models=['brs', 'hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)

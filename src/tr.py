@@ -25,13 +25,13 @@ def intersection(lst1, lst2):
     return lst3
 
 class tr(object):
-    def __init__(self, binary_data,Y,Yb, conf_human=None, p_yb=None, p_y=None):
+    def __init__(self, binary_data,Y,Yb, conf_human=None, p_y=None):
         self.df = binary_data  
         self.Y = pd.Series(Y)
         self.N = float(len(Y))
         self.Yb = pd.Series(Yb)
         self.conf_human = pd.Series(conf_human)
-        self.p_yb = p_yb.copy()
+        
         self.p_y = p_y.copy()
 
     
@@ -252,9 +252,9 @@ class tr(object):
 
     def train(self, Niteration = 500, print_message=False, interpretability = 'size', T0 = 0.01, start_rules=None):
 
-        p_yb = self.p_yb
+        
         p_y = self.p_y
-        e_human_responses = self.p_yb.argmax(axis=1)
+        e_human_responses = self.Yb
 
         t = time.time()
         curr_max_iter = 0
@@ -288,8 +288,7 @@ class tr(object):
 
         #reset responses using expection
         reset = self.expected_loss_filter(self.df, rulePreds_curr, conf_human=self.conf_human, 
-                                          prs=prs_curr, nrs=nrs_curr, p_yb=p_yb, p_y=p_y, 
-                                          e_human_responses=e_human_responses, conf_model=model_conf_curr)
+                                          prs=prs_curr, nrs=nrs_curr, yb=e_human_responses, p_y=p_y, conf_model=model_conf_curr)
         p[reset] = False
         n[reset] = False
         rulePreds_curr[reset] = self.Yb[reset]
@@ -387,7 +386,7 @@ class tr(object):
                 rulePreds_new[ncovered_new] = 0
                 rulePreds_new[pcovered_new] = 1
                 model_conf_new, _ = self.get_model_conf_agreement(self.df, self.Yb, prs_min=prs_new, nrs_min=nrs_new)
-                reset = self.expected_loss_filter(self.df, rulePreds_new, conf_human=self.conf_human, prs=prs_new, nrs=nrs_new, p_yb=p_yb, p_y=p_y, e_human_responses=e_human_responses,conf_model=model_conf_new)
+                reset = self.expected_loss_filter(self.df, rulePreds_new, conf_human=self.conf_human, prs=prs_new, nrs=nrs_new, yb=self.Yb, p_y=p_y,conf_model=model_conf_new)
                 rulePreds_new[reset] = self.Yb[reset]
                 pcovered_new[reset] = 0
                 ncovered_new[reset] = 0
@@ -758,7 +757,7 @@ class tr(object):
         Yhat[pind] = 1
         return Yhat,covered,Yb
 
-    def predict(self, df, Yb, with_reset=False, conf_human=None, p_yb=None, p_y=None):
+    def predict(self, df, Yb, with_reset=False, conf_human=None, p_y=None):
         prules = [self.prules[i] for i in self.prs_min]
         nrules = [self.nrules[i] for i in self.nrs_min]
         # if isinstance(self.df, scipy.sparse.csc.csc_matrix)==False:
@@ -787,7 +786,7 @@ class tr(object):
         Yhat[pind] = 1
 
         if with_reset:
-            reset = self.expected_loss_filter(df, Yhat, conf_human, p_yb=p_yb, p_y=p_y)
+            reset = self.expected_loss_filter(df, Yhat, conf_human, yb=yb, p_y=p_y)
 
 
             Yhat[reset] = Yb[reset]
@@ -796,33 +795,31 @@ class tr(object):
 
         return Yhat,covered,Yb
 
-    def expected_loss_filter(self, x, y_rules, conf_human, prs=None, nrs=None, p_yb=None, p_y=None, e_human_responses=None, conf_model=None):
+    def expected_loss_filter(self, x, y_rules, conf_human, prs=None, nrs=None, yb=None, p_y=None, conf_model=None):
         if prs is None:
             prs = self.prs_min
         if nrs is None:
             nrs = self.nrs_min
-        if e_human_responses is None:
-            e_human_responses = p_yb.argmax(axis=1)
         if conf_model is None:
-            conf_model, agreement = self.get_model_conf_agreement(x, e_human_responses, prs_min=prs, nrs_min=nrs)
+            conf_model, agreement = self.get_model_conf_agreement(x, yb, prs_min=prs, nrs_min=nrs)
         agreement0 = (y_rules == 0) #hypothetical if human chooses 0
         agreement1 = (y_rules == 1) #hypothetical if human chooses 1
         conf_human0 = conf_human.copy()
         conf_human1 = conf_human.copy()
-        conf_human0[e_human_responses == 1] = -conf_human0[e_human_responses == 1] #confidence inverted if human expected to choose 1 because situation is hypothetical human chooses 0
-        conf_human1[e_human_responses == 0] = -conf_human1[e_human_responses == 0] #confidence inverted if human expected to choose 0 because situation is hypothetical human chooses 1
+        conf_human0[yb == 1] = -conf_human0[yb == 1] #confidence inverted if human expected to choose 1 because situation is hypothetical human chooses 0
+        conf_human1[yb == 0] = -conf_human1[yb == 0] #confidence inverted if human expected to choose 0 because situation is hypothetical human chooses 1
 
-        p_a = (p_yb[:, 0]*self.fA(conf_human0, conf_model, agreement0)) + (p_yb[:, 1]*self.fA(conf_human1, conf_model, agreement1))
+        p_a = ((yb==0).astype(int)*self.fA(conf_human0, conf_model, agreement0)) + ((yb==1).astype(int)*self.fA(conf_human1, conf_model, agreement1))
 
         
 
         e_loss_from_accept = p_a*((p_y[:, 0]*(y_rules == 1).astype(int)*self.asym_loss[1]) + p_y[:, 1]*(y_rules == 0).astype(int)*self.asym_loss[0])
-        e_loss_from_reject = (1-p_a)*((p_y[:,0]*p_yb[:,1]*self.asym_loss[1]) + p_y[:, 1]*p_yb[:,0]*self.asym_loss[0])
-        e_loss_from_contradict = self.contradiction_reg*((p_yb[:,0]*(y_rules==1).astype(int)) + p_yb[:,1]*(y_rules==0).astype(int))
+        e_loss_from_reject = (1-p_a)*((p_y[:,0]*(yb==1).astype(int)*self.asym_loss[1]) + p_y[:, 1]*(yb==0).astype(int)*self.asym_loss[0])
+        e_loss_from_contradict = self.contradiction_reg*(((yb==0).astype(int)*(y_rules==1).astype(int)) + (yb==1).astype(int)*(y_rules==0).astype(int))
 
         e_loss_from_advising = e_loss_from_accept + e_loss_from_reject + e_loss_from_contradict
 
-        e_loss_from_withholding = p_y[:,0]*p_yb[:,1]*self.asym_loss[1] + p_y[:,1]*p_yb[:,0]*self.asym_loss[0]
+        e_loss_from_withholding = p_y[:,0]*(yb==1).astype(int)*self.asym_loss[1] + p_y[:,1]*(yb==0).astype(int)*self.asym_loss[0]
 
         reset = e_loss_from_withholding < e_loss_from_advising
 
@@ -831,7 +828,7 @@ class tr(object):
         
 
 
-    def predictSoft(self, df, Yb, conf_human, fA, with_reset=False, p_yb=None, p_y=None):
+    def predictSoft(self, df, Yb, conf_human, fA, with_reset=False, p_y=None):
         prules = [self.prules[i] for i in self.prs_min]
         nrules = [self.nrules[i] for i in self.nrs_min]
         # if isinstance(self.df, scipy.sparse.csc.csc_matrix)==False:
@@ -868,7 +865,7 @@ class tr(object):
         Yhat[pind] = (Yb.copy()[pind] * (1 - paccept[pind])) + ((paccept[pind]) * 1)  # covers cases where model predicts positive
 
         if with_reset:
-            reset = self.expected_loss_filter(df, Yhat, conf_human, p_yb=p_yb, p_y=p_y)
+            reset = self.expected_loss_filter(df, Yhat, conf_human, yb=yb, p_y=p_y)
 
             Yhat[reset] = Yb[reset]
             covered = [i for i in covered if i not in np.where(reset==True)[0]]
@@ -891,7 +888,7 @@ class tr(object):
 
         return 0 
 
-    def predictHumanInLoop(self, df, Yb, conf_human, fA, with_reset=False, p_yb=None, p_y=None):
+    def predictHumanInLoop(self, df, Yb, conf_human, fA, with_reset=False, p_y=None):
         prules = [self.prules[i] for i in self.prs_min]
         nrules = [self.nrules[i] for i in self.nrs_min]
         dfn = 1-df #df has negative associations
@@ -933,7 +930,7 @@ class tr(object):
         Yhat[pind] = 1
 
         if with_reset:
-            reset = self.expected_loss_filter(df, Yhat, conf_human, p_yb=p_yb, p_y=p_y)
+            reset = self.expected_loss_filter(df, Yhat, conf_human, yb=yb, p_y=p_y)
 
 
             Yhat[reset] = Yb[reset]

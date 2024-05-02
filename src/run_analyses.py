@@ -15,7 +15,7 @@ from copy import deepcopy
 import os
 
 #making sure wd is file directory so hardcoded paths work
-os.chdir("..")
+#os.chdir("..")
 
 def load_datasets(dataset, run_num):
     x_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain.csv', index_col=0).reset_index(drop=True)
@@ -335,26 +335,42 @@ names = ['biased', 'biased_dec_bias', 'offset_01']
 
 for dataset in datasets:
     for name in names:
-        if (name == 'biased') and (datasets == 'heart_disease'):
-            continue
-        print(f'running for {dataset} {name}')
-        means, std, rs = make_results(dataset, name, num_runs, costs, validation=False)
-        #pickle and write means, std, and rs to file
-        with open(f'results/{dataset}/{name}_means.pkl', 'wb') as f:
-            pickle.dump(means, f)
-        with open(f'results/{dataset}/{name}_std.pkl', 'wb') as f:
-            pickle.dump(std, f)
-        with open(f'results/{dataset}/{name}_rs.pkl', 'wb') as f:
-            pickle.dump(rs, f)
+        #if (name == 'biased') and (datasets == 'heart_disease'):
+        #    continue
+        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl') or True:
+            with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
+                bia_rs = pickle.load(f)
+            with open(f'results/{dataset}/{name}_means.pkl', 'rb') as f:
+                bia_means = pickle.load(f)
+            with open(f'results/{dataset}/{name}_std.pkl', 'rb') as f:
+                bia_std = pickle.load(f)
+
+            with open(f'results/{dataset}/val_{name}_rs.pkl', 'rb') as f:
+                val_bia_rs = pickle.load(f)
+            with open(f'results/{dataset}/val_{name}_means.pkl', 'rb') as f:
+                val_bia_means = pickle.load(f)
+            with open(f'results/{dataset}/val_{name}_std.pkl', 'rb') as f:
+                val_bia_std = pickle.load(f)
+
+
+        else:
+            means, std, rs = make_results(dataset, name, num_runs, costs, validation=False)
+            #pickle and write means, std, and rs to file
+            with open(f'results/{dataset}/{name}_means.pkl', 'wb') as f:
+                pickle.dump(means, f)
+            with open(f'results/{dataset}/{name}_std.pkl', 'wb') as f:
+                pickle.dump(std, f)
+            with open(f'results/{dataset}/{name}_rs.pkl', 'wb') as f:
+                pickle.dump(rs, f)
         
-        print(f'running for val {dataset} {name}')
-        val_means, val_std, val_rs = make_results(dataset, name, num_runs, costs, validation=True)
-        #pickle and write means, std, and rs to file
-        with open(f'results/{dataset}/val_{name}_means.pkl', 'wb') as f:
-            pickle.dump(val_means, f)
-        with open(f'results/{dataset}/val_{name}_std.pkl', 'wb') as f:
-            pickle.dump(val_std, f)
-        with open(f'results/{dataset}/val_{name}_rs.pkl', 'wb') as f:
-            pickle.dump(val_rs, f)
+            print(f'running for val {dataset} {name}')
+            val_means, val_std, val_rs = make_results(dataset, name, num_runs, costs, validation=True)
+            #pickle and write means, std, and rs to file
+            with open(f'results/{dataset}/val_{name}_means.pkl', 'wb') as f:
+                pickle.dump(val_means, f)
+            with open(f'results/{dataset}/val_{name}_std.pkl', 'wb') as f:
+                pickle.dump(val_std, f)
+            with open(f'results/{dataset}/val_{name}_rs.pkl', 'wb') as f:
+                pickle.dump(val_rs, f)
         
 
