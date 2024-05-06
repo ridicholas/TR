@@ -786,7 +786,7 @@ class tr(object):
         Yhat[pind] = 1
 
         if with_reset:
-            reset = self.expected_loss_filter(df, Yhat, conf_human, yb=yb, p_y=p_y)
+            reset = self.expected_loss_filter(df, Yhat, conf_human, yb=Yb, p_y=p_y)
 
 
             Yhat[reset] = Yb[reset]
@@ -930,7 +930,7 @@ class tr(object):
         Yhat[pind] = 1
 
         if with_reset:
-            reset = self.expected_loss_filter(df, Yhat, conf_human, yb=yb, p_y=p_y)
+            reset = self.expected_loss_filter(df, Yhat, conf_human, yb=Yb, p_y=p_y)
 
 
             Yhat[reset] = Yb[reset]
