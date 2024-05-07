@@ -576,7 +576,7 @@ for dataset in datasets:
     for name in names:
         #if (name == 'biased') and (datasets == 'heart_disease'):
         #    continue
-        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl') and dataset != 'heart_disease':
+        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl'):
             with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
             with open(f'results/{dataset}/{name}_means.pkl', 'rb') as f:
