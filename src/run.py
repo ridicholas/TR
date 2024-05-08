@@ -66,6 +66,10 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
     if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/{human_name}.pkl'):
         human = Human(human_name, x_human_train, y_human_train, dataset=dataset, decision_bias=human_decision_bias)
         human_name = human_name + custom_name
+        human.train_decisions = human.get_decisions(x_train, y_train)
+        human.val_decisions = human.get_decisions(x_val, y_val)
+        human.test_decisions = human.get_decisions(x_test, y_test)
+        human.learning_decisions = human.get_decisions(x_learning, y_learning)
         with open(f'results/{dataset}/run{run_num}/{human_name}.pkl', 'wb') as f:
             pickle.dump(human, f)
     else:
@@ -111,7 +115,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
         adb_learning_data = pd.DataFrame({'human_conf': human.get_confidence(x_learning), 
                                         'model_confs': initial_task_model.predict_proba(x_learning).max(axis=1), 
-                                        'agreement': (initial_task_model.predict(x_learning) == human.get_decisions(x_learning, y_learning))})
+                                        'agreement': (initial_task_model.predict(x_learning) == human.learning_decisions)})
         
         p_accepts = human.ADB(adb_learning_data['human_conf'], adb_learning_data['model_confs'], adb_learning_data['agreement'])
         realized_accepts = bernoulli.rvs(p=p_accepts, size=len(p_accepts))
@@ -171,8 +175,9 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         os.makedirs(f'results/{dataset}/run{run_num}/cost{contradiction_reg}')
 
     # train advising
+    
     if 'hyrs' in which_models:
-        hyrs_model = hyrs(x_train, y_train, human.get_decisions(x_train, y_train))
+        hyrs_model = hyrs(x_train, y_train, human.train_decisions)
 
         hyrs_model.set_parameters(alpha = alpha, beta=beta, contradiction_reg=contradiction_reg, force_complete_coverage=False, asym_loss=asym_loss)
         hyrs_model.generate_rulespace(supp = supp, maxlen=maxlen, N=Nrules, need_negcode=True, method='randomforest',criteria='precision')
@@ -202,7 +207,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         #e_yb_mod = xgb.XGBClassifier().fit(x_train_non_binarized, human.get_decisions(x_train, y_train))
 
         tr_model = tr(x_train, y_train,
-                    human.get_decisions(x_train, y_train),
+                    human.train_decisions,
                     human.get_confidence(x_train), 
                     p_y=e_y_mod.predict_proba(x_train_non_binarized))
 

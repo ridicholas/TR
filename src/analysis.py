@@ -36,11 +36,27 @@ def load_datasets(dataset, run_num):
 def load_results(dataset, setting, run_num, cost, model):
     if model == 'brs':
         try:
-            setting = '_' + setting #+ '_dec_bias'
+            setting = '_biased'
+            with open(f'results/{dataset}/run{run_num}/cost{float(cost)}/{model}_model{setting}.pkl', 'rb') as f:
+                result = pickle.load(f)
+                return result
         except:
-            setting = '_' + setting
-    else:
-        setting = '_' + setting
+            pass
+        try:
+            setting = '_biased_dec_bias'
+            with open(f'results/{dataset}/run{run_num}/cost{float(cost)}/{model}_model{setting}.pkl', 'rb') as f:
+                result = pickle.load(f)
+                return result
+        except:
+            pass
+        try:
+            setting = '_offset_01'
+            with open(f'results/{dataset}/run{run_num}/cost{float(cost)}/{model}_model{setting}.pkl', 'rb') as f:
+                result = pickle.load(f)
+                return result
+        except:
+            pass
+        
     with open(f'results/{dataset}/run{run_num}/cost{float(cost)}/{model}_model{setting}.pkl', 'rb') as f:
         result = pickle.load(f)
         return result
@@ -114,13 +130,13 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
         dataset = dataset
         human, adb_mod, conf_mod = load_humans(dataset, whichtype, run)
 
-        brs_mod = load_results(dataset, whichtype , run, 0.0, 'brs')
+        brs_mod = load_results(dataset, f'_{whichtype}' , run, 0.0, 'brs')
 
 
         for cost in costs:
             print(f'producing for cost {cost} run {run}.....')
-            tr_mod = load_results(dataset, whichtype, run, cost, 'tr')
-            hyrs_mod = load_results(dataset, whichtype, run, cost, 'hyrs')
+            tr_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr')
+            hyrs_mod = load_results(dataset, f'_{whichtype}', run, cost, 'hyrs')
             #load e_y and e_yb mods
             with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype}.pkl', 'rb') as f:
                 e_yb_mod = pickle.load(f)

@@ -47,10 +47,10 @@ class Human(object):
             if self.dataset == 'heart_disease':
                 model_confidences = np.ones(X.shape[0])
                 ###asymmetric case version###############
-                model_confidences[(X['age54.0'] == 0) | (X['sex_Male'] == 0)] = 0
+                #model_confidences[(X['age54.0'] == 0) | (X['sex_Male'] == 0)] = 0
                 #########################################
                 ###feature decision and confidence bias###
-                #model_confidences[(X['age54.0'] == 0)] = 0
+                model_confidences[(X['age54.0'] == 0)] = 0
                 #########################################
             if self.dataset == 'fico':
                 model_confidences = np.ones(X.shape[0]) 
