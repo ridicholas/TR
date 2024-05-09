@@ -199,7 +199,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
                     human_decisions = human.get_decisions(x_test, y_test)
                     human_conf = human.get_confidence(x_test)
-                    conf_mod_preds = conf_mod.predict(x_test_non_binarized)
+                    #conf_mod_preds = conf_mod.predict(x_test_non_binarized)
 
                     learned_adb = ADB(adb_mod)
                     tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
