@@ -552,8 +552,8 @@ def cost_validation(rs, val_rs):
 
 costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 num_runs = 5
-datasets = ['heart_disease', 'fico', 'hr']
-names = ['biased', 'biased_dec_bias', 'offset_01']
+datasets = ['heart_disease']
+names = ['biased_dec_bias']
 
 '''
 dataset = 'heart_disease'
@@ -592,7 +592,7 @@ for dataset in datasets:
     for name in names:
         #if (name == 'biased') and (datasets == 'heart_disease'):
         #    continue
-        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl'):
+        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl') and dataset != 'heart_disease':
             with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
             with open(f'results/{dataset}/{name}_means.pkl', 'rb') as f:
