@@ -87,7 +87,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype #+ 'quickTest' #+ "_dec_bias"
+    whichtype = whichtype + 'quickTest' #+ "_dec_bias"
     r_mean = []
     hyrs_R = []
     tr_R = []
@@ -300,12 +300,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                 totals['t'] = len(y_test)
                 totals['e'] = len(y_test[x_test['age54.0'] == 1])
                 totals['y'] = len(y_test[x_test['age54.0'] == 0])
-                totals['m'] = len(y_test[x_test['NumSatisfactoryTrades24.0'] == 1])
-                totals['f'] = len(y_test[x_test['NumSatisfactoryTrades24.0'] == 0])
-                totals['em'] = len(y_test[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 1)])
-                totals['ef'] = len(y_test[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 0)])
-                totals['ym'] = len(y_test[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 1)])
-                totals['yf'] = len(y_test[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 0)])
+                totals['m'] = len(y_test[x_test['sex_Male'] == 1])
+                totals['f'] = len(y_test[x_test['sex_Male'] == 0])
+                totals['em'] = len(y_test[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)])
+                totals['ef'] = len(y_test[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)])
+                totals['ym'] = len(y_test[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)])
+                totals['yf'] = len(y_test[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)])
 
 
 
@@ -330,13 +330,13 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     decs['t'][which].append(((preds != y_test)*asymCosts).sum())
                     decs['e'][which].append(((preds != y_test)*asymCosts)[x_test['age54.0'] == 1].sum())
                     decs['y'][which].append(((preds != y_test)*asymCosts)[x_test['age54.0'] == 0].sum())
-                    decs['m'][which].append(((preds != y_test)*asymCosts)[x_test['NumSatisfactoryTrades24.0'] == 1].sum())
-                    decs['f'][which].append(((preds != y_test)*asymCosts)[x_test['NumSatisfactoryTrades24.0'] == 0].sum())
+                    decs['m'][which].append(((preds != y_test)*asymCosts)[x_test['sex_Male'] == 1].sum())
+                    decs['f'][which].append(((preds != y_test)*asymCosts)[x_test['sex_Male'] == 0].sum())
 
-                    decs['em'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 1)].sum())
-                    decs['ef'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 0)].sum())
-                    decs['ym'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 1)].sum())
-                    decs['yf'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 0)].sum())
+                    decs['em'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)].sum())
+                    decs['ef'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)].sum())
+                    decs['ym'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
+                    decs['yf'][which].append(((preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
 
 
 
@@ -360,58 +360,58 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     contras['t'][which].append((model_preds != human_decisions).sum())
                     contras['e'][which].append((model_preds != human_decisions)[x_test['age54.0'] == 1].sum())
                     contras['y'][which].append((model_preds != human_decisions)[x_test['age54.0'] == 0].sum())
-                    contras['m'][which].append((model_preds != human_decisions)[x_test['NumSatisfactoryTrades24.0'] == 1].sum())
-                    contras['f'][which].append((model_preds != human_decisions)[x_test['NumSatisfactoryTrades24.0'] == 0].sum())
+                    contras['m'][which].append((model_preds != human_decisions)[x_test['sex_Male'] == 1].sum())
+                    contras['f'][which].append((model_preds != human_decisions)[x_test['sex_Male'] == 0].sum())
 
-                    contras['em'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 1)].sum())
-                    contras['ef'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 0)].sum())
-                    contras['ym'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 1)].sum())
-                    contras['yf'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 0)].sum())
+                    contras['em'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)].sum())
+                    contras['ef'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)].sum())
+                    contras['ym'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
+                    contras['yf'][which].append((model_preds != human_decisions)[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
 
                     model_decs['t'][which].append(((model_preds != y_test)*asymCosts).sum())
                     model_decs['e'][which].append(((model_preds != y_test)*asymCosts)[x_test['age54.0'] == 1].sum())
                     model_decs['y'][which].append(((model_preds != y_test)*asymCosts)[x_test['age54.0'] == 0].sum())
-                    model_decs['m'][which].append(((model_preds != y_test)*asymCosts)[x_test['NumSatisfactoryTrades24.0'] == 1].sum())
-                    model_decs['f'][which].append(((model_preds != y_test)*asymCosts)[x_test['NumSatisfactoryTrades24.0'] == 0].sum())
+                    model_decs['m'][which].append(((model_preds != y_test)*asymCosts)[x_test['sex_Male'] == 1].sum())
+                    model_decs['f'][which].append(((model_preds != y_test)*asymCosts)[x_test['sex_Male'] == 0].sum())
 
-                    model_decs['em'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 1)].sum())
-                    model_decs['ef'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 0)].sum())
-                    model_decs['ym'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 1)].sum())
-                    model_decs['yf'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 0)].sum())
+                    model_decs['em'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)].sum())
+                    model_decs['ef'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)].sum())
+                    model_decs['ym'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
+                    model_decs['yf'][which].append(((model_preds != y_test)*asymCosts)[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
 
                     correct_contras['t'][which].append(((model_preds != human_decisions) & (model_preds == y_test)).sum())
                     correct_contras['e'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[x_test['age54.0'] == 1].sum())
                     correct_contras['y'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[x_test['age54.0'] == 0].sum())
-                    correct_contras['m'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[x_test['NumSatisfactoryTrades24.0'] == 1].sum())
-                    correct_contras['f'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[x_test['NumSatisfactoryTrades24.0'] == 0].sum())
+                    correct_contras['m'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[x_test['sex_Male'] == 1].sum())
+                    correct_contras['f'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[x_test['sex_Male'] == 0].sum())
 
-                    correct_contras['em'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 1)].sum())
-                    correct_contras['ef'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 0)].sum())
-                    correct_contras['ym'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 1)].sum())
-                    correct_contras['yf'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 0)].sum())
+                    correct_contras['em'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)].sum())
+                    correct_contras['ef'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)].sum())
+                    correct_contras['ym'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
+                    correct_contras['yf'][which].append(((model_preds != human_decisions) & (model_preds == y_test))[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
 
                     accepted_condition = (model_preds != human_decisions) & (model_preds == preds)
 
                     accepted_contras['t'][which].append(accepted_condition.sum())
                     accepted_contras['e'][which].append(accepted_condition[x_test['age54.0'] == 1].sum())
                     accepted_contras['y'][which].append(accepted_condition[x_test['age54.0'] == 0].sum())
-                    accepted_contras['m'][which].append(accepted_condition[x_test['NumSatisfactoryTrades24.0'] == 1].sum())
-                    accepted_contras['f'][which].append(accepted_condition[x_test['NumSatisfactoryTrades24.0'] == 0].sum())
-                    accepted_contras['em'][which].append(accepted_condition[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 1)].sum())
-                    accepted_contras['ef'][which].append(accepted_condition[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 0)].sum())
-                    accepted_contras['ym'][which].append(accepted_condition[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 1)].sum())
-                    accepted_contras['yf'][which].append(accepted_condition[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 0)].sum())
+                    accepted_contras['m'][which].append(accepted_condition[x_test['sex_Male'] == 1].sum())
+                    accepted_contras['f'][which].append(accepted_condition[x_test['sex_Male'] == 0].sum())
+                    accepted_contras['em'][which].append(accepted_condition[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)].sum())
+                    accepted_contras['ef'][which].append(accepted_condition[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)].sum())
+                    accepted_contras['ym'][which].append(accepted_condition[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
+                    accepted_contras['yf'][which].append(accepted_condition[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
 
                     if which =='tr':
                         covereds['t'][which].append(model_covereds.sum())
                         covereds['e'][which].append(model_covereds[x_test['age54.0'] == 1].sum())
                         covereds['y'][which].append(model_covereds[x_test['age54.0'] == 0].sum())
-                        covereds['m'][which].append(model_covereds[x_test['NumSatisfactoryTrades24.0'] == 1].sum())
-                        covereds['f'][which].append(model_covereds[x_test['NumSatisfactoryTrades24.0'] == 0].sum())
-                        covereds['em'][which].append(model_covereds[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 1)].sum())
-                        covereds['ef'][which].append(model_covereds[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 0)].sum())
-                        covereds['ym'][which].append(model_covereds[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 1)].sum())
-                        covereds['yf'][which].append(model_covereds[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 0)].sum())
+                        covereds['m'][which].append(model_covereds[x_test['sex_Male'] == 1].sum())
+                        covereds['f'][which].append(model_covereds[x_test['sex_Male'] == 0].sum())
+                        covereds['em'][which].append(model_covereds[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)].sum())
+                        covereds['ef'][which].append(model_covereds[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)].sum())
+                        covereds['ym'][which].append(model_covereds[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
+                        covereds['yf'][which].append(model_covereds[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
                         
 
                 tr_team_w_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_with_reset, y_test))
@@ -451,221 +451,221 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
             
             if run==0:
 
-                tr_conf_confusion = [pd.DataFrame(dtype = 'float', index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
-                                            data = [[tr_mod_confs[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(), 
-                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(),
-                                                     tr_mod_confs[(x_test['NumSatisfactoryTrades24.0'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean()], 
-                                                     [tr_mod_confs[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
-                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
-                                                     tr_mod_confs[(x_test['NumSatisfactoryTrades24.0'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean()], 
+                tr_conf_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[tr_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(), 
+                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr_mod_confs[(x_test['sex_Male'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean()], 
+                                                     [tr_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr_mod_confs[(x_test['sex_Male'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean()], 
                                                      [tr_mod_confs[(x_test['age54.0'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(),
                                                      tr_mod_confs[(x_test['age54.0'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(), 
                                                      tr_mod_confs[(tr_model_preds_with_reset != human_decisions)].mean()]])]
                 
                 
                 
-                brs_conf_confusion = [pd.DataFrame(dtype = 'float', index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
-                                data = [[brs_conf[(x_test['age54.0'] == 1) &(x_test['NumSatisfactoryTrades24.0'] == 1) & (brs_model_preds != human_decisions)].mean(), 
-                                         brs_conf[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 1) & (brs_model_preds != human_decisions)].mean(),
-                                         brs_conf[(x_test['NumSatisfactoryTrades24.0'] == 1) & (brs_model_preds != human_decisions)].mean()], 
-                                         [brs_conf[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 0) & (brs_model_preds != human_decisions)].mean(),
-                                         brs_conf[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 0) & (brs_model_preds != human_decisions)].mean(),
-                                         brs_conf[(x_test['NumSatisfactoryTrades24.0'] == 0) & (brs_model_preds != human_decisions)].mean()], 
+                brs_conf_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                data = [[brs_conf[(x_test['age54.0'] == 1) &(x_test['sex_Male'] == 1) & (brs_model_preds != human_decisions)].mean(), 
+                                         brs_conf[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1) & (brs_model_preds != human_decisions)].mean(),
+                                         brs_conf[(x_test['sex_Male'] == 1) & (brs_model_preds != human_decisions)].mean()], 
+                                         [brs_conf[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0) & (brs_model_preds != human_decisions)].mean(),
+                                         brs_conf[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0) & (brs_model_preds != human_decisions)].mean(),
+                                         brs_conf[(x_test['sex_Male'] == 0) & (brs_model_preds != human_decisions)].mean()], 
                                          [brs_conf[(x_test['age54.0'] == 1) & (brs_model_preds != human_decisions)].mean(),
                                          brs_conf[(x_test['age54.0'] == 0) & (brs_model_preds != human_decisions)].mean(), 
                                          brs_conf[(brs_model_preds != human_decisions)].mean()]])]
                 
-                tr_covered_confusion = [pd.DataFrame(dtype = 'float', index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                tr_covered_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                 data = [[mean(covereds['em']['tr']), mean(covereds['ym']['tr']), mean(covereds['m']['tr'])], 
                                         [mean(covereds['ef']['tr']), mean(covereds['yf']['tr']), mean(covereds['f']['tr'])], 
                                         [mean(covereds['e']['tr']), mean(covereds['y']['tr']), mean(covereds['t']['tr'])]])]
                 
 
-                tr_confusion = [pd.DataFrame(dtype = 'float', index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                tr_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(decs['em']['tr']), mean(decs['ym']['tr']), mean(decs['m']['tr'])], 
                                                     [mean(decs['ef']['tr']), mean(decs['yf']['tr']), mean(decs['f']['tr'])], 
                                                     [mean(decs['e']['tr']), mean(decs['y']['tr']), mean(decs['t']['tr'])]])]
                 
-                tr_model_confusion = [pd.DataFrame(dtype = 'float', index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                tr_model_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(model_decs['em']['tr']), mean(model_decs['ym']['tr']), mean(model_decs['m']['tr'])], 
                                                     [mean(model_decs['ef']['tr']), mean(model_decs['yf']['tr']), mean(model_decs['f']['tr'])], 
                                                     [mean(model_decs['e']['tr']), mean(model_decs['y']['tr']), mean(model_decs['t']['tr'])]])]
                 
-                hyrs_confusion = [pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                hyrs_confusion = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(decs['em']['hyrs']), mean(decs['ym']['hyrs']), mean(decs['m']['hyrs'])], 
                                                     [mean(decs['ef']['hyrs']), mean(decs['yf']['hyrs']), mean(decs['f']['hyrs'])], 
                                                     [mean(decs['e']['hyrs']), mean(decs['y']['hyrs']), mean(decs['t']['hyrs'])]])]
                 
-                hyrs_model_confusion = [pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                hyrs_model_confusion = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(model_decs['em']['hyrs']), mean(model_decs['ym']['hyrs']), mean(model_decs['m']['hyrs'])], 
                                                     [mean(model_decs['ef']['hyrs']), mean(model_decs['yf']['hyrs']), mean(model_decs['f']['hyrs'])], 
                                                     [mean(model_decs['e']['hyrs']), mean(model_decs['y']['hyrs']), mean(model_decs['t']['hyrs'])]])]
                 
-                brs_confusion = [pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'],
+                brs_confusion = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
                 data = [[mean(decs['em']['brs']), mean(decs['ym']['brs']), mean(decs['m']['brs'])], 
                         [mean(decs['ef']['brs']), mean(decs['yf']['brs']), mean(decs['f']['brs'])], 
                         [mean(decs['e']['brs']), mean(decs['y']['brs']), mean(decs['t']['brs'])]])]
                 
-                brs_model_confusion = [pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'],
+                brs_model_confusion = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
                 data = [[mean(model_decs['em']['brs']), mean(model_decs['ym']['brs']), mean(model_decs['m']['brs'])], 
                         [mean(model_decs['ef']['brs']), mean(model_decs['yf']['brs']), mean(model_decs['f']['brs'])], 
                         [mean(model_decs['e']['brs']), mean(model_decs['y']['brs']), mean(model_decs['t']['brs'])]])]
                 
 
-                human_confusion = [pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'],
+                human_confusion = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
                                             data= [[mean(decs['em']['human']), mean(decs['ym']['human']), mean(decs['m']['human'])], 
                                                     [mean(decs['ef']['human']), mean(decs['yf']['human']), mean(decs['f']['human'])], 
                                                     [mean(decs['e']['human']), mean(decs['y']['human']), mean(decs['t']['human'])]])]
 
-                tr_confusion_contras = [pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                tr_confusion_contras = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(contras['em']['tr']), mean(contras['ym']['tr']), mean(contras['m']['tr'])], 
                                                     [mean(contras['ef']['tr']), mean(contras['yf']['tr']), mean(contras['f']['tr'])], 
                                                     [mean(contras['e']['tr']), mean(contras['y']['tr']), mean(contras['t']['tr'])]])]
                 
-                hyrs_confusion_contras = [pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                hyrs_confusion_contras = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(contras['em']['hyrs']), mean(contras['ym']['hyrs']), mean(contras['m']['hyrs'])], 
                                                     [mean(contras['ef']['hyrs']), mean(contras['yf']['hyrs']), mean(contras['f']['hyrs'])], 
                                                     [mean(contras['e']['hyrs']), mean(contras['y']['hyrs']), mean(contras['t']['hyrs'])]])]
 
-                tr_confusion_contras_accepted = [pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                tr_confusion_contras_accepted = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(accepted_contras['em']['tr']), mean(accepted_contras['ym']['tr']), mean(accepted_contras['m']['tr'])], 
                                                     [mean(accepted_contras['ef']['tr']), mean(accepted_contras['yf']['tr']), mean(accepted_contras['f']['tr'])], 
                                                     [mean(accepted_contras['e']['tr']), mean(accepted_contras['y']['tr']), mean(accepted_contras['t']['tr'])]])]
                 
-                tr_confusion_contras_correct = [pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                tr_confusion_contras_correct = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(correct_contras['em']['tr']), mean(correct_contras['ym']['tr']), mean(correct_contras['m']['tr'])], 
                                                     [mean(correct_contras['ef']['tr']), mean(correct_contras['yf']['tr']), mean(correct_contras['f']['tr'])], 
                                                     [mean(correct_contras['e']['tr']), mean(correct_contras['y']['tr']), mean(correct_contras['t']['tr'])]])]
                 
-                hyrs_confusion_contras_correct = [pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                hyrs_confusion_contras_correct = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                             data = [[mean(correct_contras['em']['hyrs']), mean(correct_contras['ym']['hyrs']), mean(correct_contras['m']['hyrs'])], 
                                     [mean(correct_contras['ef']['hyrs']), mean(correct_contras['yf']['hyrs']), mean(correct_contras['f']['hyrs'])], 
                                     [mean(correct_contras['e']['hyrs']), mean(correct_contras['y']['hyrs']), mean(correct_contras['t']['hyrs'])]])]
                 
-                totals_confusion = [pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'],
+                totals_confusion = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
                 data = [[totals['em'], totals['ym'], totals['m']], 
                         [totals['ef'], totals['yf'], totals['f']], 
                         [totals['e'], totals['y'], totals['t']]])]
                 
-                brs_confusion_contras = [pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'],
+                brs_confusion_contras = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
                 data = [[mean(contras['em']['brs']), mean(contras['ym']['brs']), mean(contras['m']['brs'])], 
                         [mean(contras['ef']['brs']), mean(contras['yf']['brs']), mean(contras['f']['brs'])], 
                         [mean(contras['e']['brs']), mean(contras['y']['brs']), mean(contras['t']['brs'])]])]
                 
-                brs_confusion_contras_correct = [pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                brs_confusion_contras_correct = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(correct_contras['em']['brs']), mean(correct_contras['ym']['brs']), mean(correct_contras['m']['brs'])], 
                                                     [mean(correct_contras['ef']['brs']), mean(correct_contras['yf']['brs']), mean(correct_contras['f']['brs'])], 
                                                     [mean(correct_contras['e']['brs']), mean(correct_contras['y']['brs']), mean(correct_contras['t']['brs'])]])]
                 
-                brs_confusion_contras_accepted = [pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                brs_confusion_contras_accepted = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(accepted_contras['em']['brs']), mean(accepted_contras['ym']['brs']), mean(accepted_contras['m']['brs'])], 
                                                     [mean(accepted_contras['ef']['brs']), mean(accepted_contras['yf']['brs']), mean(accepted_contras['f']['brs'])], 
                                                     [mean(accepted_contras['e']['brs']), mean(accepted_contras['y']['brs']), mean(accepted_contras['t']['brs'])]])]
                 
             else:
-                tr_confusion.append(pd.DataFrame(dtype = 'float', index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                tr_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(decs['em']['tr']), mean(decs['ym']['tr']), mean(decs['m']['tr'])], 
                                                     [mean(decs['ef']['tr']), mean(decs['yf']['tr']), mean(decs['f']['tr'])], 
                                                     [mean(decs['e']['tr']), mean(decs['y']['tr']), mean(decs['t']['tr'])]]))
                 
-                tr_conf_confusion.append(pd.DataFrame(dtype = 'float', index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
-                                            data = [[tr_mod_confs[(x_test['age54.0'] == 1) &(x_test['NumSatisfactoryTrades24.0'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(), 
-                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(),
-                                                     tr_mod_confs[(x_test['NumSatisfactoryTrades24.0'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean()], 
-                                                     [tr_mod_confs[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
-                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
-                                                     tr_mod_confs[(x_test['NumSatisfactoryTrades24.0'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean()], 
+                tr_conf_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[tr_mod_confs[(x_test['age54.0'] == 1) &(x_test['sex_Male'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(), 
+                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr_mod_confs[(x_test['sex_Male'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean()], 
+                                                     [tr_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr_mod_confs[(x_test['sex_Male'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean()], 
                                                      [tr_mod_confs[(x_test['age54.0'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(),
                                                      tr_mod_confs[(x_test['age54.0'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(), 
                                                      tr_mod_confs[(tr_model_preds_with_reset != human_decisions)].mean()]]))
                 
-                tr_covered_confusion.append(pd.DataFrame(dtype = 'float', index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                tr_covered_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(decs['em']['tr']), mean(decs['ym']['tr']), mean(decs['m']['tr'])], 
                                                     [mean(decs['ef']['tr']), mean(decs['yf']['tr']), mean(decs['f']['tr'])], 
                                                     [mean(decs['e']['tr']), mean(decs['y']['tr']), mean(decs['t']['tr'])]]))
                 
-                brs_conf_confusion.append(pd.DataFrame(dtype = 'float', index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
-                                data = [[brs_conf[(x_test['age54.0'] == 1) &(x_test['NumSatisfactoryTrades24.0'] == 1) & (brs_model_preds != human_decisions)].mean(), 
-                                         brs_conf[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 1) & (brs_model_preds != human_decisions)].mean(),
-                                         brs_conf[(x_test['NumSatisfactoryTrades24.0'] == 1) & (brs_model_preds != human_decisions)].mean()], 
-                                         [brs_conf[(x_test['age54.0'] == 1) & (x_test['NumSatisfactoryTrades24.0'] == 0) & (brs_model_preds != human_decisions)].mean(),
-                                         brs_conf[(x_test['age54.0'] == 0) & (x_test['NumSatisfactoryTrades24.0'] == 0) & (brs_model_preds != human_decisions)].mean(),
-                                         brs_conf[(x_test['NumSatisfactoryTrades24.0'] == 0) & (brs_model_preds != human_decisions)].mean()], 
+                brs_conf_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                data = [[brs_conf[(x_test['age54.0'] == 1) &(x_test['sex_Male'] == 1) & (brs_model_preds != human_decisions)].mean(), 
+                                         brs_conf[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1) & (brs_model_preds != human_decisions)].mean(),
+                                         brs_conf[(x_test['sex_Male'] == 1) & (brs_model_preds != human_decisions)].mean()], 
+                                         [brs_conf[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0) & (brs_model_preds != human_decisions)].mean(),
+                                         brs_conf[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0) & (brs_model_preds != human_decisions)].mean(),
+                                         brs_conf[(x_test['sex_Male'] == 0) & (brs_model_preds != human_decisions)].mean()], 
                                          [brs_conf[(x_test['age54.0'] == 1) & (brs_model_preds != human_decisions)].mean(),
                                          brs_conf[(x_test['age54.0'] == 0) & (brs_model_preds != human_decisions)].mean(), 
                                          brs_conf[(brs_model_preds != human_decisions)].mean()]]))
                 
-                brs_model_confusion.append(pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'],
+                brs_model_confusion.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
                 data = [[mean(model_decs['em']['brs']), mean(model_decs['ym']['brs']), mean(model_decs['m']['brs'])], 
                         [mean(model_decs['ef']['brs']), mean(model_decs['yf']['brs']), mean(model_decs['f']['brs'])], 
                         [mean(model_decs['e']['brs']), mean(model_decs['y']['brs']), mean(model_decs['t']['brs'])]]))
                 
-                tr_model_confusion.append(pd.DataFrame(dtype = 'float', index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                tr_model_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(model_decs['em']['tr']), mean(model_decs['ym']['tr']), mean(model_decs['m']['tr'])], 
                                                     [mean(model_decs['ef']['tr']), mean(model_decs['yf']['tr']), mean(model_decs['f']['tr'])], 
                                                     [mean(model_decs['e']['tr']), mean(model_decs['y']['tr']), mean(model_decs['t']['tr'])]]))
                 
-                hyrs_confusion.append(pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                hyrs_confusion.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(decs['em']['hyrs']), mean(decs['ym']['hyrs']), mean(decs['m']['hyrs'])], 
                                                     [mean(decs['ef']['hyrs']), mean(decs['yf']['hyrs']), mean(decs['f']['hyrs'])], 
                                                     [mean(decs['e']['hyrs']), mean(decs['y']['hyrs']), mean(decs['t']['hyrs'])]]))
                 
-                hyrs_model_confusion.append(pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                hyrs_model_confusion.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(model_decs['em']['hyrs']), mean(model_decs['ym']['hyrs']), mean(model_decs['m']['hyrs'])], 
                                                     [mean(model_decs['ef']['hyrs']), mean(model_decs['yf']['hyrs']), mean(model_decs['f']['hyrs'])], 
                                                     [mean(model_decs['e']['hyrs']), mean(model_decs['y']['hyrs']), mean(model_decs['t']['hyrs'])]]))
                 
-                hyrs_confusion_contras.append(pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                hyrs_confusion_contras.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                             data = [[mean(contras['em']['hyrs']), mean(contras['ym']['hyrs']), mean(contras['m']['hyrs'])], 
                                     [mean(contras['ef']['hyrs']), mean(contras['yf']['hyrs']), mean(contras['f']['hyrs'])], 
                                     [mean(contras['e']['hyrs']), mean(contras['y']['hyrs']), mean(contras['t']['hyrs'])]]))
                 
-                brs_confusion.append(pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'],
+                brs_confusion.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
                 data = [[mean(decs['em']['brs']), mean(decs['ym']['brs']), mean(decs['m']['brs'])], 
                         [mean(decs['ef']['brs']), mean(decs['yf']['brs']), mean(decs['f']['brs'])], 
                         [mean(decs['e']['brs']), mean(decs['y']['brs']), mean(decs['t']['brs'])]]))
                 
 
-                human_confusion.append(pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'],
+                human_confusion.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
                                             data= [[mean(decs['em']['human']), mean(decs['ym']['human']), mean(decs['m']['human'])], 
                                                     [mean(decs['ef']['human']), mean(decs['yf']['human']), mean(decs['f']['human'])], 
                                                     [mean(decs['e']['human']), mean(decs['y']['human']), mean(decs['t']['human'])]]))
 
-                tr_confusion_contras.append(pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                tr_confusion_contras.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(contras['em']['tr']), mean(contras['ym']['tr']), mean(contras['m']['tr'])], 
                                                     [mean(contras['ef']['tr']), mean(contras['yf']['tr']), mean(contras['f']['tr'])], 
                                                     [mean(contras['e']['tr']), mean(contras['y']['tr']), mean(contras['t']['tr'])]]))
-                tr_confusion_contras_accepted.append(pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                tr_confusion_contras_accepted.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(accepted_contras['em']['tr']), mean(accepted_contras['ym']['tr']), mean(accepted_contras['m']['tr'])], 
                                                     [mean(accepted_contras['ef']['tr']), mean(accepted_contras['yf']['tr']), mean(accepted_contras['f']['tr'])], 
                                                     [mean(accepted_contras['e']['tr']), mean(accepted_contras['y']['tr']), mean(accepted_contras['t']['tr'])]]))
                 
-                tr_confusion_contras_correct.append(pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                tr_confusion_contras_correct.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(correct_contras['em']['tr']), mean(correct_contras['ym']['tr']), mean(correct_contras['m']['tr'])], 
                                                     [mean(correct_contras['ef']['tr']), mean(correct_contras['yf']['tr']), mean(correct_contras['f']['tr'])], 
                                                     [mean(correct_contras['e']['tr']), mean(correct_contras['y']['tr']), mean(correct_contras['t']['tr'])]]))
                 
-                hyrs_confusion_contras_correct.append(pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                hyrs_confusion_contras_correct.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                             data = [[mean(correct_contras['em']['hyrs']), mean(correct_contras['ym']['hyrs']), mean(correct_contras['m']['hyrs'])], 
                                     [mean(correct_contras['ef']['hyrs']), mean(correct_contras['yf']['hyrs']), mean(correct_contras['f']['hyrs'])], 
                                     [mean(correct_contras['e']['hyrs']), mean(correct_contras['y']['hyrs']), mean(correct_contras['t']['hyrs'])]]))
                 
-                totals_confusion.append(pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'],
+                totals_confusion.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
                 data = [[totals['em'], totals['ym'], totals['m']], 
                         [totals['ef'], totals['yf'], totals['f']], 
                         [totals['e'], totals['y'], totals['t']]]))
                 
-                brs_confusion_contras.append(pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'],
+                brs_confusion_contras.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'],
                 data = [[mean(contras['em']['brs']), mean(contras['ym']['brs']), mean(contras['m']['brs'])], 
                         [mean(contras['ef']['brs']), mean(contras['yf']['brs']), mean(contras['f']['brs'])], 
                         [mean(contras['e']['brs']), mean(contras['y']['brs']), mean(contras['t']['brs'])]]))
                 
-                brs_confusion_contras_correct.append(pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                brs_confusion_contras_correct.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(correct_contras['em']['brs']), mean(correct_contras['ym']['brs']), mean(correct_contras['m']['brs'])], 
                                                     [mean(correct_contras['ef']['brs']), mean(correct_contras['yf']['brs']), mean(correct_contras['f']['brs'])], 
                                                     [mean(correct_contras['e']['brs']), mean(correct_contras['y']['brs']), mean(correct_contras['t']['brs'])]]))
                 
-                brs_confusion_contras_accepted.append(pd.DataFrame(index=['ManyTrades', 'FewTrades', 'Total'], columns=['HighRisk', 'LowRisk', 'Total'], 
+                brs_confusion_contras_accepted.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(accepted_contras['em']['brs']), mean(accepted_contras['ym']['brs']), mean(accepted_contras['m']['brs'])], 
                                                     [mean(accepted_contras['ef']['brs']), mean(accepted_contras['yf']['brs']), mean(accepted_contras['f']['brs'])], 
                                                     [mean(accepted_contras['e']['brs']), mean(accepted_contras['y']['brs']), mean(accepted_contras['t']['brs'])]]))
@@ -740,7 +740,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 costs = [0.0]
 num_runs = 5
 dataset = 'heart_disease'
-case1_means, case1_std, case1_rs = make_results(dataset, 'biased_dec_bias', num_runs, costs, False, asym_costs=[1,1])
+case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, costs, False, asym_costs=[1,1])
    
 
 print('pause')

@@ -561,6 +561,33 @@ class hyrs(object):
         Yhat[nind] = 0
         Yhat[pind] = 1
         return Yhat, covered, Yb
+    
+    def expected_loss_filter(self, x, y_rules, conf_human, p_y=None, e_human_responses=None, conf_model=None, fA=None, asym_loss=[1,1], contradiction_reg=0.0):
+   
+        conf_model, agreement = self.get_model_conf_agreement(x, e_human_responses)
+        yb = e_human_responses
+        
+        agreement0 = (y_rules == 0) #hypothetical if human chooses 0
+        agreement1 = (y_rules == 1) #hypothetical if human chooses 1
+        conf_human0 = conf_human.copy()
+        conf_human1 = conf_human.copy()
+        conf_human0[e_human_responses == 1] = -conf_human0[e_human_responses == 1] #confidence inverted if human expected to choose 1 because situation is hypothetical human chooses 0
+        conf_human1[e_human_responses == 0] = -conf_human1[e_human_responses == 0] #confidence inverted if human expected to choose 0 because situation is hypothetical human chooses 1
+
+        p_a = ((yb==0).astype(int)*fA(conf_human0, conf_model, agreement0)) + ((yb==1).astype(int)*fA(conf_human1, conf_model, agreement1))
+
+
+        e_loss_from_accept = p_a*((p_y[:, 0]*(y_rules == 1).astype(int)*asym_loss[1]) + p_y[:, 1]*(y_rules == 0).astype(int)*asym_loss[0])
+        e_loss_from_reject = (1-p_a)*((p_y[:,0]*(yb==1).astype(int)*asym_loss[1]) + p_y[:, 1]*(yb==0).astype(int)*asym_loss[0])
+        e_loss_from_contradict = contradiction_reg*(((yb==0).astype(int)*(y_rules==1).astype(int)) + (yb==1).astype(int)*(y_rules==0).astype(int))
+
+        e_loss_from_advising = e_loss_from_accept + e_loss_from_reject + e_loss_from_contradict
+
+        e_loss_from_withholding = p_y[:,0]*(yb==1).astype(int)*asym_loss[1] + p_y[:,1]*(yb==0).astype(int)*asym_loss[0]
+
+        reset = e_loss_from_withholding < e_loss_from_advising
+
+        return reset
 
     def predict(self, df, Yb):
         prules = [self.prules[i] for i in self.prs_min]
@@ -688,5 +715,6 @@ def binary_code(df, collist, Nlevel):
             threshold = df[col].quantile(float(q) / Nlevel)
             df[col + '_geq_' + str(int(q)) + 'q'] = (df[col] >= threshold).astype(float)
     df.drop(collist, axis=1, inplace=True)
+
 
 

@@ -209,8 +209,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
+                    hyrs_reset = hyrs_mod.expected_loss_filter(x_test, hyrs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=None, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=cost)
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
-                    brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, learned_adb.ADB_model_wrapper)
+                    hyrs_team_preds_w_reset = hyrs_team_preds.copy()
+                    hyrs_team_preds_w_reset[hyrs_reset] = human_decisions[hyrs_reset]
+                    hyrs_model_preds_w_reset = hyrs_model_preds.copy()
+                    hyrs_model_preds_w_reset[hyrs_reset] = human_decisions[hyrs_reset]
 
                     hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
                     hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
@@ -552,8 +556,8 @@ def cost_validation(rs, val_rs):
 
 costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 num_runs = 5
-datasets = ['heart_disease']
-names = ['biased_dec_bias']
+datasets = ['heart_disease', 'fico', 'hr']
+names = ['biased', 'biased_dec_bias', 'offset_01']
 
 '''
 dataset = 'heart_disease'
@@ -592,7 +596,7 @@ for dataset in datasets:
     for name in names:
         #if (name == 'biased') and (datasets == 'heart_disease'):
         #    continue
-        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl') and dataset != 'heart_disease':
+        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl'):
             with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
             with open(f'results/{dataset}/{name}_means.pkl', 'rb') as f:
