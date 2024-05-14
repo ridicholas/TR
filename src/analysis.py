@@ -611,13 +611,12 @@ for dataset in datasets:
             with open(f'results/{dataset}/val_{name}_std.pkl', 'rb') as f:
                 val_std = pickle.load(f)
 
-            if dataset == 'heart_disease' and name == 'biased_dec_bias':
-                print('pause')
+
             cval_means, cval_stderss, cval_rs = cost_validation(rs, val_rs)
             rval_means, rval_stderss, rval_rs = robust_rules(rs, val_rs)  
             ccval_means, ccval_stderss, ccval_rs = cost_validation(val_rs, val_rs) 
             rcval_means, rcval_stderss, rcval_rs = robust_rules(cval_rs, ccval_rs)   
-            make_multi_TL_v_cost_plot(means, std, name, axs[datarow, behaviorrow])
+            make_multi_TL_v_cost_plot(rcval_means, rcval_stderss, name, axs[datarow, behaviorrow])
             #make_multi_TL_v_cost_plot(means, std, name, axs[datarow, behaviorrow])
             
 
