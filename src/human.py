@@ -47,10 +47,10 @@ class Human(object):
             if self.dataset == 'heart_disease':
                 model_confidences = np.ones(X.shape[0])
                 ###asymmetric case version###############
-                model_confidences[(X['age54.0'] == 0) | (X['sex_Male'] == 0)] = 0
+                #model_confidences[(X['age54.0'] == 0) | (X['sex_Male'] == 0)] = 0
                 #########################################
                 ###feature decision and confidence bias###
-                #model_confidences[(X['age54.0'] == 0)] = 0
+                model_confidences[(X['age54.0'] == 0)] = 0
                 #########################################
             if self.dataset == 'fico':
                 model_confidences = np.ones(X.shape[0]) 
@@ -170,10 +170,10 @@ class Human(object):
                 #confidences[(X['age54.0'] == 1)] = 0.3
                 ##########################################
                 ####for feature decision and confidence bias#############
-                confidences[(X['sex_Male'] == 0) & (X['age54.0'] == 1)] = 0 #1 strong
-                confidences[(X['sex_Male'] == 1) & (X['age54.0'] == 0)] = 1 #1 strong
-                confidences[(X['sex_Male'] == 0) & (X['age54.0'] == 0)] = 0 #0.2 #strong
-                confidences[(X['sex_Male'] == 1) & (X['age54.0'] == 1)] = 0 #0.2 #weak
+                confidences[(X['sex_Male'] == 0) & (X['age54.0'] == 1)] = 1 #1 weak
+                confidences[(X['sex_Male'] == 1) & (X['age54.0'] == 0)] = 0.2 #1 strong
+                confidences[(X['sex_Male'] == 0) & (X['age54.0'] == 0)] = 1 #0.2 #strong
+                confidences[(X['sex_Male'] == 1) & (X['age54.0'] == 1)] = 0.2 #0.2 #weak
                 #########################################################
 
                 ####for regular case study#######################
