@@ -64,7 +64,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
     # make human
     if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/{human_name}.pkl'):
-        human = Human(human_name, x_human_train, y_human_train, dataset=dataset, decision_bias=human_decision_bias)
+        human = Human(human_name, x_human_train, y_human_train, dataset=dataset, decision_bias=human_decision_bias, alteration=custom_name)
         human_name = human_name + custom_name
         human.train_decisions = human.get_decisions(x_train, y_train)
         human.val_decisions = human.get_decisions(x_val, y_val)
@@ -227,8 +227,12 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             tr_model.make_lite()
             pickle.dump(tr_model, f)
 
-#run('heart_disease', 0, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.4, remake_humans=True, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
-#run('heart_disease', 1, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.4, remake_humans=True, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
+#run('heart_disease', 0, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='case', use_true=False, subsplit=1)
+#run('heart_disease', 1, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='case', use_true=False, subsplit=1)
+#run('heart_disease', 2, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='case', use_true=False, subsplit=1)
+#run('heart_disease', 3, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='case', use_true=False, subsplit=1)
+#run('heart_disease', 4, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='case', use_true=False, subsplit=1)
+#run('heart_disease', 1, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.2, remake_humans=True, human_decision_bias=True, custom_name='case', use_true=False, subsplit=1)
 #run('heart_disease', 2, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.4, remake_humans=True, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
 #run('heart_disease', 4, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
 #run('heart_disease', 2, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)

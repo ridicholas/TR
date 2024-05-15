@@ -87,7 +87,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype + 'quickTest' #+ "_dec_bias"
+    whichtype = whichtype #+ 'case' #+ "_dec_bias"
     r_mean = []
     hyrs_R = []
     tr_R = []
@@ -109,18 +109,19 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
 
 
-        brs_mod = load_results(dataset, whichtype , run, 0.0, 'brs')
+        
 
 
 
         for cost in costs:
             print(f'producing for cost {cost} run {run}.....')
+            brs_mod = load_results(dataset, whichtype , run, cost, 'brs')
             tr_mod = load_results(dataset, whichtype, run, cost, 'tr')
             hyrs_mod = load_results(dataset, whichtype, run, cost, 'hyrs')
 
             #load e_y and e_yb mods
-            with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype}.pkl', 'rb') as f:
-                e_yb_mod = pickle.load(f)
+            #with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype}.pkl', 'rb') as f:
+            #    e_yb_mod = pickle.load(f)
             with open(f'results/{dataset}/run{run}/cost{float(cost)}/ey_model_{whichtype}.pkl', 'rb') as f:
                 e_y_mod = pickle.load(f)
 
@@ -740,7 +741,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 costs = [0.0]
 num_runs = 5
 dataset = 'heart_disease'
-case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, costs, False, asym_costs=[1,1])
+case1_means, case1_std, case1_rs = make_results(dataset, 'biased_dec_bias', num_runs, costs, False, asym_costs=[1,1])
    
 
 print('pause')

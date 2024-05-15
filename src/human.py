@@ -6,8 +6,9 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import StandardScaler
 
 class Human(object):
-    def __init__(self, name, X, y, dataset=None, decision_bias=False) -> None:
+    def __init__(self, name, X, y, dataset=None, decision_bias=False, alteration='') -> None:
         self.name = name
+        self.alteration=alteration
         self.X = X.dropna(axis=1)
         self.y = y
         self.scaler = StandardScaler().fit(self.X)
@@ -50,7 +51,11 @@ class Human(object):
                 #model_confidences[(X['age54.0'] == 0) | (X['sex_Male'] == 0)] = 0
                 #########################################
                 ###feature decision and confidence bias###
-                model_confidences[(X['age54.0'] == 0)] = 0
+                if not(hasattr(self, 'alteration')) or self.alteration == '':
+                    model_confidences[(X['age54.0'] == 0)] = 0
+                elif self.alteration == 'case':
+                    model_confidences[(X['sex_Male'] == 1)] = 0
+                
                 #########################################
             if self.dataset == 'fico':
                 model_confidences = np.ones(X.shape[0]) 
@@ -170,10 +175,17 @@ class Human(object):
                 #confidences[(X['age54.0'] == 1)] = 0.3
                 ##########################################
                 ####for feature decision and confidence bias#############
-                confidences[(X['age54.0'] == 1) & (start_confidences <= self.confVal)] = 0.9
-                confidences[(X['age54.0'] == 1) & (start_confidences > self.confVal)] = 1
-                confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
-                confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.2
+                if not(hasattr(self, 'alteration')) or self.alteration == '':
+                    confidences[(X['age54.0'] == 1) & (start_confidences <= self.confVal)] = 0.9
+                    confidences[(X['age54.0'] == 1) & (start_confidences > self.confVal)] = 0.2
+                    confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
+                    confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.2
+                
+                else:
+                    confidences[(X['age54.0'] == 1) & (start_confidences <= self.confVal)] = 0.9
+                    confidences[(X['age54.0'] == 1) & (start_confidences > self.confVal)] = 1
+                    confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
+                    confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.2
                 #########################################################
 
                 ####for regular case study#######################
