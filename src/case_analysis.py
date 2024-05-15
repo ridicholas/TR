@@ -87,7 +87,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype #+ 'case' #+ "_dec_bias"
+    whichtype = whichtype + 'case' #+ "_dec_bias"
     r_mean = []
     hyrs_R = []
     tr_R = []
@@ -741,7 +741,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 costs = [0.0]
 num_runs = 5
 dataset = 'heart_disease'
-case1_means, case1_std, case1_rs = make_results(dataset, 'biased_dec_bias', num_runs, costs, False, asym_costs=[1,1])
+case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, costs, False, asym_costs=[1,1])
    
 
 print('pause')

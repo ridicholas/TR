@@ -556,8 +556,8 @@ def cost_validation(rs, val_rs):
 
 costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 num_runs = 5
-datasets = ['heart_disease', 'fico', 'hr']
-names = ['biased', 'biased_dec_bias', 'offset_01']
+datasets = ['heart_disease']
+names = ['biased_dec_bias']
 
 '''
 dataset = 'heart_disease'
@@ -583,8 +583,8 @@ rcval_means, rcval_stderss, rcval_rs = robust_rules(cval_rs, ccval_rs)
 make_TL_v_cost_plot(rcval_means, rcval_stderss, name)
 
 '''
-fig, axs = plt.subplots(3,3)
-fig.set_size_inches(11.5,7)
+#fig, axs = plt.subplots(3,3)
+#fig.set_size_inches(11.5,7)
 
 datarow = 0
 behaviorrow = 0
@@ -596,7 +596,7 @@ for dataset in datasets:
     for name in names:
         #if (name == 'biased') and (datasets == 'heart_disease'):
         #    continue
-        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl'):
+        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl') and dataset != 'heart_disease':
             with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
             with open(f'results/{dataset}/{name}_means.pkl', 'rb') as f:
@@ -644,6 +644,7 @@ for dataset in datasets:
     datarow += 1
     behaviorrow = 0
 
+'''
 for ax, col in zip(axs[0], cols):
     ax.annotate(col, xy=(0.5, 1), xytext=(0, pad),
                 xycoords='axes fraction', textcoords='offset points',
@@ -657,26 +658,9 @@ for ax, row in zip(axs[:,0], rows):
 fig.tight_layout()
 fig.savefig(f'results/combined_plots_top3only.png', dpi=200)
 
+'''
 
 
-#cval_of1_means, cval_of1_stderss, cval_of1_rs = cost_validation(of1_rs, val_of1_rs)        
-#cval_of2_means, cval_of2_stderss, cval_of2_rs = cost_validation(of2_rs, val_of2_rs)   
-cval_bia_means, cval_bia_stderss, cval_bia_rs = cost_validation(bia_rs, val_bia_rs)     
-
-
-#rval_of1_means, rval_of1_stderss, rval_of1_rs = robust_rules(of1_rs, val_of1_rs)        
-#rval_of2_means, rval_of2_stderss, rval_of1_rs = robust_rules(of2_rs, val_of2_rs)     
-rval_bia_means, rval_bia_stderss, rval_bia_rs = robust_rules(bia_rs, val_bia_rs)    
-
-#ccval_of1_means, ccval_of1_stderss, ccval_of1_rs = cost_validation(val_of1_rs, val_of1_rs)        
-#ccval_of2_means, ccval_of2_stderss, ccval_of2_rs = cost_validation(val_of2_rs, val_of2_rs)   
-ccval_bia_means, ccval_bia_stderss, ccval_bia_rs = cost_validation(val_bia_rs, val_bia_rs)  
-
-
-
-#rcval_of1_means, rcval_of1_stderss, rcval_of1_rs = robust_rules(cval_of1_rs, ccval_of1_rs)        
-#rcval_of2_means, rcval_of2_stderss, rcval_of1_rs = robust_rules(cval_of2_rs, ccval_of2_rs)     
-rcval_bia_means, rcval_bia_stderss, rcval_bia_rs = robust_rules(cval_bia_rs, ccval_bia_rs)     
 
     
 

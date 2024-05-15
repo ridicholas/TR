@@ -53,7 +53,7 @@ class Human(object):
                 ###feature decision and confidence bias###
                 if not(hasattr(self, 'alteration')) or self.alteration == '':
                     model_confidences[(X['age54.0'] == 0)] = 0
-                elif self.alteration == 'case':
+                else:
                     model_confidences[(X['sex_Male'] == 1)] = 0
                 
                 #########################################
