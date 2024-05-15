@@ -51,7 +51,7 @@ class Human(object):
                 #model_confidences[(X['age54.0'] == 0) | (X['sex_Male'] == 0)] = 0
                 #########################################
                 ###feature decision and confidence bias###
-                if not(hasattr(self, 'alteration')) or self.alteration == '':
+                if not(hasattr(self, 'alteration')) or self.alteration == '' or self.alteration == '_dec_bias':
                     model_confidences[(X['age54.0'] == 0)] = 0
                 else:
                     model_confidences[(X['sex_Male'] == 1)] = 0
@@ -145,12 +145,12 @@ class Human(object):
         
     
     def heart_confidence_transformation(self, X=None, t_type=None):
-        if self.decision_bias:
-            if self.dataset == 'heart_disease':
-                start_confidences = np.ones(X.shape[0])
-                start_confidences[X['age54.0'] == 0] = 0       
-        else:
-            start_confidences = np.abs(self.model.predict_proba(self.scaler.transform(X))[:, 1] - 0.5)*2
+        #if self.decision_bias:
+        #    if self.dataset == 'heart_disease':
+        #        start_confidences = np.ones(X.shape[0])
+        #        start_confidences[X['age54.0'] == 0] = 0       
+        #else:
+        start_confidences = np.abs(self.model.predict_proba(self.scaler.transform(X))[:, 1] - 0.5)*2
 
         if t_type==None or t_type=='calibrated':
             
@@ -175,15 +175,15 @@ class Human(object):
                 #confidences[(X['age54.0'] == 1)] = 0.3
                 ##########################################
                 ####for feature decision and confidence bias#############
-                if not(hasattr(self, 'alteration')) or self.alteration == '':
-                    confidences[(X['age54.0'] == 1) & (start_confidences <= self.confVal)] = 0.9
-                    confidences[(X['age54.0'] == 1) & (start_confidences > self.confVal)] = 0.2
-                    confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
-                    confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.2
+                if not(hasattr(self, 'alteration')) or self.alteration == '' or self.alteration == '_dec_bias':
+                    confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
+                    confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.2
+                    confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal)] = 0.9
+                    confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 0.2
                 
                 else:
                     confidences[(X['age54.0'] == 1) & (start_confidences <= self.confVal)] = 0.9
-                    confidences[(X['age54.0'] == 1) & (start_confidences > self.confVal)] = 1
+                    confidences[(X['age54.0'] == 1) & (start_confidences > self.confVal)] = 0.2
                     confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
                     confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.2
                 #########################################################

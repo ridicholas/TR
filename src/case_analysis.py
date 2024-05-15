@@ -87,7 +87,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype + 'case' #+ "_dec_bias"
+    whichtype = whichtype #+ 'case' #+ "_dec_bias"
     r_mean = []
     hyrs_R = []
     tr_R = []
@@ -115,7 +115,10 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
         for cost in costs:
             print(f'producing for cost {cost} run {run}.....')
-            brs_mod = load_results(dataset, whichtype , run, cost, 'brs')
+            try:
+                brs_mod = load_results(dataset, whichtype , run, cost, 'brs')
+            except: 
+                brs_mod = load_results(dataset, whichtype , run, 0.0, 'brs')
             tr_mod = load_results(dataset, whichtype, run, cost, 'tr')
             hyrs_mod = load_results(dataset, whichtype, run, cost, 'hyrs')
 
@@ -280,7 +283,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     tr_mod_confs = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)[0]
                 
 
-                    hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
+                    hyrs_model_preds, hyrs_model_covered, _ = hyrs_mod.predict(x_test, human_decisions)
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
                     #brs_reset = brs_expected_loss_filter(brs_mod, x_test, brs_model_preds, conf_human=human_conf, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized), conf_model=brs_conf, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=0.0)
@@ -346,13 +349,16 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
 
                     
-                    if which =='tr':
+                    if which == 'tr':
                         model_preds = tr_model_preds_with_reset.copy()
                         model_covereds = np.zeros(len(model_preds), dtype=bool)
                         model_covereds[tr_mod_covered_w_reset] = True
+                    
 
                     elif which == 'hyrs':
                         model_preds = hyrs_model_preds.copy()
+                        model_covereds = np.zeros(len(model_preds), dtype=bool)
+                        model_covereds[hyrs_model_covered] = True
                     elif which == 'brs':
                         model_preds = brs_model_preds.copy()
                     elif which == 'human':
@@ -403,7 +409,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     accepted_contras['ym'][which].append(accepted_condition[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
                     accepted_contras['yf'][which].append(accepted_condition[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
 
-                    if which =='tr':
+                    if which in ['tr', 'hyrs']:
                         covereds['t'][which].append(model_covereds.sum())
                         covereds['e'][which].append(model_covereds[x_test['age54.0'] == 1].sum())
                         covereds['y'][which].append(model_covereds[x_test['age54.0'] == 0].sum())
@@ -480,6 +486,11 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                 data = [[mean(covereds['em']['tr']), mean(covereds['ym']['tr']), mean(covereds['m']['tr'])], 
                                         [mean(covereds['ef']['tr']), mean(covereds['yf']['tr']), mean(covereds['f']['tr'])], 
                                         [mean(covereds['e']['tr']), mean(covereds['y']['tr']), mean(covereds['t']['tr'])]])]
+                
+                hyrs_covered_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                data = [[mean(covereds['em']['hyrs']), mean(covereds['ym']['hyrs']), mean(covereds['m']['hyrs'])], 
+                                        [mean(covereds['ef']['hyrs']), mean(covereds['yf']['hyrs']), mean(covereds['f']['hyrs'])], 
+                                        [mean(covereds['e']['hyrs']), mean(covereds['y']['hyrs']), mean(covereds['t']['hyrs'])]])]
                 
 
                 tr_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
@@ -584,6 +595,11 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                             data = [[mean(decs['em']['tr']), mean(decs['ym']['tr']), mean(decs['m']['tr'])], 
                                                     [mean(decs['ef']['tr']), mean(decs['yf']['tr']), mean(decs['f']['tr'])], 
                                                     [mean(decs['e']['tr']), mean(decs['y']['tr']), mean(decs['t']['tr'])]]))
+                
+                hyrs_covered_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(decs['em']['hyrs']), mean(decs['ym']['hyrs']), mean(decs['m']['hyrs'])], 
+                                                    [mean(decs['ef']['hyrs']), mean(decs['yf']['hyrs']), mean(decs['f']['hyrs'])], 
+                                                    [mean(decs['e']['hyrs']), mean(decs['y']['hyrs']), mean(decs['t']['hyrs'])]]))
                 
                 brs_conf_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                 data = [[brs_conf[(x_test['age54.0'] == 1) &(x_test['sex_Male'] == 1) & (brs_model_preds != human_decisions)].mean(), 
@@ -710,6 +726,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     
     tr_conf_confusion = pd.concat(tr_conf_confusion)
     tr_covered_confusion = pd.concat(tr_covered_confusion)
+    hyrs_covered_confusion = pd.concat(hyrs_covered_confusion)
     brs_confusion = pd.concat(brs_confusion)
     brs_conf_confusion = pd.concat(brs_conf_confusion)
     hyrs_confusion = pd.concat(hyrs_confusion)
@@ -738,10 +755,10 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
 
 
-costs = [0.0]
+costs = [0.2]
 num_runs = 5
 dataset = 'heart_disease'
-case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, costs, False, asym_costs=[1,1])
+case1_means, case1_std, case1_rs = make_results(dataset, 'biased_dec_bias', num_runs, costs, False, asym_costs=[1,1])
    
 
 print('pause')
