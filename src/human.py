@@ -176,13 +176,13 @@ class Human(object):
                 ##########################################
                 ####for feature decision and confidence bias#############
                 if not(hasattr(self, 'alteration')) or self.alteration == '' or self.alteration == '_dec_bias':
-                    confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
-                    confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.2
-                    confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal)] = 0.9
-                    confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 0.2
+                    confidences[(X['age54.0'] == 1) & (start_confidences <= self.confVal)] = 0.9
+                    confidences[(X['age54.0'] == 1) & (start_confidences > self.confVal)] = 1
+                    confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
+                    confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.2
                 
                 else:
-                    confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.2
+                    confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.95
                     confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.95
                     confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal)] = 0.95
                     confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 0.95
