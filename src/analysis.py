@@ -14,6 +14,8 @@ from run import evaluate_adb_model
 from copy import deepcopy
 import os
 
+os.chdir("..")
+
 def load_datasets(dataset, run_num):
     x_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain.csv', index_col=0).reset_index(drop=True)
     y_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/ytrain.csv', index_col=0).iloc[:, 0].reset_index(drop=True)
@@ -556,8 +558,8 @@ def cost_validation(rs, val_rs):
 
 costs = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 num_runs = 5
-datasets = ['heart_disease', 'fico', 'hr']
-names = ['biased', 'biased_dec_bias', 'offset_01']
+datasets = ['heart_disease']
+names = ['biased_dec_bias']
 
 '''
 dataset = 'heart_disease'
@@ -583,8 +585,8 @@ rcval_means, rcval_stderss, rcval_rs = robust_rules(cval_rs, ccval_rs)
 make_TL_v_cost_plot(rcval_means, rcval_stderss, name)
 
 '''
-fig, axs = plt.subplots(3,3)
-fig.set_size_inches(11.5,7)
+#fig, axs = plt.subplots(3,3)
+#fig.set_size_inches(11.5,7)
 
 datarow = 0
 behaviorrow = 0
@@ -596,7 +598,7 @@ for dataset in datasets:
     for name in names:
         #if (name == 'biased') and (datasets == 'heart_disease'):
         #    continue
-        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl'):
+        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl') and dataset != 'heart_disease':
             with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
             with open(f'results/{dataset}/{name}_means.pkl', 'rb') as f:
@@ -643,7 +645,7 @@ for dataset in datasets:
         behaviorrow += 1
     datarow += 1
     behaviorrow = 0
-
+'''
 for ax, col in zip(axs[0], cols):
     ax.annotate(col, xy=(0.5, 1), xytext=(0, pad),
                 xycoords='axes fraction', textcoords='offset points',
@@ -679,7 +681,7 @@ ccval_bia_means, ccval_bia_stderss, ccval_bia_rs = cost_validation(val_bia_rs, v
 rcval_bia_means, rcval_bia_stderss, rcval_bia_rs = robust_rules(cval_bia_rs, ccval_bia_rs)     
 
     
-
+'''
     
 
 print('pause')
