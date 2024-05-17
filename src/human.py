@@ -51,7 +51,7 @@ class Human(object):
                 #model_confidences[(X['age58.0'] == 0) | (X['sex_Male'] == 0)] = 0
                 #########################################
                 ###feature decision and confidence bias###
-                if not(hasattr(self, 'alteration')) or self.alteration == '' or self.alteration == '_dec_bias':
+                if not(hasattr(self, 'alteration')) or self.alteration == '' or self.alteration == '_dec_bias' or self.alteration == 'quick':
                     model_confidences[(X['age58.0'] == 0)] = 0
                 else:
                     model_confidences[(X['sex_Male'] == 1)] = 0
@@ -75,8 +75,7 @@ class Human(object):
         low = bernoulli.rvs(p=0.4, size=len(decisions)).astype(bool)
         #high accuracy 100%
         if self.decision_bias == True:
-            #for confidence and decision bias general example
-            high = bernoulli.rvs(p=0.01, size=len(decisions)).astype(bool)
+
 
             #for all other
             high = bernoulli.rvs(p=0.05, size=len(decisions)).astype(bool)
@@ -165,10 +164,10 @@ class Human(object):
         if t_type=='biased':
             confidences = np.ones(X.shape[0])
             if self.decision_bias == False:
-                confidences[(X['age58.0'] == 1) & (start_confidences <= self.confVal)] = 0.9
-                confidences[(X['age58.0'] == 1) & (start_confidences > self.confVal)] = 0.9
-                confidences[(X['age58.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
-                confidences[(X['age58.0'] == 0) & (start_confidences > self.confVal)] = 0.2
+                confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal)] = 0.9
+                confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 1
+                confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
+                confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.2
             else:
                 ####for asymmetric case study#############
                 #confidences[(X['age58.0'] == 0)] = 1
@@ -185,7 +184,11 @@ class Human(object):
                     confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.95
                     confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal)] = 0.2
                     confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 0.2
-                
+                elif self.alteration == 'quick':
+                    confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
+                    confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.2
+                    confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal)] = 0.9
+                    confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 1
                 else:
                     confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.95
                     confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.95
