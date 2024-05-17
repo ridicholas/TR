@@ -48,11 +48,11 @@ class Human(object):
             if self.dataset == 'heart_disease':
                 model_confidences = np.ones(X.shape[0])
                 ###asymmetric case version###############
-                #model_confidences[(X['age54.0'] == 0) | (X['sex_Male'] == 0)] = 0
+                #model_confidences[(X['age58.0'] == 0) | (X['sex_Male'] == 0)] = 0
                 #########################################
                 ###feature decision and confidence bias###
                 if not(hasattr(self, 'alteration')) or self.alteration == '' or self.alteration == '_dec_bias':
-                    model_confidences[(X['age54.0'] == 0)] = 0
+                    model_confidences[(X['age58.0'] == 0)] = 0
                 else:
                     model_confidences[(X['sex_Male'] == 1)] = 0
                 
@@ -87,12 +87,12 @@ class Human(object):
         decisions[(model_confidences > self.confVal) & low] = 1-decisions[(model_confidences > self.confVal) & low]
         #if self.decision_bias & (self.dataset == 'heart_disease'):
             #mid = bernoulli.rvs(p=0.15, size=len(decisions)).astype(bool)
-            #decisions[(X['sex_Male'] == 0) & (X['age54.0'] == 0)] = y[(X['sex_Male'] == 0) & (X['age54.0'] == 0)]
-            #decisions[(X['sex_Male'] == 0) & (X['age54.0'] == 0) & mid] = 1-decisions[(X['sex_Male'] == 0) & (X['age54.0'] == 0) & mid]
+            #decisions[(X['sex_Male'] == 0) & (X['age58.0'] == 0)] = y[(X['sex_Male'] == 0) & (X['age58.0'] == 0)]
+            #decisions[(X['sex_Male'] == 0) & (X['age58.0'] == 0) & mid] = 1-decisions[(X['sex_Male'] == 0) & (X['age58.0'] == 0) & mid]
 
             #mid = bernoulli.rvs(p=0.15, size=len(decisions)).astype(bool)
-            #decisions[(X['sex_Male'] == 1) & (X['age54.0'] == 1)] = y[(X['sex_Male'] == 1) & (X['age54.0'] == 1)]
-            #decisions[(X['sex_Male'] == 1) & (X['age54.0'] == 1) & mid] = 1-decisions[(X['sex_Male'] == 1) & (X['age54.0'] == 1) & mid]
+            #decisions[(X['sex_Male'] == 1) & (X['age58.0'] == 1)] = y[(X['sex_Male'] == 1) & (X['age58.0'] == 1)]
+            #decisions[(X['sex_Male'] == 1) & (X['age58.0'] == 1) & mid] = 1-decisions[(X['sex_Male'] == 1) & (X['age58.0'] == 1) & mid]
 
 
         return decisions
@@ -148,7 +148,7 @@ class Human(object):
         #if self.decision_bias:
         #    if self.dataset == 'heart_disease':
         #        start_confidences = np.ones(X.shape[0])
-        #        start_confidences[X['age54.0'] == 0] = 0       
+        #        start_confidences[X['age58.0'] == 0] = 0       
         #else:
         start_confidences = np.abs(self.model.predict_proba(self.scaler.transform(X))[:, 1] - 0.5)*2
 
@@ -165,21 +165,21 @@ class Human(object):
         if t_type=='biased':
             confidences = np.ones(X.shape[0])
             if self.decision_bias == False:
-                confidences[(X['age54.0'] == 1) & (start_confidences <= self.confVal)] = 0.9
-                confidences[(X['age54.0'] == 1) & (start_confidences > self.confVal)] = 1
-                confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
-                confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.2
+                confidences[(X['age58.0'] == 1) & (start_confidences <= self.confVal)] = 0.9
+                confidences[(X['age58.0'] == 1) & (start_confidences > self.confVal)] = 0.9
+                confidences[(X['age58.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
+                confidences[(X['age58.0'] == 0) & (start_confidences > self.confVal)] = 0.2
             else:
                 ####for asymmetric case study#############
-                #confidences[(X['age54.0'] == 0)] = 1
-                #confidences[(X['age54.0'] == 1)] = 0.3
+                #confidences[(X['age58.0'] == 0)] = 1
+                #confidences[(X['age58.0'] == 1)] = 0.3
                 ##########################################
                 ####for feature decision and confidence bias#############
                 if not(hasattr(self, 'alteration')) or self.alteration == '' or self.alteration == '_dec_bias':
-                    confidences[(X['age54.0'] == 1) & (start_confidences <= self.confVal)] = 0.9
-                    confidences[(X['age54.0'] == 1) & (start_confidences > self.confVal)] = 0.2
-                    confidences[(X['age54.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
-                    confidences[(X['age54.0'] == 0) & (start_confidences > self.confVal)] = 0.2
+                    confidences[(X['age58.0'] == 1) & (start_confidences <= self.confVal)] = 0.9
+                    confidences[(X['age58.0'] == 1) & (start_confidences > self.confVal)] = 0.9
+                    confidences[(X['age58.0'] == 0) & (start_confidences <= self.confVal)] = 0.9
+                    confidences[(X['age58.0'] == 0) & (start_confidences > self.confVal)] = 0.2
                 elif self.alteration == 'case_cal':
                     confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.95
                     confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.95
@@ -194,8 +194,8 @@ class Human(object):
                 #########################################################
 
                 ####for regular case study#######################
-                #confidences[(X['age54.0'] == 0)] = 1
-                #confidences[(X['age54.0'] == 1)] = 0.3
+                #confidences[(X['age58.0'] == 0)] = 1
+                #confidences[(X['age58.0'] == 1)] = 0.3
                 #confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 0.9
                 #confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
 
@@ -356,8 +356,8 @@ class Human(object):
                 confidences[(X['race_White'] == 0) & (start_confidences > self.confVal)] = 0.2
             else:
                 ####for asymmetric case study#############
-                #confidences[(X['age54.0'] == 0)] = 1
-                #confidences[(X['age54.0'] == 1)] = 0.3
+                #confidences[(X['age58.0'] == 0)] = 1
+                #confidences[(X['age58.0'] == 1)] = 0.3
                 ##########################################
                 ####for feature decision and confidence bias#############
                 confidences[(X['sex_Male'] == 0) & (X['race_White'] == 1)] = 0.2 #weak
@@ -367,8 +367,8 @@ class Human(object):
                 #########################################################
 
                 ####for regular case study#######################
-                #confidences[(X['age54.0'] == 0)] = 1
-                #confidences[(X['age54.0'] == 1)] = 0.3
+                #confidences[(X['age58.0'] == 0)] = 1
+                #confidences[(X['age58.0'] == 1)] = 0.3
                 #confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 0.9
                 #confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
 
