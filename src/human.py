@@ -179,7 +179,7 @@ class Human(object):
                     confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 1
                     confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
                     confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.2
-                elif self.alteration == 'case_cal':
+                elif self.alteration == 'case_cal' or self.alteration == 'case1_cal':
                     confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.95
                     confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.95
                     confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal)] = 0.2

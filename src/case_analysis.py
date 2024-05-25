@@ -87,7 +87,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype + 'case_cal' #+ "_dec_bias"
+    whichtype = whichtype + 'case1_cal' #+ "_dec_bias"
     r_mean = []
     hyrs_R = []
     tr_R = []
@@ -238,6 +238,17 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
             covereds['ym'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
             covereds['yf'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
 
+            covered_corrects = {}
+            covered_corrects['t']={'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['e'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['y'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['m'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['f'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['em'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['ef'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['ym'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['yf'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+
 
 
             totals = {}
@@ -284,6 +295,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                 
 
                     hyrs_model_preds, hyrs_model_covered, _ = hyrs_mod.predict(x_test, human_decisions)
+                    hyrs_mod_confs = hyrs_mod.get_model_conf_agreement(x_test, human_decisions)[0]
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
                     #brs_reset = brs_expected_loss_filter(brs_mod, x_test, brs_model_preds, conf_human=human_conf, p_yb=e_yb_mod.predict_proba(x_test_non_binarized), p_y=e_y_mod.predict_proba(x_test_non_binarized), conf_model=brs_conf, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=0.0)
@@ -357,8 +369,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
                     elif which == 'hyrs':
                         model_preds = hyrs_model_preds.copy()
-                        model_covereds = np.zeros(len(model_preds), dtype=bool)
-                        model_covereds[hyrs_model_covered] = True
+                        model_covereds = hyrs_model_covered.isin([0,1])
+
                     elif which == 'brs':
                         model_preds = brs_model_preds.copy()
                     elif which == 'human':
@@ -409,6 +421,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     accepted_contras['ym'][which].append(accepted_condition[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
                     accepted_contras['yf'][which].append(accepted_condition[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
 
+
                     if which in ['tr', 'hyrs']:
                         covereds['t'][which].append(model_covereds.sum())
                         covereds['e'][which].append(model_covereds[x_test['age54.0'] == 1].sum())
@@ -419,6 +432,16 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                         covereds['ef'][which].append(model_covereds[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)].sum())
                         covereds['ym'][which].append(model_covereds[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
                         covereds['yf'][which].append(model_covereds[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
+
+                        covered_corrects['t'][which].append((model_covereds & (model_preds == y_test)).sum())
+                        covered_corrects['e'][which].append((model_covereds & (model_preds == y_test))[x_test['age54.0'] == 1].sum())
+                        covered_corrects['y'][which].append((model_covereds & (model_preds == y_test))[x_test['age54.0'] == 0].sum())
+                        covered_corrects['m'][which].append((model_covereds & (model_preds == y_test))[x_test['sex_Male'] == 1].sum())
+                        covered_corrects['f'][which].append((model_covereds & (model_preds == y_test))[x_test['sex_Male'] == 0].sum())
+                        covered_corrects['em'][which].append((model_covereds & (model_preds == y_test))[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1)].sum())
+                        covered_corrects['ef'][which].append((model_covereds & (model_preds == y_test))[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0)].sum())
+                        covered_corrects['ym'][which].append((model_covereds & (model_preds == y_test))[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1)].sum())
+                        covered_corrects['yf'][which].append((model_covereds & (model_preds == y_test))[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
                         
 
                 tr_team_w_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_with_reset, y_test))
@@ -469,6 +492,17 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                                      tr_mod_confs[(x_test['age54.0'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(), 
                                                      tr_mod_confs[(tr_model_preds_with_reset != human_decisions)].mean()]])]
                 
+                hyrs_conf_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[hyrs_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1) & (hyrs_model_preds != human_decisions)].mean(), 
+                                                     hyrs_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1) & (hyrs_model_preds != human_decisions)].mean(),
+                                                     hyrs_mod_confs[(x_test['sex_Male'] == 1) & (hyrs_model_preds != human_decisions)].mean()], 
+                                                     [hyrs_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0) & (hyrs_model_preds != human_decisions)].mean(),
+                                                     hyrs_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0) & (hyrs_model_preds != human_decisions)].mean(),
+                                                     hyrs_mod_confs[(x_test['sex_Male'] == 0) & (hyrs_model_preds != human_decisions)].mean()], 
+                                                     [hyrs_mod_confs[(x_test['age54.0'] == 1) & (hyrs_model_preds != human_decisions)].mean(),
+                                                     hyrs_mod_confs[(x_test['age54.0'] == 0) & (hyrs_model_preds != human_decisions)].mean(), 
+                                                     hyrs_mod_confs[(hyrs_model_preds != human_decisions)].mean()]])]
+                
                 
                 
                 brs_conf_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
@@ -487,10 +521,22 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                         [mean(covereds['ef']['tr']), mean(covereds['yf']['tr']), mean(covereds['f']['tr'])], 
                                         [mean(covereds['e']['tr']), mean(covereds['y']['tr']), mean(covereds['t']['tr'])]])]
                 
+
+                
+                tr_covered_correct_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                data = [[mean(covered_corrects['em']['tr']), mean(covered_corrects['ym']['tr']), mean(covered_corrects['m']['tr'])], 
+                                        [mean(covered_corrects['ef']['tr']), mean(covered_corrects['yf']['tr']), mean(covered_corrects['f']['tr'])], 
+                                        [mean(covered_corrects['e']['tr']), mean(covered_corrects['y']['tr']), mean(covered_corrects['t']['tr'])]])]
+                
                 hyrs_covered_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                 data = [[mean(covereds['em']['hyrs']), mean(covereds['ym']['hyrs']), mean(covereds['m']['hyrs'])], 
                                         [mean(covereds['ef']['hyrs']), mean(covereds['yf']['hyrs']), mean(covereds['f']['hyrs'])], 
                                         [mean(covereds['e']['hyrs']), mean(covereds['y']['hyrs']), mean(covereds['t']['hyrs'])]])]
+                
+                hyrs_covered_correct_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                data = [[mean(covered_corrects['em']['hyrs']), mean(covered_corrects['ym']['hyrs']), mean(covered_corrects['m']['hyrs'])], 
+                                        [mean(covered_corrects['ef']['hyrs']), mean(covered_corrects['yf']['hyrs']), mean(covered_corrects['f']['hyrs'])], 
+                                        [mean(covered_corrects['e']['hyrs']), mean(covered_corrects['y']['hyrs']), mean(covered_corrects['t']['hyrs'])]])]
                 
 
                 tr_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
@@ -544,6 +590,11 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                                     [mean(accepted_contras['ef']['tr']), mean(accepted_contras['yf']['tr']), mean(accepted_contras['f']['tr'])], 
                                                     [mean(accepted_contras['e']['tr']), mean(accepted_contras['y']['tr']), mean(accepted_contras['t']['tr'])]])]
                 
+                hyrs_confusion_contras_accepted = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(accepted_contras['em']['hyrs']), mean(accepted_contras['ym']['hyrs']), mean(accepted_contras['m']['hyrs'])], 
+                                                    [mean(accepted_contras['ef']['hyrs']), mean(accepted_contras['yf']['hyrs']), mean(accepted_contras['f']['hyrs'])], 
+                                                    [mean(accepted_contras['e']['hyrs']), mean(accepted_contras['y']['hyrs']), mean(accepted_contras['t']['hyrs'])]])]
+                
                 tr_confusion_contras_correct = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(correct_contras['em']['tr']), mean(correct_contras['ym']['tr']), mean(correct_contras['m']['tr'])], 
                                                     [mean(correct_contras['ef']['tr']), mean(correct_contras['yf']['tr']), mean(correct_contras['f']['tr'])], 
@@ -591,15 +642,36 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                                      tr_mod_confs[(x_test['age54.0'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(), 
                                                      tr_mod_confs[(tr_model_preds_with_reset != human_decisions)].mean()]]))
                 
+                hyrs_conf_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[hyrs_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1) & (hyrs_model_preds != human_decisions)].mean(), 
+                                                     hyrs_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1) & (hyrs_model_preds != human_decisions)].mean(),
+                                                     hyrs_mod_confs[(x_test['sex_Male'] == 1) & (hyrs_model_preds != human_decisions)].mean()], 
+                                                     [hyrs_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0) & (hyrs_model_preds != human_decisions)].mean(),
+                                                     hyrs_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0) & (hyrs_model_preds != human_decisions)].mean(),
+                                                     hyrs_mod_confs[(x_test['sex_Male'] == 0) & (hyrs_model_preds != human_decisions)].mean()], 
+                                                     [hyrs_mod_confs[(x_test['age54.0'] == 1) & (hyrs_model_preds != human_decisions)].mean(),
+                                                     hyrs_mod_confs[(x_test['age54.0'] == 0) & (hyrs_model_preds != human_decisions)].mean(), 
+                                                     hyrs_mod_confs[(hyrs_model_preds != human_decisions)].mean()]]))
+                
                 tr_covered_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
-                                            data = [[mean(decs['em']['tr']), mean(decs['ym']['tr']), mean(decs['m']['tr'])], 
-                                                    [mean(decs['ef']['tr']), mean(decs['yf']['tr']), mean(decs['f']['tr'])], 
-                                                    [mean(decs['e']['tr']), mean(decs['y']['tr']), mean(decs['t']['tr'])]]))
+                                data = [[mean(covereds['em']['tr']), mean(covereds['ym']['tr']), mean(covereds['m']['tr'])], 
+                                        [mean(covereds['ef']['tr']), mean(covereds['yf']['tr']), mean(covereds['f']['tr'])], 
+                                        [mean(covereds['e']['tr']), mean(covereds['y']['tr']), mean(covereds['t']['tr'])]]))
+                
+                tr_covered_correct_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                data = [[mean(covered_corrects['em']['tr']), mean(covered_corrects['ym']['tr']), mean(covered_corrects['m']['tr'])], 
+                                        [mean(covered_corrects['ef']['tr']), mean(covered_corrects['yf']['tr']), mean(covered_corrects['f']['tr'])], 
+                                        [mean(covered_corrects['e']['tr']), mean(covered_corrects['y']['tr']), mean(covered_corrects['t']['tr'])]]))
                 
                 hyrs_covered_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
-                                            data = [[mean(decs['em']['hyrs']), mean(decs['ym']['hyrs']), mean(decs['m']['hyrs'])], 
-                                                    [mean(decs['ef']['hyrs']), mean(decs['yf']['hyrs']), mean(decs['f']['hyrs'])], 
-                                                    [mean(decs['e']['hyrs']), mean(decs['y']['hyrs']), mean(decs['t']['hyrs'])]]))
+                                data = [[mean(covereds['em']['hyrs']), mean(covereds['ym']['hyrs']), mean(covereds['m']['hyrs'])], 
+                                        [mean(covereds['ef']['hyrs']), mean(covereds['yf']['hyrs']), mean(covereds['f']['hyrs'])], 
+                                        [mean(covereds['e']['hyrs']), mean(covereds['y']['hyrs']), mean(covereds['t']['hyrs'])]]))
+                
+                hyrs_covered_correct_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                data = [[mean(covered_corrects['em']['hyrs']), mean(covered_corrects['ym']['hyrs']), mean(covered_corrects['m']['hyrs'])], 
+                                        [mean(covered_corrects['ef']['hyrs']), mean(covered_corrects['yf']['hyrs']), mean(covered_corrects['f']['hyrs'])], 
+                                        [mean(covered_corrects['e']['hyrs']), mean(covered_corrects['y']['hyrs']), mean(covered_corrects['t']['hyrs'])]]))
                 
                 brs_conf_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                 data = [[brs_conf[(x_test['age54.0'] == 1) &(x_test['sex_Male'] == 1) & (brs_model_preds != human_decisions)].mean(), 
@@ -656,6 +728,11 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                             data = [[mean(accepted_contras['em']['tr']), mean(accepted_contras['ym']['tr']), mean(accepted_contras['m']['tr'])], 
                                                     [mean(accepted_contras['ef']['tr']), mean(accepted_contras['yf']['tr']), mean(accepted_contras['f']['tr'])], 
                                                     [mean(accepted_contras['e']['tr']), mean(accepted_contras['y']['tr']), mean(accepted_contras['t']['tr'])]]))
+                
+                hyrs_confusion_contras_accepted.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(accepted_contras['em']['hyrs']), mean(accepted_contras['ym']['hyrs']), mean(accepted_contras['m']['hyrs'])], 
+                                                    [mean(accepted_contras['ef']['hyrs']), mean(accepted_contras['yf']['hyrs']), mean(accepted_contras['f']['hyrs'])], 
+                                                    [mean(accepted_contras['e']['hyrs']), mean(accepted_contras['y']['hyrs']), mean(accepted_contras['t']['hyrs'])]]))
                 
                 tr_confusion_contras_correct.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(correct_contras['em']['tr']), mean(correct_contras['ym']['tr']), mean(correct_contras['m']['tr'])], 
@@ -725,6 +802,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     brs_model_confusion = pd.concat(brs_model_confusion)
     
     tr_conf_confusion = pd.concat(tr_conf_confusion)
+    hyrs_conf_confusion = pd.concat(hyrs_conf_confusion)
     tr_covered_confusion = pd.concat(tr_covered_confusion)
     hyrs_covered_confusion = pd.concat(hyrs_covered_confusion)
     brs_confusion = pd.concat(brs_confusion)
@@ -740,14 +818,52 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     brs_confusion_contras_accepted = pd.concat(brs_confusion_contras_accepted)
     hyrs_confusion_contras = pd.concat(hyrs_confusion_contras)
     hyrs_confusion_contras_correct = pd.concat(hyrs_confusion_contras_correct)
-    
+    hyrs_confusion_contras_accepted = pd.concat(hyrs_confusion_contras_accepted)
+
+    tr_covered_correct_confusion = pd.concat(tr_covered_correct_confusion)
+    hyrs_covered_correct_confusion = pd.concat(hyrs_covered_correct_confusion)
+     
 
     
     
     results_means = results.apply(lambda x: x.apply(lambda y: mean(y)))
 
+    
 
+    case_results = pd.DataFrame(index = ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence', 
+                                         'Contradiction Acceptance Rate', 'Improvement w.r.t. TDL', 'Reconciliation Costs Incurred', 'Improved in TTL w.r.t. Human'], columns = ['Female', 'Male', 'Total'])
 
+    case_results.loc['Advising Rate', :] = (tr_covered_confusion.groupby(tr_covered_confusion.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+    case_results.loc['Contradiction Rate', :] = (tr_confusion_contras.groupby(tr_confusion_contras.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+    case_results.loc['Advising Confidence', :] = tr_conf_confusion.groupby(tr_conf_confusion.index).agg('mean').drop(columns=['Elderly', 'Young'])['Total']
+    case_results.loc['Contradiction Acceptance Rate', :] = (tr_confusion_contras_accepted.groupby(tr_confusion_contras_accepted.index).agg('sum')/tr_confusion_contras.groupby(tr_confusion_contras.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+    case_results.loc['Improvement w.r.t. TDL', :] = ((human_confusion.groupby(human_confusion.index).agg('sum')-tr_confusion.groupby(tr_confusion.index).agg('sum'))/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
+    case_results.loc['Reconciliation Costs Incurred', :] = -(cost * tr_confusion_contras.groupby(tr_confusion_contras.index).agg('sum')/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
+    case_results.loc['Improved in TTL w.r.t. Human', :] = case_results.loc['Reconciliation Costs Incurred', :] + case_results.loc['Improvement w.r.t. TDL', :]
+    case_results.loc['Advising Accuracy', :] = (tr_covered_correct_confusion.groupby(tr_covered_correct_confusion.index).agg('sum')/tr_covered_confusion.groupby(tr_covered_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+
+    hyrs_case_results = pd.DataFrame(index = ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence', 
+                                         'Contradiction Acceptance Rate', 'Improvement w.r.t. TDL', 'Reconciliation Costs Incurred', 'Improved in TTL w.r.t. Human'], columns = ['Female', 'Male', 'Total'])
+    hyrs_case_results.loc['Advising Rate', :] = (hyrs_covered_confusion.groupby(hyrs_covered_confusion.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+    hyrs_case_results.loc['Contradiction Rate', :] = (hyrs_confusion_contras.groupby(hyrs_confusion_contras.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+    hyrs_case_results.loc['Advising Confidence', :] = hyrs_conf_confusion.groupby(hyrs_conf_confusion.index).agg('mean').drop(columns=['Elderly', 'Young'])['Total']
+    hyrs_case_results.loc['Contradiction Acceptance Rate', :] = (hyrs_confusion_contras_accepted.groupby(hyrs_confusion_contras_accepted.index).agg('sum')/hyrs_confusion_contras.groupby(hyrs_confusion_contras.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+    hyrs_case_results.loc['Improvement w.r.t. TDL', :] = ((human_confusion.groupby(human_confusion.index).agg('sum')-hyrs_confusion.groupby(hyrs_confusion.index).agg('sum'))/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
+    hyrs_case_results.loc['Reconciliation Costs Incurred', :] = -(cost * hyrs_confusion_contras.groupby(hyrs_confusion_contras.index).agg('sum')/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
+    hyrs_case_results.loc['Improved in TTL w.r.t. Human', :] = hyrs_case_results.loc['Reconciliation Costs Incurred', :] + hyrs_case_results.loc['Improvement w.r.t. TDL', :]
+    hyrs_case_results.loc['Advising Accuracy', :] = (hyrs_covered_correct_confusion.groupby(hyrs_covered_correct_confusion.index).agg('sum')/hyrs_covered_confusion.groupby(hyrs_covered_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+
+    brs_case_results = pd.DataFrame(index = ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence', 
+                                         'Contradiction Acceptance Rate', 'Improvement w.r.t. TDL', 'Reconciliation Costs Incurred', 'Improved in TTL w.r.t. Human'], columns = ['Female', 'Male', 'Total'])
+    
+    brs_case_results.loc['Advising Rate', :] = 1
+    brs_case_results.loc['Contradiction Rate', :] = (brs_confusion_contras.groupby(brs_confusion_contras.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+    brs_case_results.loc['Advising Confidence', :] = brs_conf_confusion.groupby(brs_conf_confusion.index).agg('mean').drop(columns=['Elderly', 'Young'])['Total']
+    brs_case_results.loc['Contradiction Acceptance Rate', :] = (brs_confusion_contras_accepted.groupby(brs_confusion_contras_accepted.index).agg('sum')/brs_confusion_contras.groupby(brs_confusion_contras.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+    brs_case_results.loc['Improvement w.r.t. TDL', :] = ((human_confusion.groupby(human_confusion.index).agg('sum')-brs_confusion.groupby(brs_confusion.index).agg('sum'))/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
+    brs_case_results.loc['Reconciliation Costs Incurred', :] = -(cost * brs_confusion_contras.groupby(brs_confusion_contras.index).agg('sum')/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
+    brs_case_results.loc['Improved in TTL w.r.t. Human', :] = brs_case_results.loc['Reconciliation Costs Incurred', :] + brs_case_results.loc['Improvement w.r.t. TDL', :]
+    brs_case_results.loc['Advising Accuracy', :] = 1-(brs_model_confusion.groupby(brs_model_confusion.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
 
     results_stderrs = results.apply(lambda x: x.apply(lambda y: np.std(y)/np.sqrt(len(y))))
 
@@ -755,7 +871,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
 
 
-costs = [0.2]
+costs = [0.1]
 num_runs = 5
 dataset = 'heart_disease'
 case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, costs, False, asym_costs=[1,1])

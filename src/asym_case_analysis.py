@@ -727,7 +727,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
 
 costs = [0.0]
-num_runs = 5
+num_runs = 10
 dataset = 'heart_disease'
 case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, costs, False, asym_costs=[3,1])
    
