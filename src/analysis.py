@@ -141,8 +141,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             tr_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr')
             hyrs_mod = load_results(dataset, f'_{whichtype}', run, cost, 'hyrs')
             #load e_y and e_yb mods
-            with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype}.pkl', 'rb') as f:
-                e_yb_mod = pickle.load(f)
+            #with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype}.pkl', 'rb') as f:
+            #    e_yb_mod = pickle.load(f)
             with open(f'results/{dataset}/run{run}/cost{float(cost)}/ey_model_{whichtype}.pkl', 'rb') as f:
                 e_y_mod = pickle.load(f)
 
