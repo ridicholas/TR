@@ -565,15 +565,15 @@ def cost_validation(rs, val_rs):
     return new_results_means, new_results_stderrs, new_rs
 
 
-costs = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
+costs = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]
 
-num_runs = 5
+num_runs = 10
 datasets = ['heart_disease', 'fico' ,'hr']
 names = ['biased', 'biased_dec_bias', 'offset_01']
 
 
-fig, axs = plt.subplots(3,3)
-fig.set_size_inches(11.5,7)
+#fig, axs = plt.subplots(3,3)
+#fig.set_size_inches(11.5,7)
 
 datarow = 0
 behaviorrow = 0
@@ -587,7 +587,7 @@ for dataset in datasets:
         #    continue
         if name == 'biased_dec_bias':
             print('pause')
-        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl'):
+        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl') and False:
             with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
             with open(f'results/{dataset}/{name}_means.pkl', 'rb') as f:
@@ -636,7 +636,7 @@ for dataset in datasets:
     behaviorrow = 0
 
 
-
+'''
 for ax, col in zip(axs[0], cols):
     ax.annotate(col, xy=(0.5, 1), xytext=(0, pad),
                 xycoords='axes fraction', textcoords='offset points',
@@ -672,7 +672,7 @@ ccval_bia_means, ccval_bia_stderss, ccval_bia_rs = cost_validation(val_bia_rs, v
 rcval_bia_means, rcval_bia_stderss, rcval_bia_rs = robust_rules(cval_bia_rs, ccval_bia_rs)     
 
 
-
+'''
 
 
 print('pause')
