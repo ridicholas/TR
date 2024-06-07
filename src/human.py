@@ -164,10 +164,10 @@ class Human(object):
         if t_type=='biased':
             confidences = np.ones(X.shape[0])
             if self.decision_bias == False:
-                confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal)] = 0.9
-                confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 1
-                confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
-                confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.2
+                confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal)] = 0.9 #overconfident
+                confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 1 #appropriate
+                confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9 #overconfident
+                confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.2 #appropriate/under
             else:
                 ####for asymmetric case study#############
                 #confidences[(X['age54.0'] == 0)] = 1
