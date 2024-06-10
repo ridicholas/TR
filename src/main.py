@@ -52,8 +52,12 @@ def main(argv):
     #print(type(remake_humans))
     #print(which_models)
 
-    
-    run(dataset, run_num, human_name, runtype=runtype, which_models=which_models, contradiction_reg=contradiction_reg, remake_humans=remake_humans, human_decision_bias=decision_bias, custom_name=custom_name)
+    if contradiction_reg == 0.1 or contradiction_reg == '0.1':
+        contradiction_regs = [0.1,0.2,0.3,0.4,0.5,0.6,0.8,1.0]
+        for reg in contradiction_regs:
+            run(dataset, run_num, human_name, runtype=runtype, which_models=which_models, contradiction_reg=reg, remake_humans=remake_humans, human_decision_bias=decision_bias, custom_name=custom_name)
+    else:
+        run(dataset, run_num, human_name, runtype=runtype, which_models=which_models, contradiction_reg=contradiction_reg, remake_humans=remake_humans, human_decision_bias=decision_bias, custom_name=custom_name)
 
 
 
