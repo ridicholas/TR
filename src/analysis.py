@@ -15,7 +15,7 @@ from copy import deepcopy
 import os
 
 #making sure wd is file directory so hardcoded paths work
-#os.chdir("..")
+os.chdir("..")
 
 def load_datasets(dataset, run_num):
     x_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain.csv', index_col=0).reset_index(drop=True)
@@ -118,7 +118,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
     bar=progressbar.ProgressBar()
     whichtype = whichtype
-    for run in bar(range(num_runs)):
+    for r in bar(range(num_runs)):
+        run = int(r+10)
 
         
         bar=progressbar.ProgressBar()
@@ -562,7 +563,7 @@ def cost_validation(rs, val_rs):
             x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized= load_datasets(dataset, i)
             curr_val_objective = val_rs['tr_team_w_reset_objective'][cost][i]
             for alt_cost in rs.index:
-                if alt_cost == cost:
+                if alt_cost <= cost or alt_cost > cost + 0.2:
                     continue
                 alt_val_objective = val_rs['tr_team_w_reset_decision_loss'][alt_cost][i] + cost*(val_rs['tr_model_w_reset_contradictions'][alt_cost][i])/len(y_val)
                 if alt_val_objective < curr_val_objective:
@@ -633,12 +634,12 @@ def cost_plus_hyrs(rs):
 costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]
 
 num_runs = 10
-datasets = ['heart_disease', 'fico', 'hr']
+datasets = ['heart_disease']
 names = ['biased', 'biased_dec_bias', 'offset_01']
 
 
-fig, axs = plt.subplots(3,3)
-fig.set_size_inches(11.5,7)
+#fig, axs = plt.subplots(3,3)
+#fig.set_size_inches(11.5,7)
 
 datarow = 0
 behaviorrow = 0
@@ -650,7 +651,7 @@ for dataset in datasets:
     for name in names:
         #if (name == 'biased') and (datasets == 'heart_disease'):
         #    continue
-        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl'):
+        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl') and False:
             with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
             with open(f'results/{dataset}/{name}_means.pkl', 'rb') as f:
@@ -666,13 +667,13 @@ for dataset in datasets:
                 val_std = pickle.load(f)
 
 
-            #cval_means, cval_stderss, cval_rs, cost_tracker, final_cost = cost_validation(rs, val_rs)
-            cval_means, cval_stderss, cval_rs = cost_plus(rs)
+            cval_means, cval_stderss, cval_rs, cost_tracker, final_cost = cost_validation(rs, val_rs)
+            #cval_means, cval_stderss, cval_rs = cost_plus(rs)
             #cval_val_means, cval_val_stderrs, cval_val_rs = cost_plus(val_rs)
-            #rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(cval_rs, cval_val_rs)
-            #ccval_means, ccval_stderss, ccval_rs, _. _ = cost_validation(val_rs, val_rs) 
-            #rcval_means, rcval_stderss, rcval_rs, both_tracker = robust_rules(cval_rs, ccval_rs)   
-            make_multi_TL_v_cost_plot(cval_means, cval_stderss, name, axs[datarow, behaviorrow])
+            #rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(val_rs, cval_val_rs)
+            ccval_means, ccval_stderss, ccval_rs, _, _ = cost_validation(val_rs, val_rs) 
+            rcval_means, rcval_stderss, rcval_rs, both_tracker = robust_rules(cval_rs, ccval_rs)   
+            make_multi_TL_v_cost_plot(rcval_means, rcval_stderss, name, axs[datarow, behaviorrow])
             #make_multi_TL_v_cost_plot(means, std, name, axs[datarow, behaviorrow])
             
 
@@ -680,27 +681,27 @@ for dataset in datasets:
         else:
             means, std, rs = make_results(dataset, name, num_runs, costs, validation=False)
             #pickle and write means, std, and rs to file
-            with open(f'results/{dataset}/{name}_means.pkl', 'wb') as f:
+            with open(f'results/{dataset}/{name}_means10_20.pkl', 'wb') as f:
                 pickle.dump(means, f)
-            with open(f'results/{dataset}/{name}_std.pkl', 'wb') as f:
+            with open(f'results/{dataset}/{name}_std10_20.pkl', 'wb') as f:
                 pickle.dump(std, f)
-            with open(f'results/{dataset}/{name}_rs.pkl', 'wb') as f:
+            with open(f'results/{dataset}/{name}_rs10_20.pkl', 'wb') as f:
                 pickle.dump(rs, f)
         
             print(f'running for val {dataset} {name}')
             val_means, val_std, val_rs = make_results(dataset, name, num_runs, costs, validation=True)
             #pickle and write means, std, and rs to file
-            with open(f'results/{dataset}/val_{name}_means.pkl', 'wb') as f:
+            with open(f'results/{dataset}/val_{name}_means10_20.pkl', 'wb') as f:
                 pickle.dump(val_means, f)
-            with open(f'results/{dataset}/val_{name}_std.pkl', 'wb') as f:
+            with open(f'results/{dataset}/val_{name}_std10_20.pkl', 'wb') as f:
                 pickle.dump(val_std, f)
-            with open(f'results/{dataset}/val_{name}_rs.pkl', 'wb') as f:
+            with open(f'results/{dataset}/val_{name}_rs10_20.pkl', 'wb') as f:
                 pickle.dump(val_rs, f)
         behaviorrow += 1
     datarow += 1
     behaviorrow = 0
 
-
+'''
 for ax, col in zip(axs[0], cols):
     ax.annotate(col, xy=(0.5, 1), xytext=(0, pad),
                 xycoords='axes fraction', textcoords='offset points',
@@ -714,7 +715,7 @@ for ax, row in zip(axs[:,0], rows):
 fig.tight_layout()
 fig.savefig(f'results/combined_plots_final_costplus2.png', dpi=200)
 
-
+'''
 
 
 
