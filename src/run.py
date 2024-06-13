@@ -228,7 +228,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             pickle.dump(tr_model, f)
 
 
-#run('heart_disease', 1, 'biased', runtype='standard', which_models=['tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='alphatext', use_true=False, subsplit=1)
+#run('heart_disease', 1, 'biased', runtype='standard', which_models=['tr'], contradiction_reg=0.2, remake_humans=True, human_decision_bias=False, custom_name='alphatext', use_true=False, subsplit=1)
 #run('heart_disease', 11, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
 #run('heart_disease', 12, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
 #run('heart_disease', 13, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)

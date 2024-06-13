@@ -351,7 +351,12 @@ class tr(object):
         
         
         self.actions = []
+        self.action_tracker = {}
         for iter in range(Niteration):
+            if iter % 100 == 0:
+                print('pause')
+            self.iter = iter
+            self.action_tracker[self.iter] = {}
             if iter >0.75 * Niteration:
                 prs_curr,nrs_curr,pcovered_curr,ncovered_curr,overlap_curr,covered_curr, Yhat_curr = prs_opt[:],nrs_opt[:],pcovered_opt[:],ncovered_opt[:],overlap_opt[:],covered_opt[:], Yhat_opt[:]
             #print("currp: {}, currn: {}, curr_err: {}, curr_covered: {}, curr_contras: {}, curr_obj: {}".format(prs_curr, nrs_curr, err_curr, covered_curr.sum(), contras_curr, err_curr + (contras_curr * self.contradiction_reg)))
@@ -597,6 +602,18 @@ class tr(object):
             #ex = sample(list(max_errs), 1)[0]  
             #to_draw = list(set(incorr).union(set(incorrb)).union(set(contras)))
             #ex = sample(to_draw, 1)[0]
+            self.action_tracker[self.iter]['ex'] = ex
+            self.action_tracker[self.iter]['Y'] = self.Y[ex]
+            self.action_tracker[self.iter]['Yhat'] = Yhat[ex]
+            self.action_tracker[self.iter]['Yb'] = self.Yb[ex]
+            self.action_tracker[self.iter]['pcovered'] = pcovered[ex]
+            self.action_tracker[self.iter]['ncovered'] = ncovered[ex]
+            self.action_tracker[self.iter]['p'] = p[ex]
+            self.action_tracker[self.iter]['n'] = n[ex]
+            self.action_tracker[self.iter]['prs_in'] = prs_in
+            self.action_tracker[self.iter]['nrs_in'] = nrs_in
+            self.action_tracker[self.iter]['ex_in_incorr'] = ex in incorr
+            self.action_tracker[self.iter]['ex_in_contr'] = ex in contras
 
             if (ex in incorr) or (ex in contras):  # incorrectly classified by interpretable model
                 rs_indicator = (p[ex]).astype(int)  # covered by prules
@@ -609,15 +626,19 @@ class tr(object):
                         sign = [1]
                 else:
                     if random() < 0.5 or (ex not in incorr):
+                        self.action_tracker[self.iter]['move'] = 'only_cut'
+                    
                         # print('7')
                         move = ['cut']
                         sign = [rs_indicator]
                     else:
                         # print('8')
+                        self.action_tracker[self.iter]['move'] = 'cut,add'
                         move = ['cut', 'add']
                         sign = [rs_indicator, rs_indicator]
             else:  # incorrectly classified by the human/not covered
                 # print('9')
+                self.action_tracker[self.iter]['move'] = 'only_add'
                 move = ['add']
                 sign = [int(self.Y[ex] == 1)]
 
@@ -630,7 +651,8 @@ class tr(object):
                 nrs = self.action(move[j],sign[j],ex,nrs,Yhat,ncovered)
         #if (ex in incorr) or (ex in contras):
         #    print('prs_new:{}, nrs_new:{}'.format(prs, nrs))
-        
+        self.action_tracker[self.iter]['prs_out'] = prs
+        self.action_tracker[self.iter]['nrs_out'] = nrs
 
         p = np.sum(self.pRMatrix[:,prs],axis = 1)>0
         n = np.sum(self.nRMatrix[:,nrs],axis = 1)>0
