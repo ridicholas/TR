@@ -94,6 +94,11 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                                 'brs_team_w_reset_objective': [[]],
                                 'brs_model_w_reset_objective': [[]],
                                 'brs_model_w_reset_contradictions': [[]],
+                                'hyrs_team_w_reset_decision_loss': [[]],
+                                'hyrs_model_w_reset_decision_loss': [[]],
+                                'hyrs_team_w_reset_objective': [[]],
+                                'hyrs_model_w_reset_objective': [[]],
+                                'hyrs_model_w_reset_contradictions': [[]],
                                 'tr_model_w_reset_contradictions': [[]],
                                 'tr_model_wo_reset_contradictions': [[]],
                                 'hyrs_model_contradictions': [[]],
@@ -181,6 +186,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             brs_model_w_reset_objective = []
             brs_team_objective = []
             brs_team_w_reset_objective = []
+            hyrs_model_w_reset_decision_loss = []
+            hyrs_team_w_reset_decision_loss = []
+            hyrs_model_w_reset_contradictions = []
+            hyrs_model_w_reset_objective = []
+            hyrs_team_w_reset_objective = []
+
 
             human_decision_loss = []
             hyrs_norecon_objective = []
@@ -247,6 +258,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                 
 
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
+                    hyrs_reset = hyrs_mod.expected_loss_filter(x_test, hyrs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=None, fA= human.ADB, asym_loss=[1,1], contradiction_reg=cost)
+                    hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
+                    hyrs_team_preds_w_reset = hyrs_team_preds.copy()
+                    hyrs_team_preds_w_reset[hyrs_reset] = human_decisions[hyrs_reset]
+                    hyrs_model_preds_w_reset = hyrs_model_preds.copy()
+                    hyrs_model_preds_w_reset[hyrs_reset] = human_decisions[hyrs_reset]
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
                     brs_reset = brs_expected_loss_filter(brs_mod, x_test, brs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=brs_conf, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=cost)
@@ -271,6 +288,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                 brs_team_decision_loss.append(1 - accuracy_score(brs_team_preds, y_test))
                 brs_model_w_reset_decision_loss.append(1 - accuracy_score(brs_model_preds_w_reset, y_test))
                 brs_team_w_reset_decision_loss.append(1 - accuracy_score(brs_team_preds_w_reset, y_test))
+                hyrs_model_w_reset_decision_loss.append(1 - accuracy_score(hyrs_model_preds_w_reset, y_test))
+                hyrs_team_w_reset_decision_loss.append(1 - accuracy_score(hyrs_team_preds_w_reset, y_test))
                 
 
                 tr_model_w_reset_contradictions.append((tr_model_preds_with_reset != human_decisions).sum())
@@ -278,6 +297,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                 hyrs_model_contradictions.append((hyrs_model_preds != human_decisions).sum())
                 brs_model_contradictions.append((brs_model_preds != human_decisions).sum())
                 brs_model_w_reset_contradictions.append((brs_model_preds_w_reset != human_decisions).sum())
+                hyrs_model_w_reset_contradictions.append((hyrs_model_preds_w_reset != human_decisions).sum())
 
                 tr_team_w_reset_objective.append(tr_team_w_reset_decision_loss[-1] + cost*(tr_model_w_reset_contradictions[-1])/len(y_test))
                 tr_team_wo_reset_objective.append(tr_team_wo_reset_decision_loss[-1] + cost*(tr_model_wo_reset_contradictions[-1])/len(y_test))
@@ -289,6 +309,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                 brs_team_objective.append(brs_team_decision_loss[-1] + cost*(brs_model_contradictions[-1])/len(y_test))
                 brs_team_w_reset_objective.append(brs_team_w_reset_decision_loss[-1] + cost*(brs_model_w_reset_contradictions[-1])/len(y_test))
                 brs_model_w_reset_objective.append(brs_model_w_reset_decision_loss[-1] + cost*(brs_model_w_reset_contradictions[-1])/len(y_test))
+                hyrs_team_w_reset_objective.append(hyrs_team_w_reset_decision_loss[-1] + cost*(hyrs_model_w_reset_contradictions[-1])/len(y_test))
+                hyrs_model_w_reset_objective.append(hyrs_model_w_reset_decision_loss[-1] + cost*(hyrs_model_w_reset_contradictions[-1])/len(y_test))
                                                   
 
                 human_decision_loss.append(1 - accuracy_score(human_decisions, y_test))
@@ -337,6 +359,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             results.loc[cost, 'brs_team_w_reset_objective'].append(mean(brs_team_w_reset_objective))
             results.loc[cost, 'brs_model_w_reset_objective'].append(mean(brs_model_w_reset_objective))
             results.loc[cost, 'brs_model_w_reset_contradictions'].append(mean(brs_model_w_reset_contradictions))
+            results.loc[cost, 'hyrs_team_w_reset_decision_loss'].append(mean(hyrs_team_w_reset_decision_loss))
+            results.loc[cost, 'hyrs_model_w_reset_decision_loss'].append(mean(hyrs_model_w_reset_decision_loss))
+            results.loc[cost, 'hyrs_team_w_reset_objective'].append(mean(hyrs_team_w_reset_objective))
+            results.loc[cost, 'hyrs_model_w_reset_objective'].append(mean(hyrs_model_w_reset_objective))
+            results.loc[cost, 'hyrs_model_w_reset_contradictions'].append(mean(hyrs_model_w_reset_contradictions))
+
             
             
     
@@ -634,7 +662,7 @@ def cost_plus_hyrs(rs):
 costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]
 
 num_runs = 10
-datasets = ['fico']
+datasets = ['hr']
 names = ['biased', 'biased_dec_bias', 'offset_01']
 
 
