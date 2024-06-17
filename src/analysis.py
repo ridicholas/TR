@@ -662,7 +662,7 @@ def cost_plus_hyrs(rs):
 costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]
 
 num_runs = 20
-datasets = ['fico']
+datasets = ['heart_disease']
 names = ['biased', 'biased_dec_bias', 'offset_01']
 
 
