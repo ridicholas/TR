@@ -123,8 +123,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
     bar=progressbar.ProgressBar()
     whichtype = whichtype
-    for r in bar(range(num_runs)):
-        run = int(r+10)
+    for run in bar(range(num_runs)):
+        
 
         
         bar=progressbar.ProgressBar()
@@ -661,7 +661,7 @@ def cost_plus_hyrs(rs):
 
 costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]
 
-num_runs = 10
+num_runs = 20
 datasets = ['hr']
 names = ['biased', 'biased_dec_bias', 'offset_01']
 
@@ -709,21 +709,21 @@ for dataset in datasets:
         else:
             means, std, rs = make_results(dataset, name, num_runs, costs, validation=False)
             #pickle and write means, std, and rs to file
-            with open(f'results/{dataset}/{name}_means10_20.pkl', 'wb') as f:
+            with open(f'results/{dataset}/{name}_means.pkl', 'wb') as f:
                 pickle.dump(means, f)
-            with open(f'results/{dataset}/{name}_std10_20.pkl', 'wb') as f:
+            with open(f'results/{dataset}/{name}_std.pkl', 'wb') as f:
                 pickle.dump(std, f)
-            with open(f'results/{dataset}/{name}_rs10_20.pkl', 'wb') as f:
+            with open(f'results/{dataset}/{name}_rs.pkl', 'wb') as f:
                 pickle.dump(rs, f)
         
             print(f'running for val {dataset} {name}')
             val_means, val_std, val_rs = make_results(dataset, name, num_runs, costs, validation=True)
             #pickle and write means, std, and rs to file
-            with open(f'results/{dataset}/val_{name}_means10_20.pkl', 'wb') as f:
+            with open(f'results/{dataset}/val_{name}_means.pkl', 'wb') as f:
                 pickle.dump(val_means, f)
-            with open(f'results/{dataset}/val_{name}_std10_20.pkl', 'wb') as f:
+            with open(f'results/{dataset}/val_{name}_std.pkl', 'wb') as f:
                 pickle.dump(val_std, f)
-            with open(f'results/{dataset}/val_{name}_rs10_20.pkl', 'wb') as f:
+            with open(f'results/{dataset}/val_{name}_rs.pkl', 'wb') as f:
                 pickle.dump(val_rs, f)
         behaviorrow += 1
     datarow += 1
