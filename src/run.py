@@ -86,6 +86,10 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
     if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/conf_model_{human_name}.pkl'):
         if subsplit != 1:
             x_learning_non_binarized, _, x_learning, _, y_learning, _ = train_test_split(x_learning_non_binarized, x_learning, y_learning, test_size=1-subsplit, stratify=y_learning)
+            human.learning_decisions = human.get_decisions(x_learning, y_learning)
+            with open(f'results/{dataset}/run{run_num}/{human_name}.pkl', 'wb') as f:
+                pickle.dump(human, f)
+
         #conf_model = xgb.XGBRegressor().fit(x_learning_non_binarized, human.get_confidence(x_learning))
         conf_model = human.get_confidence
         if shared_human and run_num == 0:

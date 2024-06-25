@@ -15,7 +15,7 @@ from copy import deepcopy
 import os
 
 #making sure wd is file directory so hardcoded paths work
-os.chdir("..")
+#os.chdir("..")
 
 def load_datasets(dataset, run_num):
     x_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain.csv', index_col=0).reset_index(drop=True)
@@ -447,26 +447,26 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax):
     ax.plot(results_means.index[0:10], results_means['human_decision_loss'].iloc[0:10], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
     
     ax.fill_between(results_means.index[0:10], 
-                results_means['human_decision_loss'].iloc[0:10]-(results_stderrs['human_decision_loss'].iloc[0:10]),
-                results_means['human_decision_loss'].iloc[0:10]+(results_stderrs['human_decision_loss'].iloc[0:10]) ,
+                results_means['human_decision_loss'].iloc[0:10]-1.96*(results_stderrs['human_decision_loss'].iloc[0:10]),
+                results_means['human_decision_loss'].iloc[0:10]+1.96*(results_stderrs['human_decision_loss'].iloc[0:10]) ,
                 color=color_dict['Human'], alpha=0.2)
     ax.fill_between(results_means.index[0:10], 
-                results_means['hyrs_team_objective'].iloc[0:10]-(results_stderrs['hyrs_team_objective'].iloc[0:10]),
-                results_means['hyrs_team_objective'].iloc[0:10]+(results_stderrs['hyrs_team_objective'].iloc[0:10]) ,
+                results_means['hyrs_team_objective'].iloc[0:10]-1.96*(results_stderrs['hyrs_team_objective'].iloc[0:10]),
+                results_means['hyrs_team_objective'].iloc[0:10]+1.96*(results_stderrs['hyrs_team_objective'].iloc[0:10]) ,
                 color=color_dict['HYRSRecon'], alpha=0.2)
     
     ax.fill_between(results_means.index[0:10], 
-                results_means['hyrs_norecon_objective'].iloc[0:10]-(results_stderrs['hyrs_norecon_objective'].iloc[0:10]),
-                results_means['hyrs_norecon_objective'].iloc[0:10]+(results_stderrs['hyrs_norecon_objective'].iloc[0:10]) ,
+                results_means['hyrs_norecon_objective'].iloc[0:10]-1.96*(results_stderrs['hyrs_norecon_objective'].iloc[0:10]),
+                results_means['hyrs_norecon_objective'].iloc[0:10]+1.96*(results_stderrs['hyrs_norecon_objective'].iloc[0:10]) ,
                 color=color_dict['HYRS'], alpha=0.2)
     ax.fill_between(results_means.index[0:10], 
-                results_means['brs_team_objective'].iloc[0:10]-(results_stderrs['brs_team_objective'].iloc[0:10]),
-                results_means['brs_team_objective'].iloc[0:10]+(results_stderrs['brs_team_objective'].iloc[0:10]) ,
+                results_means['brs_team_objective'].iloc[0:10]-1.96*(results_stderrs['brs_team_objective'].iloc[0:10]),
+                results_means['brs_team_objective'].iloc[0:10]+1.96*(results_stderrs['brs_team_objective'].iloc[0:10]) ,
                 color=color_dict['BRS'], alpha=0.2)
     
     ax.fill_between(results_means.index[0:10], 
-                results_means['tr_team_w_reset_objective'].iloc[0:10]-(results_stderrs['tr_team_w_reset_objective'].iloc[0:10]),
-                results_means['tr_team_w_reset_objective'].iloc[0:10]+(results_stderrs['tr_team_w_reset_objective'].iloc[0:10]),
+                results_means['tr_team_w_reset_objective'].iloc[0:10]-1.96*(results_stderrs['tr_team_w_reset_objective'].iloc[0:10]),
+                results_means['tr_team_w_reset_objective'].iloc[0:10]+1.96*(results_stderrs['tr_team_w_reset_objective'].iloc[0:10]),
                 color=color_dict['TR'], alpha=0.2)
     '''
     ax.fill_between(results_means.iloc[0:10].index,
@@ -555,6 +555,7 @@ def robust_rules(rs, val_rs):
                 curr_val_objective = val_rs['brs_team_objective'][cost][i]
                 if i not in tracker[cost]:
                     tracker[cost].append(i)
+            '''
             if val_rs['brs_team_w_reset_objective'][cost][i] < curr_val_objective:
                 new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['brs_model_w_reset_contradictions'][cost][i].copy()
                 new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['brs_team_w_reset_decision_loss'][cost][i].copy()
@@ -563,7 +564,18 @@ def robust_rules(rs, val_rs):
                 curr_val_objective = val_rs['brs_team_w_reset_objective'][cost][i]
                 if i not in tracker[cost]:
                     tracker[cost].append(i)
-            '''
+
+            if val_rs['hyrs_team_w_reset_objective'][cost][i] < curr_val_objective:
+                new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['hyrs_model_w_reset_contradictions'][cost][i].copy()
+                new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['hyrs_team_w_reset_decision_loss'][cost][i].copy()
+                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][cost][i] + cost*new_rs['tr_model_w_reset_contradictions'][cost][i]/len(y_test)
+                print(f"cost: {cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
+                curr_val_objective = val_rs['hyrs_team_w_reset_objective'][cost][i]
+                if i not in tracker[cost]:
+                    tracker[cost].append(i)
+
+            
+            
              
             if val_rs['human_decision_loss'][cost][i] < curr_val_objective:
                 new_rs['tr_model_w_reset_contradictions'][cost][i] = 0
@@ -662,12 +674,12 @@ def cost_plus_hyrs(rs):
 costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]
 
 num_runs = 20
-datasets = ['heart_disease']
+datasets = ['heart_disease', 'fico', 'hr']
 names = ['biased', 'biased_dec_bias', 'offset_01']
 
 
-#fig, axs = plt.subplots(3,3)
-#fig.set_size_inches(11.5,7)
+fig, axs = plt.subplots(3,3)
+fig.set_size_inches(11.5,7)
 
 datarow = 0
 behaviorrow = 0
@@ -679,7 +691,7 @@ for dataset in datasets:
     for name in names:
         #if (name == 'biased') and (datasets == 'heart_disease'):
         #    continue
-        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl') and False:
+        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl'):
             with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
             with open(f'results/{dataset}/{name}_means.pkl', 'rb') as f:
@@ -695,13 +707,13 @@ for dataset in datasets:
                 val_std = pickle.load(f)
 
 
-            cval_means, cval_stderss, cval_rs, cost_tracker, final_cost = cost_validation(rs, val_rs)
+            #cval_means, cval_stderss, cval_rs, cost_tracker, final_cost = cost_validation(rs, val_rs)
             #cval_means, cval_stderss, cval_rs = cost_plus(rs)
-            #cval_val_means, cval_val_stderrs, cval_val_rs = cost_plus(val_rs)
-            #rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(val_rs, cval_val_rs)
-            ccval_means, ccval_stderss, ccval_rs, _, _ = cost_validation(val_rs, val_rs) 
-            rcval_means, rcval_stderss, rcval_rs, both_tracker = robust_rules(cval_rs, ccval_rs)   
-            make_multi_TL_v_cost_plot(rcval_means, rcval_stderss, name, axs[datarow, behaviorrow])
+            cval_val_means, cval_val_stderrs, cval_val_rs = cost_plus(val_rs)
+            rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(rs, val_rs)
+            #ccval_means, ccval_stderss, ccval_rs, _, _ = cost_validation(val_rs, val_rs) 
+            #rcval_means, rcval_stderss, rcval_rs, both_tracker = robust_rules(cval_rs, ccval_rs)   
+            make_multi_TL_v_cost_plot(cval_means, cval_stderss, name, axs[datarow, behaviorrow])
             #make_multi_TL_v_cost_plot(means, std, name, axs[datarow, behaviorrow])
             
 
@@ -729,7 +741,7 @@ for dataset in datasets:
     datarow += 1
     behaviorrow = 0
 
-'''
+
 for ax, col in zip(axs[0], cols):
     ax.annotate(col, xy=(0.5, 1), xytext=(0, pad),
                 xycoords='axes fraction', textcoords='offset points',
@@ -743,7 +755,7 @@ for ax, row in zip(axs[:,0], rows):
 fig.tight_layout()
 fig.savefig(f'results/combined_plots_final_costplus2.png', dpi=200)
 
-'''
+
 
 
 
