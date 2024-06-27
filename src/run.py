@@ -115,7 +115,9 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
     _, x_initial, _, y_initial = train_test_split(x_train, y_train, test_size=100/len(y_train), stratify=y_train)
     initial_task_model = xgb.XGBClassifier().fit(x_initial, y_initial)
 
-    if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl'):
+    if (remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl')):
+
+        
 
         adb_learning_data = pd.DataFrame({'human_conf': human.get_confidence(x_learning), 
                                         'model_confs': initial_task_model.predict_proba(x_learning).max(axis=1), 
@@ -131,12 +133,19 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         with open(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl', 'wb') as f:
             pickle.dump(adb_model, f)
     else:
-        if shared_human:
-            with open(f'results/{dataset}/run{0}/adb_model_{human_name}.pkl', 'rb') as f:
-                adb_model = pickle.load(f)
-        else:
-            with open(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl', 'rb') as f:
-                adb_model = pickle.load(f)
+
+
+        with open(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl', 'rb') as f:
+            adb_model = pickle.load(f)
+
+    if shared_human:
+        with open(f'results/{dataset}/run{0}/adb_model_{human_name}.pkl', 'rb') as f:
+            adb_model = pickle.load(f)
+        with open(f'results/{dataset}/run{0}/{human_name}.pkl', 'rb') as f:
+            human = pickle.load(f)
+        with open(f'results/{dataset}/run{0}/conf_model_{human_name}.pkl', 'rb') as f:
+            conf_model = pickle.load(f)
+
     
 
     

@@ -184,7 +184,7 @@ def make_discretion_results(dataset, whichtype, num_runs, costs, validation=Fals
 
                     human_decisions = human.get_decisions(x_test, y_test)
                     human_conf = human.get_confidence(x_test)
-                    conf_mod_preds = conf_mod.predict(x_test_non_binarized)
+                    
 
                     learned_adb = ADB(adb_mod)
                     tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
@@ -495,8 +495,8 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name, sizes = ['True', '
     
     sizes_marker_dict = {'True': 'o', '1': 'x', '02': 's'}
     sizes_lines_dict = {'True': '-', '1': '--', '02': '-.'}
-    auc_dict = {'True': 0.931, '1': 0.944, '02': 0.778}
-    mae_dict = {'True': 0.0, '1': 0.046, '02': 0.374}
+    auc_dict = {'True': 0.931, '1': 0.868, '02': 0.882}
+    mae_dict = {'True': 0.0, '1': 0.12, '02': 0.085}
 
     sizes = ['1', '02']
     for i in range(len(sizes)):

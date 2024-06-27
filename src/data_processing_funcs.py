@@ -44,6 +44,8 @@ def make_heart_data(numQs=5, num_runs=50):
     startDict['Xtrain_non_binarized_start'] = startDict['Xtrain_non_binarized'].copy()
 
     for i in range(num_runs):
+        if i < 20:
+            continue
 
         # make human_training
         startDict['Xtrain'], startDict['Xhuman_train'], startDict['Ytrain'], \
@@ -154,6 +156,8 @@ def make_fico_data(numQs=5, num_runs=50):
     startDict['Xtrain_non_binarized_start'] = startDict['Xtrain_non_binarized'].copy()
 
     for i in range(num_runs):
+        if i < 20:
+            continue
 
         # make human_training
         startDict['Xtrain'], startDict['Xhuman_train'], startDict['Ytrain'], \
@@ -274,6 +278,8 @@ def make_hr_data(numQs=5, num_runs=50):
     startDict['Xtrain_non_binarized_start'] = startDict['Xtrain_non_binarized'].copy()
 
     for i in range(num_runs):
+        if i < 20:
+            continue
 
         # make human_training
         startDict['Xtrain'], startDict['Xhuman_train'], startDict['Ytrain'], \
@@ -461,7 +467,7 @@ def make_adult_data(numQs=5, num_runs=50):
         startDict['Xlearning'].to_csv(f'{outdir}/xlearning.csv')
 
 
-#make_heart_data(numQs=5, num_runs=20)
-#make_fico_data(numQs=5, num_runs=20)
-#make_hr_data(numQs=5, num_runs=20)
-make_adult_data(numQs=5, num_runs=20)
+#make_heart_data(numQs=5, num_runs=30)
+#make_fico_data(numQs=5, num_runs=30)
+#make_hr_data(numQs=5, num_runs=30)
+#make_adult_data(numQs=5, num_runs=20)

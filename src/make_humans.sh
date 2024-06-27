@@ -1,4 +1,4 @@
-nohup python3 -u main.py -d 'heart_disease' -i 20 -h 'offset_01' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log20_heart_disease_offset01_standard_nomodels.out &
+nohup python3 -u main.py -d 'heart_disease' -i 20 -h 'offset_01' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/__ &
 nohup python3 -u main.py -d 'heart_disease' -i 21 -h 'offset_01' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log21_heart_disease_offset01_standard_nomodels.out &
 nohup python3 -u main.py -d 'heart_disease' -i 22 -h 'offset_01' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log22_heart_disease_offset01_standard_nomodels.out &
 nohup python3 -u main.py -d 'heart_disease' -i 23 -h 'offset_01' -r 'standard' -c 0 -n True -p '' -b False -w '' > ../logs/log23_heart_disease_offset01_standard_nomodels.out &
