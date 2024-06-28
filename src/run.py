@@ -117,21 +117,26 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
     if (remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl')):
 
+        if not(shared_human and run_num != 0):
+            
+
+
+
         
 
-        adb_learning_data = pd.DataFrame({'human_conf': human.get_confidence(x_learning), 
-                                        'model_confs': initial_task_model.predict_proba(x_learning).max(axis=1), 
-                                        'agreement': (initial_task_model.predict(x_learning) == human.learning_decisions)})
-        
-        p_accepts = human.ADB(adb_learning_data['human_conf'], adb_learning_data['model_confs'], adb_learning_data['agreement'])
-        realized_accepts = bernoulli.rvs(p=p_accepts, size=len(p_accepts))
-        if use_true:
-            adb_model = human.ADB
-        else:
-            adb_model = xgb.XGBClassifier().fit(adb_learning_data[adb_learning_data['agreement'] == False], realized_accepts[adb_learning_data['agreement'] == False])
-        
-        with open(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl', 'wb') as f:
-            pickle.dump(adb_model, f)
+            adb_learning_data = pd.DataFrame({'human_conf': human.get_confidence(x_learning), 
+                                            'model_confs': initial_task_model.predict_proba(x_learning).max(axis=1), 
+                                            'agreement': (initial_task_model.predict(x_learning) == human.learning_decisions)})
+            
+            p_accepts = human.ADB(adb_learning_data['human_conf'], adb_learning_data['model_confs'], adb_learning_data['agreement'])
+            realized_accepts = bernoulli.rvs(p=p_accepts, size=len(p_accepts))
+            if use_true:
+                adb_model = human.ADB
+            else:
+                adb_model = xgb.XGBClassifier().fit(adb_learning_data[adb_learning_data['agreement'] == False], realized_accepts[adb_learning_data['agreement'] == False])
+            
+            with open(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl', 'wb') as f:
+                pickle.dump(adb_model, f)
     else:
 
 
