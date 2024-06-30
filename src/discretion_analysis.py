@@ -14,6 +14,8 @@ from run import evaluate_adb_model
 from copy import deepcopy
 import os
 
+os.chdir("..")
+
 def load_datasets(dataset, run_num):
     x_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain.csv', index_col=0)
     y_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/ytrain.csv', index_col=0).iloc[:, 0]
@@ -492,7 +494,7 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name, sizes = ['True', '
     #            results_means[0]['brs_team_objective'].iloc[0:6]+(results_stderrs[0]['brs_team_objective'].iloc[0:6]) ,
     #            color=color_dict['BRS'], alpha=0.2)
 
-    
+    '''
     sizes_marker_dict = {'True': 'o', '1': 'x', '02': 's'}
     sizes_lines_dict = {'True': '-', '1': '--', '02': '-.'}
     auc_dict = {'True': 0.931, '1': 0.868, '02': 0.882}
@@ -603,3 +605,4 @@ rcval_bia_means02, rcval_bia_std02, rcval_bia_rs02 = robust_rules(cval_bia_rs02,
 
 print('pause')
 
+'''
