@@ -245,8 +245,39 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             tr_model.make_lite()
             pickle.dump(tr_model, f)
 
+    if 'tr-no(ADB)' in which_models:
+        #train estimates
+        e_y_mod = xgb.XGBClassifier().fit(x_train_non_binarized, y_train)
+        #e_yb_mod = xgb.XGBClassifier().fit(x_train_non_binarized, human.get_decisions(x_train, y_train))
 
-#run('heart_disease', 1, 'biased', runtype='standard', which_models=['tr'], contradiction_reg=0.2, remake_humans=True, human_decision_bias=False, custom_name='alphatext', use_true=False, subsplit=1)
+        tr_model = tr(x_train, y_train,
+                    human.train_decisions,
+                    human.get_confidence(x_train), 
+                    p_y=e_y_mod.predict_proba(x_train_non_binarized))
+        
+        def noADB(human_conf, model_conf, agreement):
+            return np.ones(len(human_conf))
+        
+        adb = ADB(noADB)
+
+        tr_model.set_parameters(alpha = alpha, beta=beta, contradiction_reg=contradiction_reg, fairness_reg=fairness_reg, force_complete_coverage=False, asym_loss=asym_loss, fA=adb.ADB_model_wrapper)
+
+        tr_model.generate_rulespace(supp = supp, maxlen=maxlen, N=Nrules, need_negcode=True, method='randomforest',criteria='precision')
+        _, _, _ = tr_model.train(Niteration=Niteration, T0=0.01, print_message=False)
+
+        #write ey and eyb models
+        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name}{appendType}.pkl', 'wb') as f:
+            pickle.dump(e_y_mod, f)
+        #with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/eyb_model_{human_name}{appendType}.pkl', 'wb') as f:
+        #    pickle.dump(e_yb_mod, f)
+
+        #write tr model
+        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr-no(ADB)_model_{human_name}{appendType}.pkl', 'wb') as f:
+            tr_model.make_lite()
+            pickle.dump(tr_model, f)
+
+
+#run('heart_disease', 1, 'biased', runtype='standard', which_models=['tr-no(ADB)'], contradiction_reg=0.2, remake_humans=True, human_decision_bias=False, custom_name='alphatext', use_true=False, subsplit=1)
 #run('heart_disease', 11, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
 #run('heart_disease', 12, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
 #run('heart_disease', 13, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)

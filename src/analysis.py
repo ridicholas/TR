@@ -17,6 +17,8 @@ import os
 #making sure wd is file directory so hardcoded paths work
 #os.chdir("..")
 
+
+
 def load_datasets(dataset, run_num):
     x_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain.csv', index_col=0).reset_index(drop=True)
     y_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/ytrain.csv', index_col=0).iloc[:, 0].reset_index(drop=True)
@@ -35,6 +37,11 @@ def load_datasets(dataset, run_num):
     x_test_non_binarized = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtest_non_binarized.csv', index_col=0).reset_index(drop=True)
 
     return x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized
+
+#x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized = load_datasets('hr', 0)
+
+#with open(f'results/hr/run0/biased.pkl', 'rb') as f:
+#    human = pickle.load(f)
 
 def load_results(dataset, setting, run_num, cost, model):
     if model == 'brs':
@@ -474,12 +481,12 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax):
                 results_means['brs_team_w_reset_objective'].iloc[0:10]+(results_stderrs['brs_team_w_reset_objective'].iloc[0:10]),
                 color=color_dict['BRSselect'], alpha=0.2)'''
    
-    ax.set_xlabel('Reconciliation Cost', fontsize=12)
-    ax.set_ylabel('Total Team Loss', fontsize=12)
+    ax.set_xlabel('Reconciliation Cost', fontsize=9)
+    ax.set_ylabel('TTL', fontsize=9)
     ax.tick_params(labelrotation=45, labelsize=10)
     #ax.title('{} Setting'.format(setting), fontsize=15)
     #ax.title('Income Prediction (Adult Dataset)', fontsize=15)
-    ax.legend(prop={'size': 5})
+    ax.legend(prop={'size': 4})
     ax.grid('on', linestyle='dotted', linewidth=0.2, color='black')
 
     #fig.savefig(f'results/{dataset}/plots/TL_{dataset}_{name}.png', bbox_inches='tight')
@@ -514,11 +521,11 @@ def make_contradictions_v_decisionloss_plot(results_means, results_stderrs, name
                     results_means.loc[cost, 'tr_team_w_reset_decision_loss']+(results_stderrs.loc[cost, 'tr_team_w_reset_decision_loss']),
                     color=color_dict['TR'], alpha=0.2)
    
-    plt.xlabel('Contradictions', fontsize=12)
-    plt.ylabel('Team Decision Loss', fontsize=12)
+    plt.xlabel('Contradictions', fontsize=9)
+    plt.ylabel('Team Decision Loss', fontsize=9)
     plt.tick_params(labelrotation=45, labelsize=10)
     #plt.title('{} Setting'.format(setting), fontsize=15)
-    plt.legend(prop={'size': 5})
+    plt.legend(prop={'size': 3})
     plt.grid('on', linestyle='dotted', linewidth=0.2, color='black')
 
     fig.savefig(f'results/{dataset}/plots/TDL_{dataset}_{name}.png', bbox_inches='tight', format='svg', dpi=1200)
@@ -564,7 +571,7 @@ def robust_rules(rs, val_rs):
                 curr_val_objective = val_rs['brs_team_w_reset_objective'][cost][i]
                 if i not in tracker[cost]:
                     tracker[cost].append(i)
-
+            
             if val_rs['hyrs_team_w_reset_objective'][cost][i] < curr_val_objective:
                 new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['hyrs_model_w_reset_contradictions'][cost][i].copy()
                 new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['hyrs_team_w_reset_decision_loss'][cost][i].copy()
@@ -679,11 +686,11 @@ names = ['biased', 'biased_dec_bias', 'offset_01']
 
 
 fig, axs = plt.subplots(3,3)
-fig.set_size_inches(11.5,7)
+fig.set_size_inches(9,7)
 
 datarow = 0
 behaviorrow = 0
-cols = ['{}'.format(col) for col in ['Confidence Biased', 'Confidence & Decision Biased', 'Mostly Calibrated']]
+cols = ['{}'.format(col) for col in ['Difficulty-Biased Decisions \n Feature-Biased Confidence', 'Feature-Biased Decisions \n Feature-Biased Confidence', 'Difficulty-Biased Decisions \n Mostly Calibrated Confidence']]
 rows = ['{}'.format(row) for row in ['Heart Disease', '    FICO    ', '     HR     ']]
 pad = 5
 
@@ -709,11 +716,11 @@ for dataset in datasets:
 
             #cval_means, cval_stderss, cval_rs, cost_tracker, final_cost = cost_validation(rs, val_rs)
             #cval_means, cval_stderss, cval_rs = cost_plus(rs)
-            cval_val_means, cval_val_stderrs, cval_val_rs = cost_plus(val_rs)
+            #cval_val_means, cval_val_stderrs, cval_val_rs = cost_plus(val_rs)
             rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(rs, val_rs)
             #ccval_means, ccval_stderss, ccval_rs, _, _ = cost_validation(val_rs, val_rs) 
             #rcval_means, rcval_stderss, rcval_rs, both_tracker = robust_rules(cval_rs, ccval_rs)   
-            make_multi_TL_v_cost_plot(cval_means, cval_stderss, name, axs[datarow, behaviorrow])
+            make_multi_TL_v_cost_plot(rval_means, rval_stderss, name, axs[datarow, behaviorrow])
             #make_multi_TL_v_cost_plot(means, std, name, axs[datarow, behaviorrow])
             
 
@@ -745,15 +752,16 @@ for dataset in datasets:
 for ax, col in zip(axs[0], cols):
     ax.annotate(col, xy=(0.5, 1), xytext=(0, pad),
                 xycoords='axes fraction', textcoords='offset points',
-                size='large', ha='center', va='baseline')
+                size='medium', ha='center', va='baseline')
 
 for ax, row in zip(axs[:,0], rows):
     ax.annotate(row, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - pad, 0),
                 xycoords=ax.yaxis.label, textcoords='offset points',
                 size='large', ha='right', va='center', rotation=90)
 
+
 fig.tight_layout()
-fig.savefig(f'results/combined_plots_final_costplus2.png', dpi=200)
+fig.savefig(f'results/combined_plots_final.png', dpi=200)
 
 
 

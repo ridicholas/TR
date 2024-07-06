@@ -14,7 +14,7 @@ from run import evaluate_adb_model
 from copy import deepcopy
 import os
 
-os.chdir("..")
+#os.chdir("..")
 
 def load_datasets(dataset, run_num):
     x_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain.csv', index_col=0)
@@ -358,7 +358,7 @@ sizes = ['True', '1', '02']
 
 #########TRUE_RESULTS###############
 
-if os.path.isfile(f'results/{dataset}/biased_rs_discretionTrue.pkl') and False:
+if os.path.isfile(f'results/{dataset}/biased_rs_discretionTrue.pkl'):
     with open(f'results/{dataset}/biased_rs_discretionTrue.pkl', 'rb') as f:
         bia_rsTrue = pickle.load(f)
     with open(f'results/{dataset}/biased_means_discretionTrue.pkl', 'rb') as f:
@@ -375,7 +375,7 @@ else:
         pickle.dump(bia_rsTrue, f)
 
 
-if os.path.isfile(f'results/{dataset}/val_biased_rsTrue.pkl') and False:
+if os.path.isfile(f'results/{dataset}/val_biased_rsTrue.pkl'):
     with open(f'results/{dataset}/val_biased_rsTrue.pkl', 'rb') as f:
         val_bia_rsTrue = pickle.load(f)
     with open(f'results/{dataset}/val_biased_meansTrue.pkl', 'rb') as f:
@@ -393,7 +393,7 @@ else:
         pickle.dump(val_bia_rsTrue, f)
 
         #########1_RESULTS###############
-if os.path.isfile(f'results/{dataset}/biased_rs_discretion1.pkl') and False:
+if os.path.isfile(f'results/{dataset}/biased_rs_discretion1.pkl'):
     with open(f'results/{dataset}/biased_rs_discretion1.pkl', 'rb') as f:
         bia_rs1 = pickle.load(f)
     with open(f'results/{dataset}/biased_means_discretion1.pkl', 'rb') as f:
@@ -410,7 +410,7 @@ else:
         pickle.dump(bia_rs1, f)
 
 
-if os.path.isfile(f'results/{dataset}/val_biased_rs1.pkl') and False:
+if os.path.isfile(f'results/{dataset}/val_biased_rs1.pkl'):
     with open(f'results/{dataset}/val_biased_rs1.pkl', 'rb') as f:
         val_bia_rs1 = pickle.load(f)
     with open(f'results/{dataset}/val_biased_means1.pkl', 'rb') as f:
@@ -429,7 +429,7 @@ else:
 
 
 #########02_RESULTS###############
-if os.path.isfile(f'results/{dataset}/biased_rs_discretion02.pkl') and False:
+if os.path.isfile(f'results/{dataset}/biased_rs_discretion02.pkl'):
     with open(f'results/{dataset}/biased_rs_discretion02.pkl', 'rb') as f:
         bia_rs02 = pickle.load(f)
     with open(f'results/{dataset}/biased_means_discretion02.pkl', 'rb') as f:
@@ -446,7 +446,7 @@ else:
         pickle.dump(bia_rs02, f)
 
 
-if os.path.isfile(f'results/{dataset}/val_biased_rs02.pkl') and False:
+if os.path.isfile(f'results/{dataset}/val_biased_rs02.pkl'):
     with open(f'results/{dataset}/val_biased_rs02.pkl', 'rb') as f:
         val_bia_rs02 = pickle.load(f)
     with open(f'results/{dataset}/val_biased_means02.pkl', 'rb') as f:
@@ -494,13 +494,13 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name, sizes = ['True', '
     #            results_means[0]['brs_team_objective'].iloc[0:6]+(results_stderrs[0]['brs_team_objective'].iloc[0:6]) ,
     #            color=color_dict['BRS'], alpha=0.2)
 
-    '''
+   
     sizes_marker_dict = {'True': 'o', '1': 'x', '02': 's'}
     sizes_lines_dict = {'True': '-', '1': '--', '02': '-.'}
     auc_dict = {'True': 0.931, '1': 0.868, '02': 0.882}
     mae_dict = {'True': 0.0, '1': 0.12, '02': 0.085}
 
-    sizes = ['1', '02']
+    sizes = ['True','1', '02']
     for i in range(len(sizes)):
         c=color_dict['TR']
         plt.plot(results_means[i].index[0:6], results_means[i]['tr_team_w_reset_objective'].iloc[0:6], marker = sizes_marker_dict[sizes[i]], label=f'TR, AUC: {auc_dict[sizes[i]]}, MAE: {mae_dict[sizes[i]]}', markersize=1.8, linewidth=0.9, linestyle=sizes_lines_dict[sizes[i]])
@@ -604,5 +604,3 @@ rcval_bia_means02, rcval_bia_std02, rcval_bia_rs02 = robust_rules(cval_bia_rs02,
     
 
 print('pause')
-
-'''
