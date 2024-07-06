@@ -13,6 +13,8 @@ from sklearn.metrics import accuracy_score, auc, roc_auc_score, roc_curve, mean_
 import numpy as np
 from sklearn.model_selection import train_test_split
 
+
+
 class ADB(object):
     def __init__(self, adb_model) -> None:
         self.adb_model = adb_model
@@ -22,6 +24,9 @@ class ADB(object):
             return self.adb_model.predict_proba(X)[:, 1]
         except:
             return self.adb_model(human_conf, model_conf, agreement)
+        
+def noADB(human_conf, model_conf, agreement):
+    return np.ones(len(human_conf))
     
 #a run of the experiment consists of: a dataset, a human, a set of models, and a set of parameters
 
@@ -255,8 +260,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
                     human.get_confidence(x_train), 
                     p_y=e_y_mod.predict_proba(x_train_non_binarized))
         
-        def noADB(human_conf, model_conf, agreement):
-            return np.ones(len(human_conf))
+
         
         adb = ADB(noADB)
 
