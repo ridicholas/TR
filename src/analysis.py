@@ -250,7 +250,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
                     '''
 
-                    hyrs_model_preds_with_reset = hyrs_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_model_preds_w_reset = hyrs_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     hyrs_team_preds_w_reset = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     hyrs_team_preds = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
@@ -291,7 +291,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
                     '''
 
-                    hyrs_model_preds_with_reset = hyrs_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_model_preds_w_reset = hyrs_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     hyrs_team_preds_w_reset = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     hyrs_team_preds = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
