@@ -15,8 +15,11 @@ from copy import deepcopy
 import os
 
 #making sure wd is file directory so hardcoded paths work
-#os.chdir("..")
+os.chdir("..")
 
+
+def noADB(human_conf, model_conf, agreement):
+    return np.ones(len(human_conf))
 
 
 def load_datasets(dataset, run_num):
@@ -44,6 +47,8 @@ def load_datasets(dataset, run_num):
 #    human = pickle.load(f)
 
 def load_results(dataset, setting, run_num, cost, model):
+    if model == 'hyrs':
+        model = 'tr-no(ADB)'
     if model == 'brs':
         try:
             setting = '_biased'
@@ -219,17 +224,20 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
                 if validation: 
 
+                    trNoADB = ADB(noADB)
                     human_decisions = human.get_decisions(x_test, y_test)
                     human_conf = human.get_confidence(x_test)
                     #conf_mod_preds = conf_mod.predict(x_test_non_binarized)
 
                     learned_adb = ADB(adb_mod)
+
                     tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
                     tr_model_preds_with_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
+                    '''
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
                     hyrs_reset = hyrs_mod.expected_loss_filter(x_test, hyrs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=None, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=cost)
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
@@ -240,7 +248,16 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
                     hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
                     hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
-                    brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, learned_adb.ADB_model_wrapper)
+                    '''
+
+                    hyrs_model_preds_with_reset = hyrs_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_team_preds_w_reset = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_team_preds = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+
+                    brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, trNoADB.ADB_model_wrapper)
                     brs_reset = brs_expected_loss_filter(brs_mod, x_test, brs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=brs_conf, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=cost)
                     brs_team_preds_w_reset = brs_team_preds.copy()
                     brs_team_preds_w_reset[brs_reset] = human_decisions[brs_reset]
@@ -263,7 +280,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     tr_model_preds_no_reset, tr_mod_covered_no_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
                     tr_mod_confs = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)[0]
                 
-
+                    '''
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
                     hyrs_reset = hyrs_mod.expected_loss_filter(x_test, hyrs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=None, fA= human.ADB, asym_loss=[1,1], contradiction_reg=cost)
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
@@ -272,6 +289,17 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     hyrs_model_preds_w_reset = hyrs_model_preds.copy()
                     hyrs_model_preds_w_reset[hyrs_reset] = human_decisions[hyrs_reset]
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
+                    '''
+
+                    hyrs_model_preds_with_reset = hyrs_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_team_preds_w_reset = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_team_preds = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+
+                    hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.adb, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+
+
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
                     brs_reset = brs_expected_loss_filter(brs_mod, x_test, brs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=brs_conf, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=cost)
                     brs_team_preds_w_reset = brs_team_preds.copy()
@@ -280,8 +308,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     brs_model_preds_w_reset[brs_reset] = human_decisions[brs_reset]
                     
 
-                    hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
-                    hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, human.ADB, x_test)
+                    #hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
+                    #hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, human.ADB, x_test)
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
                         
 
@@ -684,7 +712,7 @@ num_runs = 20
 datasets = ['heart_disease', 'fico', 'hr']
 names = ['biased', 'biased_dec_bias', 'offset_01']
 
-
+'''
 fig, axs = plt.subplots(3,3)
 fig.set_size_inches(9,7)
 
@@ -693,12 +721,12 @@ behaviorrow = 0
 cols = ['{}'.format(col) for col in ['Difficulty-Biased Decisions \n Feature-Biased Confidence', 'Feature-Biased Decisions \n Feature-Biased Confidence', 'Difficulty-Biased Decisions \n Mostly Calibrated Confidence']]
 rows = ['{}'.format(row) for row in ['Heart Disease', '    FICO    ', '     HR     ']]
 pad = 5
-
+'''
 for dataset in datasets:
     for name in names:
         #if (name == 'biased') and (datasets == 'heart_disease'):
         #    continue
-        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl'):
+        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl') and False:
             with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
             with open(f'results/{dataset}/{name}_means.pkl', 'rb') as f:
@@ -717,10 +745,10 @@ for dataset in datasets:
             #cval_means, cval_stderss, cval_rs, cost_tracker, final_cost = cost_validation(rs, val_rs)
             #cval_means, cval_stderss, cval_rs = cost_plus(rs)
             #cval_val_means, cval_val_stderrs, cval_val_rs = cost_plus(val_rs)
-            rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(rs, val_rs)
+            #rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(rs, val_rs)
             #ccval_means, ccval_stderss, ccval_rs, _, _ = cost_validation(val_rs, val_rs) 
             #rcval_means, rcval_stderss, rcval_rs, both_tracker = robust_rules(cval_rs, ccval_rs)   
-            make_multi_TL_v_cost_plot(rval_means, rval_stderss, name, axs[datarow, behaviorrow])
+            #make_multi_TL_v_cost_plot(rval_means, rval_stderss, name, axs[datarow, behaviorrow])
             #make_multi_TL_v_cost_plot(means, std, name, axs[datarow, behaviorrow])
             
 
@@ -748,8 +776,7 @@ for dataset in datasets:
     datarow += 1
     behaviorrow = 0
 
-
-for ax, col in zip(axs[0], cols):
+'''for ax, col in zip(axs[0], cols):
     ax.annotate(col, xy=(0.5, 1), xytext=(0, pad),
                 xycoords='axes fraction', textcoords='offset points',
                 size='medium', ha='center', va='baseline')
@@ -764,6 +791,7 @@ fig.tight_layout()
 fig.savefig(f'results/combined_plots_final.png', dpi=200)
 
 
+'''
 
 
 
