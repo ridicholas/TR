@@ -297,7 +297,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     hyrs_team_preds = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
                     hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.adb, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
 
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
