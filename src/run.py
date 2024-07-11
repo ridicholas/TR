@@ -61,6 +61,7 @@ def evaluate_adb_model(adb_model, human, x_test, c_human_true, c_human_estimate,
     return np.array(scores).mean()
 
 def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], contradiction_reg=0, remake_humans=False, human_decision_bias=False, custom_name="", use_true=False, subsplit=1, shared_human=False):   
+    print('starting run')
     # load data
     x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized = load_datasets(dataset, run_num)
     
@@ -86,7 +87,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             with open(f'results/{dataset}/run{run_num}/{human_name}.pkl', 'rb') as f:
                 human = pickle.load(f)
 
-
+    print('humans loaded')
     #train confidence model
     if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/conf_model_{human_name}.pkl'):
         if subsplit != 1:
@@ -160,6 +161,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
     
     adb = ADB(adb_model)
+    print('adb loaded')
 
 
     
@@ -251,8 +253,10 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             pickle.dump(tr_model, f)
 
     if 'tr-no(ADB)' in which_models:
+        print('tr-no(ADB) in whichmodels')
 
         if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr-no(ADB)_model_{human_name}{appendType}.pkl'):
+            print('result not there yet, starting training')
             #train estimates
             e_y_mod = xgb.XGBClassifier().fit(x_train_non_binarized, y_train)
             #e_yb_mod = xgb.XGBClassifier().fit(x_train_non_binarized, human.get_decisions(x_train, y_train))
