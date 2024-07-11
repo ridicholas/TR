@@ -281,6 +281,8 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr-no(ADB)_model_{human_name}{appendType}.pkl', 'wb') as f:
                 tr_model.make_lite()
                 pickle.dump(tr_model, f)
+        else:
+            print('already there!')
 
 
 #run('heart_disease', 0, 'biased', runtype='standard', which_models=['tr-no(ADB)'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=False, custom_name='case1', use_true=False, subsplit=1)
