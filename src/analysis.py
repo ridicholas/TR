@@ -708,8 +708,8 @@ def cost_plus_hyrs(rs):
 
 costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]
 
-num_runs = 20
-datasets = ['heart_disease', 'fico', 'hr']
+num_runs = 10
+datasets = ['heart_disease', 'fico']
 names = ['biased', 'biased_dec_bias', 'offset_01']
 
 '''
@@ -772,11 +772,12 @@ for dataset in datasets:
                 pickle.dump(val_std, f)
             with open(f'results/{dataset}/val_{name}_rs.pkl', 'wb') as f:
                 pickle.dump(val_rs, f)
+    '''
         behaviorrow += 1
     datarow += 1
     behaviorrow = 0
 
-'''for ax, col in zip(axs[0], cols):
+for ax, col in zip(axs[0], cols):
     ax.annotate(col, xy=(0.5, 1), xytext=(0, pad),
                 xycoords='axes fraction', textcoords='offset points',
                 size='medium', ha='center', va='baseline')
