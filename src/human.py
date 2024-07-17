@@ -55,7 +55,10 @@ class Human(object):
                     #model_confidences[(X['age54.0'] == 0)] = 0
                 #else:
                     #model_confidences[(X['sex_Male'] == 1)] = 0
-                model_confidences[(X['age54.0'] == 0)] = 0
+                if self.alteration == 'case1':
+                    model_confidences[(X['sex_Male'] == 1)] = 0
+                else:
+                    model_confidences[(X['age54.0'] == 0)] = 0
                 
                 #########################################
             if self.dataset == 'fico':
