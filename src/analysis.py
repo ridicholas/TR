@@ -15,7 +15,7 @@ from copy import deepcopy
 import os
 
 #making sure wd is file directory so hardcoded paths work
-#os.chdir("..")
+os.chdir("..")
 
 
 def noADB(human_conf, model_conf, agreement):
@@ -47,8 +47,6 @@ def load_datasets(dataset, run_num):
 #    human = pickle.load(f)
 
 def load_results(dataset, setting, run_num, cost, model):
-    if model == 'hyrs':
-        model = 'tr-no(ADB)'
     if model == 'brs':
         try:
             setting = '_biased'
@@ -94,8 +92,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
     
     results = pd.DataFrame(data={'tr_team_w_reset_decision_loss': [[]],
+                                 'tr2s_team_w_reset_decision_loss': [[]],
+                                 'trnoADB_team_w_reset_decision_loss': [[]],
                                 'tr_team_wo_reset_decision_loss': [[]],
                                 'tr_model_w_reset_decision_loss': [[]],
+                                'tr2s_model_w_reset_decision_loss': [[]],
+                                'trnoadb_model_w_reset_decision_loss': [[]],
                                 'tr_model_wo_reset_decision_loss': [[]],
                                 'hyrs_model_decision_loss': [[]],
                                 'hyrs_team_decision_loss': [[]],
@@ -113,12 +115,18 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                                 'hyrs_model_w_reset_contradictions': [[]],
                                 'tr_model_w_reset_contradictions': [[]],
                                 'tr_model_wo_reset_contradictions': [[]],
+                                'tr2s_model_w_reset_contradictions': [[]],
+                                'trnoadb_model_w_reset_contradictions': [[]],
                                 'hyrs_model_contradictions': [[]],
                                 'brs_model_contradictions':[[]],
                                 'tr_team_w_reset_objective': [[]],
                                 'tr_team_wo_reset_objective': [[]],
                                 'tr_model_w_reset_objective': [[]],
                                 'tr_model_wo_reset_objective': [[]],
+                                'tr2s_team_w_reset_objective': [[]],
+                                'tr2s_model_w_reset_objective': [[]],
+                                'trnoadb_team_w_reset_objective': [[]],
+                                'trnoadb_model_w_reset_objective': [[]],
                                 'hyrs_model_objective': [[]],
                                 'hyrs_team_objective':[[]],
                                 'brs_model_objective': [[]],
@@ -158,6 +166,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             print(f'producing for cost {cost} run {run}.....')
             tr_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr')
             hyrs_mod = load_results(dataset, f'_{whichtype}', run, cost, 'hyrs')
+            tr2s_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr2stage')
+            trnoadb_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr-no(ADB)')
             #load e_y and e_yb mods
             #with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype}.pkl', 'rb') as f:
             #    e_yb_mod = pickle.load(f)
@@ -166,6 +176,10 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
             tr_mod.df = x_train
             tr_mod.Y = y_train
+            tr2s_mod.df = x_train
+            tr2s_mod.Y = y_train
+            trnoadb_mod.df = x_train
+            trnoadb_mod.Y = y_train
             hyrs_mod.df = x_train
             hyrs_mod.Y = y_train
 
@@ -174,6 +188,10 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             tr_team_wo_reset_decision_loss = []
             tr_model_w_reset_decision_loss = []
             tr_model_wo_reset_decision_loss = []
+            tr2s_model_w_reset_decision_loss = []
+            tr2s_team_w_reset_decision_loss = []
+            trnoadb_model_w_reset_decision_loss = []
+            trnoadb_team_w_reset_decision_loss = []
             hyrs_model_decision_loss = []
             hyrs_team_decision_loss = []
             brs_model_decision_loss = []
@@ -184,13 +202,19 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
             tr_model_w_reset_contradictions = []
             tr_model_wo_reset_contradictions = []
+            tr2s_model_w_reset_contradictions = []
+            trnoadb_model_w_reset_contradictions = []
             hyrs_model_contradictions = []
             brs_model_contradictions = []
             brs_model_w_reset_contradictions = []
 
             tr_team_w_reset_objective = []
+            tr2s_team_w_reset_objective = []
+            trnoadb_team_w_reset_objective = []
             tr_team_wo_reset_objective = []
             tr_model_w_reset_objective = []
+            tr2s_model_w_reset_objective = []
+            trnoadb_model_w_reset_objective = []
             tr_model_wo_reset_objective = []
             hyrs_model_objective = []
             hyrs_team_objective = []
@@ -216,7 +240,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                 brs_mod.Y = y_train
                 brs_model_preds = brs_predict(brs_mod.opt_rules, x_test)
                 brs_conf = brs_predict_conf(brs_mod.opt_rules, x_test, brs_mod)
-                hyrs_norecon_mod = deepcopy(hyrs_mod)
+                hyrs_norecon_mod = deepcopy(trnoadb_mod)
             
             for i in range(50):
                 
@@ -233,11 +257,14 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
                     tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-
                     tr_model_preds_with_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
-                    '''
+                    tr2s_team_preds_with_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr2s_model_preds_with_reset = tr2s_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    
+
+                    
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
                     hyrs_reset = hyrs_mod.expected_loss_filter(x_test, hyrs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=None, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=cost)
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
@@ -246,14 +273,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     hyrs_model_preds_w_reset = hyrs_model_preds.copy()
                     hyrs_model_preds_w_reset[hyrs_reset] = human_decisions[hyrs_reset]
 
-                    hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
-                    hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
-                    '''
+                    #hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
+                    #hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
+                    
 
-                    hyrs_model_preds_w_reset = hyrs_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    hyrs_team_preds_w_reset = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    hyrs_team_preds = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    trnoadb_model_preds_w_reset = trnoadb_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    trnoadb_team_preds_w_reset = trnoadb_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
@@ -279,8 +304,11 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     tr_model_preds_with_reset, tr_mod_covered_w_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
                     tr_model_preds_no_reset, tr_mod_covered_no_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
                     tr_mod_confs = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)[0]
+
+                    tr2s_model_preds_with_reset, tr2s_mod_covered_w_reset, _ = tr2s_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
+                    tr2s_mod_confs = tr2s_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)[0]
                 
-                    '''
+                    
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
                     hyrs_reset = hyrs_mod.expected_loss_filter(x_test, hyrs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=None, fA= human.ADB, asym_loss=[1,1], contradiction_reg=cost)
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
@@ -289,12 +317,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     hyrs_model_preds_w_reset = hyrs_model_preds.copy()
                     hyrs_model_preds_w_reset[hyrs_reset] = human_decisions[hyrs_reset]
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
-                    '''
+                    
 
-                    hyrs_model_preds_w_reset = hyrs_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    hyrs_team_preds_w_reset = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    hyrs_team_preds = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    trnoadb_model_preds_w_reset = trnoadb_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    
+                    trnoadb_team_preds_w_reset = trnoadb_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    
 
                     hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
@@ -314,8 +342,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                         
 
                 tr_team_w_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_with_reset, y_test))
+                tr2s_team_w_reset_decision_loss.append(1 - accuracy_score(tr2s_team_preds_with_reset, y_test))
+                trnoadb_team_w_reset_decision_loss.append(1 - accuracy_score(trnoadb_team_preds_w_reset, y_test))
                 tr_team_wo_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_no_reset, y_test))
                 tr_model_w_reset_decision_loss.append(1 - accuracy_score(tr_model_preds_with_reset, y_test))
+                tr2s_model_w_reset_decision_loss.append(1 - accuracy_score(tr2s_model_preds_with_reset, y_test))
+                trnoadb_model_w_reset_decision_loss.append(1 - accuracy_score(trnoadb_model_preds_w_reset, y_test))
                 tr_model_wo_reset_decision_loss.append(1 - accuracy_score(tr_model_preds_no_reset, y_test))
                 hyrs_model_decision_loss.append(1 - accuracy_score(hyrs_model_preds, y_test))
                 hyrs_team_decision_loss.append(1 - accuracy_score(hyrs_team_preds, y_test))
@@ -328,6 +360,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                 
 
                 tr_model_w_reset_contradictions.append((tr_model_preds_with_reset != human_decisions).sum())
+                tr2s_model_w_reset_contradictions.append((tr2s_model_preds_with_reset != human_decisions).sum())
+                trnoadb_model_w_reset_contradictions.append((trnoadb_model_preds_w_reset != human_decisions).sum())                                   
                 tr_model_wo_reset_contradictions.append((tr_model_preds_no_reset != human_decisions).sum())
                 hyrs_model_contradictions.append((hyrs_model_preds != human_decisions).sum())
                 brs_model_contradictions.append((brs_model_preds != human_decisions).sum())
@@ -335,8 +369,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                 hyrs_model_w_reset_contradictions.append((hyrs_model_preds_w_reset != human_decisions).sum())
 
                 tr_team_w_reset_objective.append(tr_team_w_reset_decision_loss[-1] + cost*(tr_model_w_reset_contradictions[-1])/len(y_test))
+                tr2s_team_w_reset_objective.append(tr2s_team_w_reset_decision_loss[-1] + cost*(tr2s_model_w_reset_contradictions[-1])/len(y_test))
+                trnoadb_team_w_reset_objective.append(trnoadb_team_w_reset_decision_loss[-1] + cost*(trnoadb_model_w_reset_contradictions[-1])/len(y_test))
                 tr_team_wo_reset_objective.append(tr_team_wo_reset_decision_loss[-1] + cost*(tr_model_wo_reset_contradictions[-1])/len(y_test))
                 tr_model_w_reset_objective.append(tr_model_w_reset_decision_loss[-1] + cost*(tr_model_w_reset_contradictions[-1])/len(y_test))
+                tr2s_model_w_reset_objective.append(tr2s_model_w_reset_decision_loss[-1] + cost*(tr2s_model_w_reset_contradictions[-1])/len(y_test))
+                trnoadb_model_w_reset_objective.append(trnoadb_model_w_reset_decision_loss[-1] + cost*(trnoadb_model_w_reset_contradictions[-1])/len(y_test))
                 tr_model_wo_reset_objective.append(tr_model_wo_reset_decision_loss[-1] + cost*(tr_model_wo_reset_contradictions[-1])/len(y_test))
                 hyrs_model_objective.append(hyrs_model_decision_loss[-1] + cost*(hyrs_model_contradictions[-1])/len(y_test))
                 hyrs_team_objective.append(hyrs_team_decision_loss[-1] + cost*(hyrs_model_contradictions[-1])/len(y_test))
@@ -365,20 +403,30 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
             
             #append values to appropriate row in results
             results.loc[cost, 'tr_team_w_reset_decision_loss'].append(mean(tr_team_w_reset_decision_loss))
+            results.loc[cost, 'tr2s_team_w_reset_decision_loss'].append(mean(tr2s_team_w_reset_decision_loss))
+            results.loc[cost, 'trnoADB_team_w_reset_decision_loss'].append(mean(trnoadb_team_w_reset_decision_loss))
             results.loc[cost, 'tr_team_wo_reset_decision_loss'].append(mean(tr_team_wo_reset_decision_loss))
             results.loc[cost, 'tr_model_w_reset_decision_loss'].append(mean(tr_model_w_reset_decision_loss))
+            results.loc[cost, 'tr2s_model_w_reset_decision_loss'].append(mean(tr2s_model_w_reset_decision_loss))
+            results.loc[cost, 'trnoadb_model_w_reset_decision_loss'].append(mean(trnoadb_model_w_reset_decision_loss))
             results.loc[cost, 'tr_model_wo_reset_decision_loss'].append(mean(tr_model_wo_reset_decision_loss))
             results.loc[cost, 'hyrs_model_decision_loss'].append(mean(hyrs_model_decision_loss))
             results.loc[cost, 'hyrs_team_decision_loss'].append(mean(hyrs_team_decision_loss))
             results.loc[cost, 'brs_model_decision_loss'].append(mean(brs_model_decision_loss))
             results.loc[cost, 'brs_team_decision_loss'].append(mean(brs_team_decision_loss))
             results.loc[cost, 'tr_model_w_reset_contradictions'].append(mean(tr_model_w_reset_contradictions))
+            results.loc[cost, 'tr2s_model_w_reset_contradictions'].append(mean(tr2s_model_w_reset_contradictions))
+            results.loc[cost, 'trnoadb_model_w_reset_contradictions'].append(mean(trnoadb_model_w_reset_contradictions))
             results.loc[cost, 'tr_model_wo_reset_contradictions'].append(mean(tr_model_wo_reset_contradictions))
             results.loc[cost, 'hyrs_model_contradictions'].append(mean(hyrs_model_contradictions))
             results.loc[cost, 'brs_model_contradictions'].append(mean(brs_model_contradictions))
             results.loc[cost, 'tr_team_w_reset_objective'].append(mean(tr_team_w_reset_objective))
+            results.loc[cost, 'tr2s_team_w_reset_objective'].append(mean(tr2s_team_w_reset_objective))
+            results.loc[cost, 'trnoadb_team_w_reset_objective'].append(mean(trnoadb_team_w_reset_objective))
             results.loc[cost, 'tr_team_wo_reset_objective'].append(mean(tr_team_wo_reset_objective))
             results.loc[cost, 'tr_model_w_reset_objective'].append(mean(tr_model_w_reset_objective))
+            results.loc[cost, 'tr2s_model_w_reset_objective'].append(mean(tr2s_model_w_reset_objective))
+            results.loc[cost, 'trnoadb_model_w_reset_objective'].append(mean(trnoadb_model_w_reset_objective))
             results.loc[cost, 'tr_model_wo_reset_objective'].append(mean(tr_model_wo_reset_objective))
             results.loc[cost, 'hyrs_model_objective'].append(mean(hyrs_model_objective))
             results.loc[cost, 'hyrs_team_objective'].append(mean(hyrs_team_objective))
@@ -710,10 +758,10 @@ def cost_plus_hyrs(rs):
 costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]
 
 num_runs = 10
-datasets = ['heart_disease', 'fico', 'hr']
-names = ['biased', 'biased_dec_bias', 'offset_01']
+datasets = ['heart_disease']
+names = ['biased']
 
-
+'''
 fig, axs = plt.subplots(3,3)
 fig.set_size_inches(9,7)
 
@@ -722,12 +770,12 @@ behaviorrow = 0
 cols = ['{}'.format(col) for col in ['Difficulty-Biased Decisions \n Feature-Biased Confidence', 'Feature-Biased Decisions \n Feature-Biased Confidence', 'Difficulty-Biased Decisions \n Mostly Calibrated Confidence']]
 rows = ['{}'.format(row) for row in ['Heart Disease', '    FICO    ', '     HR     ']]
 pad = 5
-
+'''
 for dataset in datasets:
     for name in names:
         #if (name == 'biased') and (datasets == 'heart_disease'):
         #    continue
-        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl'):
+        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl') and False:
             with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
             with open(f'results/{dataset}/{name}_means.pkl', 'rb') as f:
@@ -773,7 +821,7 @@ for dataset in datasets:
                 pickle.dump(val_std, f)
             with open(f'results/{dataset}/val_{name}_rs.pkl', 'wb') as f:
                 pickle.dump(val_rs, f)
-    
+    '''
         behaviorrow += 1
     datarow += 1
     behaviorrow = 0
@@ -799,3 +847,4 @@ fig.savefig(f'results/combined_plots_final_newapproach.png', dpi=200)
 
 print('pause')
 
+'''
