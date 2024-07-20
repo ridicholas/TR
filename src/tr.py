@@ -355,7 +355,7 @@ class tr(object):
         self.action_tracker = {}
         for iter in range(Niteration):
             if iter % 100 == 0:
-                print('pause')
+                print(f'iter: {iter}')
             self.iter = iter
             self.action_tracker[self.iter] = {}
             if iter >0.75 * Niteration:

@@ -15,7 +15,7 @@ from copy import deepcopy
 import os
 
 #making sure wd is file directory so hardcoded paths work
-os.chdir("..")
+#os.chdir("..")
 
 
 def noADB(human_conf, model_conf, agreement):
@@ -522,14 +522,15 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name):
 def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax):
     
     color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00'}  #75c361
-    ax.plot(results_means.index[0:10], results_means['hyrs_norecon_objective'].iloc[0:10], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:10], results_means['hyrs_team_w_reset_objective'].iloc[0:10], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
+    #ax.plot(results_means.index[0:10], results_means['hyrs_norecon_objective'].iloc[0:10], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
+    ax.plot(results_means.index[0:10], results_means['hyrs_team_objective'].iloc[0:10], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
     ax.plot(results_means.index[0:10], results_means['tr_team_w_reset_objective'].iloc[0:10], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:10], results_means['brs_team_objective'].iloc[0:10], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
+    ax.plot(results_means.index[0:10], results_means['tr2s_team_w_reset_objective'].iloc[0:10], marker = '.', label='TR2s', c='orange', markersize=1.8, linewidth=0.9)
+    #ax.plot(results_means.index[0:10], results_means['brs_team_objective'].iloc[0:10], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
     #ax.plot(results_means.index[0:10], results_means['brs_team_w_reset_objective'].iloc[0:10], marker = 'v', c=color_dict['BRSselect'], label='TR-SelectiveOnly', markersize=1.8, linewidth=0.9)
     
     ax.plot(results_means.index[0:10], results_means['human_decision_loss'].iloc[0:10], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
-    
+    '''
     ax.fill_between(results_means.index[0:10], 
                 results_means['human_decision_loss'].iloc[0:10]-1.96*(results_stderrs['human_decision_loss'].iloc[0:10]),
                 results_means['human_decision_loss'].iloc[0:10]+1.96*(results_stderrs['human_decision_loss'].iloc[0:10]) ,
@@ -547,11 +548,14 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax):
                 results_means['brs_team_objective'].iloc[0:10]-1.96*(results_stderrs['brs_team_objective'].iloc[0:10]),
                 results_means['brs_team_objective'].iloc[0:10]+1.96*(results_stderrs['brs_team_objective'].iloc[0:10]) ,
                 color=color_dict['BRS'], alpha=0.2)
-    
+    '''
     ax.fill_between(results_means.index[0:10], 
                 results_means['tr_team_w_reset_objective'].iloc[0:10]-1.96*(results_stderrs['tr_team_w_reset_objective'].iloc[0:10]),
                 results_means['tr_team_w_reset_objective'].iloc[0:10]+1.96*(results_stderrs['tr_team_w_reset_objective'].iloc[0:10]),
                 color=color_dict['TR'], alpha=0.2)
+    ax.fill_between(results_means.index[0:10], 
+                results_means['tr2s_team_w_reset_objective'].iloc[0:10]-1.96*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:10]),
+                results_means['tr2s_team_w_reset_objective'].iloc[0:10]+1.96*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:10]), color = 'orange', alpha=0.2)
     '''
     ax.fill_between(results_means.iloc[0:10].index,
                      results_means['brs_team_w_reset_objective'].iloc[0:10]-(results_stderrs['brs_team_w_reset_objective'].iloc[0:10]),
@@ -762,7 +766,7 @@ num_runs = 10
 datasets = ['heart_disease']
 names = ['biased']
 
-'''
+
 fig, axs = plt.subplots(3,3)
 fig.set_size_inches(9,7)
 
@@ -771,12 +775,12 @@ behaviorrow = 0
 cols = ['{}'.format(col) for col in ['Difficulty-Biased Decisions \n Feature-Biased Confidence', 'Feature-Biased Decisions \n Feature-Biased Confidence', 'Difficulty-Biased Decisions \n Mostly Calibrated Confidence']]
 rows = ['{}'.format(row) for row in ['Heart Disease', '    FICO    ', '     HR     ']]
 pad = 5
-'''
+
 for dataset in datasets:
     for name in names:
         #if (name == 'biased') and (datasets == 'heart_disease'):
         #    continue
-        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl') and False:
+        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl'):
             with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
             with open(f'results/{dataset}/{name}_means.pkl', 'rb') as f:
@@ -795,11 +799,11 @@ for dataset in datasets:
             #cval_means, cval_stderss, cval_rs, cost_tracker, final_cost = cost_validation(rs, val_rs)
             #cval_means, cval_stderss, cval_rs = cost_plus(rs)
             #cval_val_means, cval_val_stderrs, cval_val_rs = cost_plus(val_rs)
-            rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(rs, val_rs)
+            #rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(rs, val_rs)
             #ccval_means, ccval_stderss, ccval_rs, _, _ = cost_validation(val_rs, val_rs) 
             #rcval_means, rcval_stderss, rcval_rs, both_tracker = robust_rules(cval_rs, ccval_rs)   
-            make_multi_TL_v_cost_plot(rval_means, rval_stderss, name, axs[datarow, behaviorrow])
-            #make_multi_TL_v_cost_plot(means, std, name, axs[datarow, behaviorrow])
+            #make_multi_TL_v_cost_plot(rval_means, rval_stderss, name, axs[datarow, behaviorrow])
+            make_multi_TL_v_cost_plot(means, std, name, axs[datarow, behaviorrow])
             
 
 
@@ -822,7 +826,7 @@ for dataset in datasets:
                 pickle.dump(val_std, f)
             with open(f'results/{dataset}/val_{name}_rs.pkl', 'wb') as f:
                 pickle.dump(val_rs, f)
-    '''
+    
         behaviorrow += 1
     datarow += 1
     behaviorrow = 0
@@ -848,4 +852,3 @@ fig.savefig(f'results/combined_plots_final_newapproach.png', dpi=200)
 
 print('pause')
 
-'''
