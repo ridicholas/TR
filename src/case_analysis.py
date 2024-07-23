@@ -83,7 +83,16 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                 'hyrs_norecon_objective': [[]],
                                 'hyrs_norecon_model_decision_loss': [[]],
                                 'hyrs_norecon_team_decision_loss': [[]], 
-                               'hyrs_norecon_model_contradictions': [[]]}, index=[costs[0]]
+                               'hyrs_norecon_model_contradictions': [[]],
+                               'tr2s_team_w_reset_decision_loss': [[]],
+                               'tr2s_team_wo_reset_decision_loss': [[]],
+                                 'tr2s_model_w_reset_decision_loss': [[]],
+                                    'tr2s_model_wo_reset_decision_loss': [[]],
+                                    'tr2s_model_w_reset_contradictions': [[]],
+                                    'tr2s_model_wo_reset_contradictions': [[]],
+                                    'tr2s_team_w_reset_objective': [[]],
+                                    'tr2s_team_wo_reset_objective': [[]]
+                               }, index=[costs[0]]
                             )
 
     for cost in costs[1:]:
@@ -122,8 +131,9 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                 brs_mod = load_results(dataset, whichtype , run, cost, 'brs')
             except: 
                 brs_mod = load_results(dataset, whichtype , run, 0.0, 'brs')
-            tr_mod = load_results(dataset, whichtype, run, cost, 'tr')
+            tr2s_mod = load_results(dataset, whichtype, run, cost, 'tr2stage')
             hyrs_mod = load_results(dataset, whichtype, run, cost, 'tr-no(ADB)')
+            tr_mod = load_results(dataset, whichtype, run, cost, 'tr')
             
 
             #load e_y and e_yb mods
@@ -134,6 +144,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
             tr_mod.df = x_train
             tr_mod.Y = y_train
+            tr2s_mod.df = x_train
+            tr2s_mod.Y = y_train
             hyrs_mod.df = x_train
             hyrs_mod.Y = y_train
 
@@ -167,6 +179,16 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
             hyrs_norecon_model_decision_loss = []
             hyrs_norecon_team_decision_loss = []
             hyrs_norecon_model_contradictions = []
+
+            tr2s_team_w_reset_decision_loss = []
+            tr2s_team_wo_reset_decision_loss = []
+            tr2s_model_w_reset_decision_loss = []
+            tr2s_model_wo_reset_decision_loss = []
+            tr2s_model_w_reset_contradictions = []
+            tr2s_model_wo_reset_contradictions = []
+            tr2s_team_w_reset_objective = []
+            tr2s_team_wo_reset_objective = []
+
             
             
             brs_mod.df = x_train
@@ -174,84 +196,86 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
             brs_model_preds = brs_predict(brs_mod.opt_rules, x_test)
             brs_conf = brs_predict_conf(brs_mod.opt_rules, x_test, brs_mod)
             hyrs_norecon_mod = deepcopy(hyrs_mod)
+
+            
             
             decs = {}
-            decs['t']={'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            decs['e'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            decs['y'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            decs['m'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            decs['f'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            decs['em'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            decs['ef'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            decs['ym'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            decs['yf'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            decs['t']={'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            decs['e'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            decs['y'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            decs['m'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            decs['f'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            decs['em'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            decs['ef'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            decs['ym'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            decs['yf'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
 
             model_decs = {}
-            model_decs['t']={'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            model_decs['e'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            model_decs['y'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            model_decs['m'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}    
-            model_decs['f'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            model_decs['em'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            model_decs['ef'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            model_decs['ym'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            model_decs['yf'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            model_decs['t']={'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            model_decs['e'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            model_decs['y'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            model_decs['m'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}    
+            model_decs['f'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            model_decs['em'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            model_decs['ef'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            model_decs['ym'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            model_decs['yf'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
 
 
             contras = {}
-            contras['t']={'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            contras['e'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            contras['y'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            contras['m'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            contras['f'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            contras['em'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            contras['ef'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            contras['ym'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            contras['yf'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            contras['t']={'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            contras['e'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            contras['y'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            contras['m'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            contras['f'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            contras['em'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            contras['ef'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            contras['ym'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            contras['yf'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
 
             correct_contras = {}
-            correct_contras['t']={'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            correct_contras['e'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            correct_contras['y'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            correct_contras['m'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            correct_contras['f'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            correct_contras['em'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            correct_contras['ef'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            correct_contras['ym'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            correct_contras['yf'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            correct_contras['t']={'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            correct_contras['e'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            correct_contras['y'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            correct_contras['m'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            correct_contras['f'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            correct_contras['em'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            correct_contras['ef'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            correct_contras['ym'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            correct_contras['yf'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
 
             accepted_contras = {}
-            accepted_contras['t']={'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            accepted_contras['e'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            accepted_contras['y'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            accepted_contras['m'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            accepted_contras['f'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            accepted_contras['em'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            accepted_contras['ef'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            accepted_contras['ym'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            accepted_contras['yf'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            accepted_contras['t']={'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            accepted_contras['e'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            accepted_contras['y'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            accepted_contras['m'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            accepted_contras['f'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            accepted_contras['em'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            accepted_contras['ef'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            accepted_contras['ym'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            accepted_contras['yf'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
 
             covereds = {}
-            covereds['t']={'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covereds['e'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covereds['y'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covereds['m'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covereds['f'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covereds['em'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covereds['ef'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covereds['ym'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covereds['yf'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            covereds['t']={'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covereds['e'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covereds['y'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covereds['m'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covereds['f'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covereds['em'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covereds['ef'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covereds['ym'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covereds['yf'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
 
             covered_corrects = {}
-            covered_corrects['t']={'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covered_corrects['e'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covered_corrects['y'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covered_corrects['m'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covered_corrects['f'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covered_corrects['em'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covered_corrects['ef'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covered_corrects['ym'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
-            covered_corrects['yf'] = {'tr': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['t']={'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['e'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['y'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['m'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['f'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['em'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['ef'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['ym'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
+            covered_corrects['yf'] = {'tr': [], 'tr2s': [], 'hyrs': [], 'brs': [], 'human': []}
 
 
 
@@ -272,6 +296,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
                     tr_model_preds_with_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+
+                    tr2s_team_preds_with_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr2s_team_preds_no_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+
+                    tr2s_model_preds_with_reset = tr2s_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr2s_model_preds_no_reset = tr2s_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
                     #hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
                     #hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
@@ -298,6 +328,13 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     tr_model_preds_with_reset, tr_mod_covered_w_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
                     tr_model_preds_no_reset, tr_mod_covered_no_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
                     tr_mod_confs = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)[0]
+
+                    tr2s_team_preds_with_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr2s_team_preds_no_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+
+                    tr2s_model_preds_with_reset, tr2s_mod_covered_w_reset, _ = tr2s_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
+                    tr2s_model_preds_no_reset, tr2s_mod_covered_no_reset, _ = tr2s_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
+                    tr2s_mod_confs = tr2s_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr2s_mod.prs_min, nrs_min=tr2s_mod.nrs_min)[0]
                 
 
                     #hyrs_model_preds, hyrs_model_covered, _ = hyrs_mod.predict(x_test, human_decisions) 
@@ -337,7 +374,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
 
 
-                which_ones = ['tr', 'hyrs', 'brs', 'human']
+                which_ones = ['tr', 'tr2s', 'hyrs', 'brs', 'human']
 
                 for which in which_ones:
                 #find number of incorrect predictions confusion matrix split along sex_Male and age54.0 variables
@@ -352,6 +389,9 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                         
                     elif which == 'human':
                         preds = human_decisions.copy()
+                    
+                    elif which == 'tr2s':
+                        preds = tr2s_team_preds_with_reset.copy()
                     
                     asymCosts = y_test.replace({0: asym_costs[1], 1: asym_costs[0]}) 
                     decs['t'][which].append(((preds != y_test)*asymCosts).sum())
@@ -387,6 +427,11 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                         model_preds = brs_model_preds.copy()
                     elif which == 'human':
                         model_preds = human_decisions.copy()
+
+                    elif which == 'tr2s':
+                        model_preds = tr2s_model_preds_with_reset.copy()
+                        model_covereds = np.zeros(len(model_preds), dtype=bool)
+                        model_covereds[tr2s_mod_covered_w_reset] = True
                 
                     contras['t'][which].append((model_preds != human_decisions).sum())
                     contras['e'][which].append((model_preds != human_decisions)[x_test['age54.0'] == 1].sum())
@@ -434,7 +479,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     accepted_contras['yf'][which].append(accepted_condition[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0)].sum())
 
 
-                    if which in ['tr', 'hyrs']:
+                    if which in ['tr', 'tr2s', 'hyrs']:
                         covereds['t'][which].append(model_covereds.sum())
                         covereds['e'][which].append(model_covereds[x_test['age54.0'] == 1].sum())
                         covereds['y'][which].append(model_covereds[x_test['age54.0'] == 0].sum())
@@ -479,6 +524,15 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                 brs_model_objective.append(brs_model_decision_loss[-1] + cost*(brs_model_contradictions[-1])/len(y_test))
                 brs_team_objective.append(brs_team_decision_loss[-1] + cost*(brs_model_contradictions[-1])/len(y_test))
 
+                tr2s_team_w_reset_decision_loss.append(1 - accuracy_score(tr2s_team_preds_with_reset, y_test))
+                tr2s_team_wo_reset_decision_loss.append(1 - accuracy_score(tr2s_team_preds_no_reset, y_test))
+                tr2s_model_w_reset_decision_loss.append(1 - accuracy_score(tr2s_model_preds_with_reset, y_test))
+                tr2s_model_wo_reset_decision_loss.append(1 - accuracy_score(tr2s_model_preds_no_reset, y_test))
+                tr2s_model_w_reset_contradictions.append((tr2s_model_preds_with_reset != human_decisions).sum())
+                tr2s_model_wo_reset_contradictions.append((tr2s_model_preds_no_reset != human_decisions).sum())
+                tr2s_team_w_reset_objective.append(tr2s_team_w_reset_decision_loss[-1] + cost*(tr2s_model_w_reset_contradictions[-1])/len(y_test))
+                tr2s_team_wo_reset_objective.append(tr2s_team_wo_reset_decision_loss[-1] + cost*(tr2s_model_wo_reset_contradictions[-1])/len(y_test))
+
                 human_decision_loss.append(1 - accuracy_score(human_decisions, y_test))
 
                 hyrs_norecon_model_decision_loss.append(1 - accuracy_score(hyrs_norecon_model_preds, y_test))
@@ -503,6 +557,17 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                                      [tr_mod_confs[(x_test['age54.0'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(),
                                                      tr_mod_confs[(x_test['age54.0'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(), 
                                                      tr_mod_confs[(tr_model_preds_with_reset != human_decisions)].mean()]])]
+                
+                tr2s_conf_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[tr2s_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1) & (tr2s_model_preds_with_reset != human_decisions)].mean(), 
+                                                     tr2s_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1) & (tr2s_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr2s_mod_confs[(x_test['sex_Male'] == 1) & (tr2s_model_preds_with_reset != human_decisions)].mean()], 
+                                                     [tr2s_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0) & (tr2s_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr2s_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0) & (tr2s_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr2s_mod_confs[(x_test['sex_Male'] == 0) & (tr2s_model_preds_with_reset != human_decisions)].mean()], 
+                                                     [tr2s_mod_confs[(x_test['age54.0'] == 1) & (tr2s_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr2s_mod_confs[(x_test['age54.0'] == 0) & (tr2s_model_preds_with_reset != human_decisions)].mean(), 
+                                                     tr2s_mod_confs[(tr2s_model_preds_with_reset != human_decisions)].mean()]])]
                 
                 hyrs_conf_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[hyrs_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1) & (hyrs_model_preds != human_decisions)].mean(), 
@@ -533,12 +598,22 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                         [mean(covereds['ef']['tr']), mean(covereds['yf']['tr']), mean(covereds['f']['tr'])], 
                                         [mean(covereds['e']['tr']), mean(covereds['y']['tr']), mean(covereds['t']['tr'])]])]
                 
+                tr2s_covered_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                data = [[mean(covereds['em']['tr2s']), mean(covereds['ym']['tr2s']), mean(covereds['m']['tr2s'])], 
+                                        [mean(covereds['ef']['tr2s']), mean(covereds['yf']['tr2s']), mean(covereds['f']['tr2s'])], 
+                                        [mean(covereds['e']['tr2s']), mean(covereds['y']['tr2s']), mean(covereds['t']['tr2s'])]])]
+                
 
                 
                 tr_covered_correct_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                 data = [[mean(covered_corrects['em']['tr']), mean(covered_corrects['ym']['tr']), mean(covered_corrects['m']['tr'])], 
                                         [mean(covered_corrects['ef']['tr']), mean(covered_corrects['yf']['tr']), mean(covered_corrects['f']['tr'])], 
                                         [mean(covered_corrects['e']['tr']), mean(covered_corrects['y']['tr']), mean(covered_corrects['t']['tr'])]])]
+                
+                tr2s_covered_correct_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                data = [[mean(covered_corrects['em']['tr2s']), mean(covered_corrects['ym']['tr2s']), mean(covered_corrects['m']['tr2s'])], 
+                                        [mean(covered_corrects['ef']['tr2s']), mean(covered_corrects['yf']['tr2s']), mean(covered_corrects['f']['tr2s'])], 
+                                        [mean(covered_corrects['e']['tr2s']), mean(covered_corrects['y']['tr2s']), mean(covered_corrects['t']['tr2s'])]])]
                 
                 hyrs_covered_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                 data = [[mean(covereds['em']['hyrs']), mean(covereds['ym']['hyrs']), mean(covereds['m']['hyrs'])], 
@@ -556,10 +631,20 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                                     [mean(decs['ef']['tr']), mean(decs['yf']['tr']), mean(decs['f']['tr'])], 
                                                     [mean(decs['e']['tr']), mean(decs['y']['tr']), mean(decs['t']['tr'])]])]
                 
+                tr2s_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(decs['em']['tr2s']), mean(decs['ym']['tr2s']), mean(decs['m']['tr2s'])], 
+                                                    [mean(decs['ef']['tr2s']), mean(decs['yf']['tr2s']), mean(decs['f']['tr2s'])], 
+                                                    [mean(decs['e']['tr2s']), mean(decs['y']['tr2s']), mean(decs['t']['tr2s'])]])]
+                
                 tr_model_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(model_decs['em']['tr']), mean(model_decs['ym']['tr']), mean(model_decs['m']['tr'])], 
                                                     [mean(model_decs['ef']['tr']), mean(model_decs['yf']['tr']), mean(model_decs['f']['tr'])], 
                                                     [mean(model_decs['e']['tr']), mean(model_decs['y']['tr']), mean(model_decs['t']['tr'])]])]
+                
+                tr2s_model_confusion = [pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(model_decs['em']['tr2s']), mean(model_decs['ym']['tr2s']), mean(model_decs['m']['tr2s'])], 
+                                                    [mean(model_decs['ef']['tr2s']), mean(model_decs['yf']['tr2s']), mean(model_decs['f']['tr2s'])], 
+                                                    [mean(model_decs['e']['tr2s']), mean(model_decs['y']['tr2s']), mean(model_decs['t']['tr2s'])]])]
                 
                 hyrs_confusion = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(decs['em']['hyrs']), mean(decs['ym']['hyrs']), mean(decs['m']['hyrs'])], 
@@ -592,6 +677,11 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                                     [mean(contras['ef']['tr']), mean(contras['yf']['tr']), mean(contras['f']['tr'])], 
                                                     [mean(contras['e']['tr']), mean(contras['y']['tr']), mean(contras['t']['tr'])]])]
                 
+                tr2s_confusion_contras = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(contras['em']['tr2s']), mean(contras['ym']['tr2s']), mean(contras['m']['tr2s'])], 
+                                                    [mean(contras['ef']['tr2s']), mean(contras['yf']['tr2s']), mean(contras['f']['tr2s'])], 
+                                                    [mean(contras['e']['tr2s']), mean(contras['y']['tr2s']), mean(contras['t']['tr2s'])]])]
+                
                 hyrs_confusion_contras = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(contras['em']['hyrs']), mean(contras['ym']['hyrs']), mean(contras['m']['hyrs'])], 
                                                     [mean(contras['ef']['hyrs']), mean(contras['yf']['hyrs']), mean(contras['f']['hyrs'])], 
@@ -602,6 +692,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                                     [mean(accepted_contras['ef']['tr']), mean(accepted_contras['yf']['tr']), mean(accepted_contras['f']['tr'])], 
                                                     [mean(accepted_contras['e']['tr']), mean(accepted_contras['y']['tr']), mean(accepted_contras['t']['tr'])]])]
                 
+
+                tr2s_confusion_contras_accepted = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(accepted_contras['em']['tr2s']), mean(accepted_contras['ym']['tr2s']), mean(accepted_contras['m']['tr2s'])], 
+                                                    [mean(accepted_contras['ef']['tr2s']), mean(accepted_contras['yf']['tr2s']), mean(accepted_contras['f']['tr2s'])], 
+                                                    [mean(accepted_contras['e']['tr2s']), mean(accepted_contras['y']['tr2s']), mean(accepted_contras['t']['tr2s'])]])]
+                
                 hyrs_confusion_contras_accepted = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[mean(accepted_contras['em']['hyrs']), mean(accepted_contras['ym']['hyrs']), mean(accepted_contras['m']['hyrs'])], 
                                                     [mean(accepted_contras['ef']['hyrs']), mean(accepted_contras['yf']['hyrs']), mean(accepted_contras['f']['hyrs'])], 
@@ -611,6 +707,11 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                             data = [[mean(correct_contras['em']['tr']), mean(correct_contras['ym']['tr']), mean(correct_contras['m']['tr'])], 
                                                     [mean(correct_contras['ef']['tr']), mean(correct_contras['yf']['tr']), mean(correct_contras['f']['tr'])], 
                                                     [mean(correct_contras['e']['tr']), mean(correct_contras['y']['tr']), mean(correct_contras['t']['tr'])]])]
+                
+                tr2s_confusion_contras_correct = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(correct_contras['em']['tr2s']), mean(correct_contras['ym']['tr2s']), mean(correct_contras['m']['tr2s'])], 
+                                                    [mean(correct_contras['ef']['tr2s']), mean(correct_contras['yf']['tr2s']), mean(correct_contras['f']['tr2s'])], 
+                                                    [mean(correct_contras['e']['tr2s']), mean(correct_contras['y']['tr2s']), mean(correct_contras['t']['tr2s'])]])]
                 
                 hyrs_confusion_contras_correct = [pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                             data = [[mean(correct_contras['em']['hyrs']), mean(correct_contras['ym']['hyrs']), mean(correct_contras['m']['hyrs'])], 
@@ -653,6 +754,52 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                                                      [tr_mod_confs[(x_test['age54.0'] == 1) & (tr_model_preds_with_reset != human_decisions)].mean(),
                                                      tr_mod_confs[(x_test['age54.0'] == 0) & (tr_model_preds_with_reset != human_decisions)].mean(), 
                                                      tr_mod_confs[(tr_model_preds_with_reset != human_decisions)].mean()]]))
+                
+                tr2s_covered_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                data = [[mean(covereds['em']['tr2s']), mean(covereds['ym']['tr2s']), mean(covereds['m']['tr2s'])], 
+                                        [mean(covereds['ef']['tr2s']), mean(covereds['yf']['tr2s']), mean(covereds['f']['tr2s'])], 
+                                        [mean(covereds['e']['tr2s']), mean(covereds['y']['tr2s']), mean(covereds['t']['tr2s'])]]))
+                
+                tr2s_covered_correct_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                data = [[mean(covered_corrects['em']['tr2s']), mean(covered_corrects['ym']['tr2s']), mean(covered_corrects['m']['tr2s'])], 
+                                        [mean(covered_corrects['ef']['tr2s']), mean(covered_corrects['yf']['tr2s']), mean(covered_corrects['f']['tr2s'])], 
+                                        [mean(covered_corrects['e']['tr2s']), mean(covered_corrects['y']['tr2s']), mean(covered_corrects['t']['tr2s'])]]))
+                
+                tr2s_confusion_contras_accepted.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(accepted_contras['em']['tr2s']), mean(accepted_contras['ym']['tr2s']), mean(accepted_contras['m']['tr2s'])], 
+                                                    [mean(accepted_contras['ef']['tr2s']), mean(accepted_contras['yf']['tr2s']), mean(accepted_contras['f']['tr2s'])], 
+                                                    [mean(accepted_contras['e']['tr2s']), mean(accepted_contras['y']['tr2s']), mean(accepted_contras['t']['tr2s'])]]))
+                
+                tr2s_confusion_contras_correct.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(correct_contras['em']['tr2s']), mean(correct_contras['ym']['tr2s']), mean(correct_contras['m']['tr2s'])], 
+                                                    [mean(correct_contras['ef']['tr2s']), mean(correct_contras['yf']['tr2s']), mean(correct_contras['f']['tr2s'])], 
+                                                    [mean(correct_contras['e']['tr2s']), mean(correct_contras['y']['tr2s']), mean(correct_contras['t']['tr2s'])]]))
+                
+                tr2s_conf_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[tr2s_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1) & (tr2s_model_preds_with_reset != human_decisions)].mean(), 
+                                                     tr2s_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 1) & (tr2s_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr2s_mod_confs[(x_test['sex_Male'] == 1) & (tr2s_model_preds_with_reset != human_decisions)].mean()], 
+                                                     [tr2s_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 0) & (tr2s_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr2s_mod_confs[(x_test['age54.0'] == 0) & (x_test['sex_Male'] == 0) & (tr2s_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr2s_mod_confs[(x_test['sex_Male'] == 0) & (tr2s_model_preds_with_reset != human_decisions)].mean()], 
+                                                     [tr2s_mod_confs[(x_test['age54.0'] == 1) & (tr2s_model_preds_with_reset != human_decisions)].mean(),
+                                                     tr2s_mod_confs[(x_test['age54.0'] == 0) & (tr2s_model_preds_with_reset != human_decisions)].mean(), 
+                                                     tr2s_mod_confs[(tr2s_model_preds_with_reset != human_decisions)].mean()]]))
+                
+                tr2s_model_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(model_decs['em']['tr2s']), mean(model_decs['ym']['tr2s']), mean(model_decs['m']['tr2s'])], 
+                                                    [mean(model_decs['ef']['tr2s']), mean(model_decs['yf']['tr2s']), mean(model_decs['f']['tr2s'])], 
+                                                    [mean(model_decs['e']['tr2s']), mean(model_decs['y']['tr2s']), mean(model_decs['t']['tr2s'])]]))
+                
+                tr2s_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(decs['em']['tr2s']), mean(decs['ym']['tr2s']), mean(decs['m']['tr2s'])], 
+                                                    [mean(decs['ef']['tr2s']), mean(decs['yf']['tr2s']), mean(decs['f']['tr2s'])], 
+                                                    [mean(decs['e']['tr2s']), mean(decs['y']['tr2s']), mean(decs['t']['tr2s'])]]))
+                
+                tr2s_confusion_contras.append(pd.DataFrame(index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
+                                            data = [[mean(contras['em']['tr2s']), mean(contras['ym']['tr2s']), mean(contras['m']['tr2s'])], 
+                                                    [mean(contras['ef']['tr2s']), mean(contras['yf']['tr2s']), mean(contras['f']['tr2s'])], 
+                                                    [mean(contras['e']['tr2s']), mean(contras['y']['tr2s']), mean(contras['t']['tr2s'])]]))
                 
                 hyrs_conf_confusion.append(pd.DataFrame(dtype = 'float', index=['Male', 'Female', 'Total'], columns=['Elderly', 'Young', 'Total'], 
                                             data = [[hyrs_mod_confs[(x_test['age54.0'] == 1) & (x_test['sex_Male'] == 1) & (hyrs_model_preds != human_decisions)].mean(), 
@@ -804,6 +951,15 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
             results.loc[cost, 'hyrs_norecon_model_decision_loss'].append(mean(hyrs_norecon_model_decision_loss))
             results.loc[cost, 'hyrs_norecon_team_decision_loss'].append(mean(hyrs_norecon_team_decision_loss))
             results.loc[cost, 'hyrs_norecon_model_contradictions'].append(mean(hyrs_norecon_model_contradictions))
+            results.loc[cost, 'tr2s_team_w_reset_decision_loss'].append(mean(tr2s_team_w_reset_decision_loss))
+            results.loc[cost, 'tr2s_team_wo_reset_decision_loss'].append(mean(tr2s_team_wo_reset_decision_loss))
+            results.loc[cost, 'tr2s_model_w_reset_decision_loss'].append(mean(tr2s_model_w_reset_decision_loss))
+            results.loc[cost, 'tr2s_model_w_reset_contradictions'].append(mean(tr2s_model_w_reset_contradictions))
+            results.loc[cost, 'tr2s_model_wo_reset_contradictions'].append(mean(tr2s_model_wo_reset_contradictions))
+            results.loc[cost, 'tr2s_model_wo_reset_decision_loss'].append(mean(tr2s_model_wo_reset_decision_loss))
+            results.loc[cost, 'tr2s_team_w_reset_objective'].append(mean(tr2s_team_w_reset_objective))
+            results.loc[cost, 'tr2s_team_wo_reset_objective'].append(mean(tr2s_team_wo_reset_objective))
+            
             
             
         
@@ -834,6 +990,16 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
     tr_covered_correct_confusion = pd.concat(tr_covered_correct_confusion)
     hyrs_covered_correct_confusion = pd.concat(hyrs_covered_correct_confusion)
+
+    tr2s_covered_confusion = pd.concat(tr2s_covered_confusion)
+    tr2s_covered_correct_confusion = pd.concat(tr2s_covered_correct_confusion)
+    tr2s_confusion_contras_accepted = pd.concat(tr2s_confusion_contras_accepted)
+    tr2s_confusion_contras_correct = pd.concat(tr2s_confusion_contras_correct)
+    tr2s_conf_confusion = pd.concat(tr2s_conf_confusion)
+    tr2s_model_confusion = pd.concat(tr2s_model_confusion)
+    tr2s_confusion = pd.concat(tr2s_confusion)
+    tr2s_confusion_contras = pd.concat(tr2s_confusion_contras)
+
      
 
     
@@ -853,6 +1019,18 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     case_results.loc['Reconciliation Costs Incurred', :] = -(cost * tr_confusion_contras.groupby(tr_confusion_contras.index).agg('sum')/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
     case_results.loc['Improved in TTL w.r.t. Human', :] = case_results.loc['Reconciliation Costs Incurred', :] + case_results.loc['Improvement w.r.t. TDL', :]
     case_results.loc['Advising Accuracy', :] = (tr_covered_correct_confusion.groupby(tr_covered_correct_confusion.index).agg('sum')/tr_covered_confusion.groupby(tr_covered_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+
+    tr2s_case_results = pd.DataFrame(index = ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence',
+                                            'Contradiction Acceptance Rate', 'Improvement w.r.t. TDL', 'Reconciliation Costs Incurred', 'Improved in TTL w.r.t. Human'], columns = ['Female', 'Male', 'Total'])
+    
+    tr2s_case_results.loc['Advising Rate', :] = (tr2s_covered_confusion.groupby(tr2s_covered_confusion.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+    tr2s_case_results.loc['Contradiction Rate', :] = (tr2s_confusion_contras.groupby(tr2s_confusion_contras.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+    tr2s_case_results.loc['Advising Confidence', :] = tr2s_conf_confusion.groupby(tr2s_conf_confusion.index).agg('mean').drop(columns=['Elderly', 'Young'])['Total']
+    tr2s_case_results.loc['Contradiction Acceptance Rate', :] = (tr2s_confusion_contras_accepted.groupby(tr2s_confusion_contras_accepted.index).agg('sum')/tr2s_confusion_contras.groupby(tr2s_confusion_contras.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+    tr2s_case_results.loc['Improvement w.r.t. TDL', :] = ((human_confusion.groupby(human_confusion.index).agg('sum')-tr2s_confusion.groupby(tr2s_confusion.index).agg('sum'))/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
+    tr2s_case_results.loc['Reconciliation Costs Incurred', :] = -(cost * tr2s_confusion_contras.groupby(tr2s_confusion_contras.index).agg('sum')/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
+    tr2s_case_results.loc['Improved in TTL w.r.t. Human', :] = tr2s_case_results.loc['Reconciliation Costs Incurred', :] + tr2s_case_results.loc['Improvement w.r.t. TDL', :]
+    tr2s_case_results.loc['Advising Accuracy', :] = (tr2s_covered_correct_confusion.groupby(tr2s_covered_correct_confusion.index).agg('sum')/tr2s_covered_confusion.groupby(tr2s_covered_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
 
     hyrs_case_results = pd.DataFrame(index = ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence', 
                                          'Contradiction Acceptance Rate', 'Improvement w.r.t. TDL', 'Reconciliation Costs Incurred', 'Improved in TTL w.r.t. Human'], columns = ['Female', 'Male', 'Total'])
