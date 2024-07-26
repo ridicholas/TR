@@ -99,7 +99,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype + 'case1' #+ "_dec_bias"
+    whichtype = whichtype + 'case1_cal' #+ "_dec_bias"
     r_mean = []
     hyrs_R = []
     tr_R = []
@@ -1011,49 +1011,49 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     case_results = pd.DataFrame(index = ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence', 
                                          'Contradiction Acceptance Rate', 'Improvement w.r.t. TDL', 'Reconciliation Costs Incurred', 'Improved in TTL w.r.t. Human'], columns = ['Female', 'Male', 'Total'])
 
-    case_results.loc['Advising Rate', :] = (tr_covered_confusion.groupby(tr_covered_confusion.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
-    case_results.loc['Contradiction Rate', :] = (tr_confusion_contras.groupby(tr_confusion_contras.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
-    case_results.loc['Advising Confidence', :] = tr_conf_confusion.groupby(tr_conf_confusion.index).agg('mean').drop(columns=['Elderly', 'Young'])['Total']
-    case_results.loc['Contradiction Acceptance Rate', :] = (tr_confusion_contras_accepted.groupby(tr_confusion_contras_accepted.index).agg('sum')/tr_confusion_contras.groupby(tr_confusion_contras.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
-    case_results.loc['Improvement w.r.t. TDL', :] = ((human_confusion.groupby(human_confusion.index).agg('sum')-tr_confusion.groupby(tr_confusion.index).agg('sum'))/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
-    case_results.loc['Reconciliation Costs Incurred', :] = -(cost * tr_confusion_contras.groupby(tr_confusion_contras.index).agg('sum')/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
-    case_results.loc['Improved in TTL w.r.t. Human', :] = case_results.loc['Reconciliation Costs Incurred', :] + case_results.loc['Improvement w.r.t. TDL', :]
-    case_results.loc['Advising Accuracy', :] = (tr_covered_correct_confusion.groupby(tr_covered_correct_confusion.index).agg('sum')/tr_covered_confusion.groupby(tr_covered_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+    case_results.loc['Advising Rate', :] = weighted_avg_and_std((tr_covered_confusion/totals_confusion), totals_confusion)
+    case_results.loc['Contradiction Rate', :] = weighted_avg_and_std((tr_confusion_contras/totals_confusion), totals_confusion)
+    case_results.loc['Advising Confidence', :] = weighted_avg_and_std((tr_conf_confusion), weights=totals_confusion)
+    case_results.loc['Contradiction Acceptance Rate', :] = weighted_avg_and_std((tr_confusion_contras_accepted/tr_confusion_contras), tr_confusion_contras)
+    case_results.loc['Improvement w.r.t. TDL', :] = weighted_avg_and_std(((human_confusion-tr_confusion)/total), totals_confusion)
+    case_results.loc['Reconciliation Costs Incurred', :] = weighted_avg_and_std(-(cost * tr_confusion_contras)/total, totals_confusion)
+    case_results.loc['Improved in TTL w.r.t. Human', :] = weighted_avg_and_std(((human_confusion-tr_confusion)-(cost * tr_confusion_contras))/total, totals_confusion)
+    case_results.loc['Advising Accuracy', :] = weighted_avg_and_std(tr_covered_correct_confusion/tr_covered_confusion, tr_covered_confusion)
 
     tr2s_case_results = pd.DataFrame(index = ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence',
                                             'Contradiction Acceptance Rate', 'Improvement w.r.t. TDL', 'Reconciliation Costs Incurred', 'Improved in TTL w.r.t. Human'], columns = ['Female', 'Male', 'Total'])
     
-    tr2s_case_results.loc['Advising Rate', :] = (tr2s_covered_confusion.groupby(tr2s_covered_confusion.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
-    tr2s_case_results.loc['Contradiction Rate', :] = (tr2s_confusion_contras.groupby(tr2s_confusion_contras.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
-    tr2s_case_results.loc['Advising Confidence', :] = tr2s_conf_confusion.groupby(tr2s_conf_confusion.index).agg('mean').drop(columns=['Elderly', 'Young'])['Total']
-    tr2s_case_results.loc['Contradiction Acceptance Rate', :] = (tr2s_confusion_contras_accepted.groupby(tr2s_confusion_contras_accepted.index).agg('sum')/tr2s_confusion_contras.groupby(tr2s_confusion_contras.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
-    tr2s_case_results.loc['Improvement w.r.t. TDL', :] = ((human_confusion.groupby(human_confusion.index).agg('sum')-tr2s_confusion.groupby(tr2s_confusion.index).agg('sum'))/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
-    tr2s_case_results.loc['Reconciliation Costs Incurred', :] = -(cost * tr2s_confusion_contras.groupby(tr2s_confusion_contras.index).agg('sum')/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
-    tr2s_case_results.loc['Improved in TTL w.r.t. Human', :] = tr2s_case_results.loc['Reconciliation Costs Incurred', :] + tr2s_case_results.loc['Improvement w.r.t. TDL', :]
-    tr2s_case_results.loc['Advising Accuracy', :] = (tr2s_covered_correct_confusion.groupby(tr2s_covered_correct_confusion.index).agg('sum')/tr2s_covered_confusion.groupby(tr2s_covered_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+    tr2s_case_results.loc['Advising Rate', :] = weighted_avg_and_std((tr2s_covered_confusion/totals_confusion), totals_confusion)
+    tr2s_case_results.loc['Contradiction Rate', :] = weighted_avg_and_std((tr2s_confusion_contras/totals_confusion), totals_confusion)
+    tr2s_case_results.loc['Advising Confidence', :] = weighted_avg_and_std((tr2s_conf_confusion), weights=totals_confusion)
+    tr2s_case_results.loc['Contradiction Acceptance Rate', :] = weighted_avg_and_std((tr2s_confusion_contras_accepted/tr2s_confusion_contras), tr2s_confusion_contras)
+    tr2s_case_results.loc['Improvement w.r.t. TDL', :] = weighted_avg_and_std(((human_confusion-tr2s_confusion)/total), totals_confusion)
+    tr2s_case_results.loc['Reconciliation Costs Incurred', :] = weighted_avg_and_std(-(cost * tr2s_confusion_contras)/total, totals_confusion)
+    tr2s_case_results.loc['Improved in TTL w.r.t. Human', :] = weighted_avg_and_std(((human_confusion-tr2s_confusion)-(cost * tr2s_confusion_contras))/total, totals_confusion)
+    tr2s_case_results.loc['Advising Accuracy', :] = weighted_avg_and_std(tr2s_covered_correct_confusion/tr2s_covered_confusion, tr2s_covered_confusion)
 
     hyrs_case_results = pd.DataFrame(index = ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence', 
                                          'Contradiction Acceptance Rate', 'Improvement w.r.t. TDL', 'Reconciliation Costs Incurred', 'Improved in TTL w.r.t. Human'], columns = ['Female', 'Male', 'Total'])
-    hyrs_case_results.loc['Advising Rate', :] = (hyrs_covered_confusion.groupby(hyrs_covered_confusion.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
-    hyrs_case_results.loc['Contradiction Rate', :] = (hyrs_confusion_contras.groupby(hyrs_confusion_contras.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
-    hyrs_case_results.loc['Advising Confidence', :] = hyrs_conf_confusion.groupby(hyrs_conf_confusion.index).agg('mean').drop(columns=['Elderly', 'Young'])['Total']
-    hyrs_case_results.loc['Contradiction Acceptance Rate', :] = (hyrs_confusion_contras_accepted.groupby(hyrs_confusion_contras_accepted.index).agg('sum')/hyrs_confusion_contras.groupby(hyrs_confusion_contras.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
-    hyrs_case_results.loc['Improvement w.r.t. TDL', :] = ((human_confusion.groupby(human_confusion.index).agg('sum')-hyrs_confusion.groupby(hyrs_confusion.index).agg('sum'))/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
-    hyrs_case_results.loc['Reconciliation Costs Incurred', :] = -(cost * hyrs_confusion_contras.groupby(hyrs_confusion_contras.index).agg('sum')/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
-    hyrs_case_results.loc['Improved in TTL w.r.t. Human', :] = hyrs_case_results.loc['Reconciliation Costs Incurred', :] + hyrs_case_results.loc['Improvement w.r.t. TDL', :]
-    hyrs_case_results.loc['Advising Accuracy', :] = (hyrs_covered_correct_confusion.groupby(hyrs_covered_correct_confusion.index).agg('sum')/hyrs_covered_confusion.groupby(hyrs_covered_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+    hyrs_case_results.loc['Advising Rate', :] = weighted_avg_and_std((hyrs_covered_confusion/totals_confusion), totals_confusion)
+    hyrs_case_results.loc['Contradiction Rate', :] = weighted_avg_and_std((hyrs_confusion_contras/totals_confusion), totals_confusion)
+    hyrs_case_results.loc['Advising Confidence', :] = weighted_avg_and_std((hyrs_conf_confusion), weights=totals_confusion)
+    hyrs_case_results.loc['Contradiction Acceptance Rate', :] = weighted_avg_and_std((hyrs_confusion_contras_accepted/hyrs_confusion_contras), hyrs_confusion_contras)
+    hyrs_case_results.loc['Improvement w.r.t. TDL', :] = weighted_avg_and_std(((human_confusion-hyrs_confusion)/total), totals_confusion)
+    hyrs_case_results.loc['Reconciliation Costs Incurred', :] = weighted_avg_and_std(-(cost * hyrs_confusion_contras)/total, totals_confusion)
+    hyrs_case_results.loc['Improved in TTL w.r.t. Human', :] = weighted_avg_and_std(((human_confusion-hyrs_confusion)-(cost * hyrs_confusion_contras))/total, totals_confusion)
+    hyrs_case_results.loc['Advising Accuracy', :] = weighted_avg_and_std(hyrs_covered_correct_confusion/hyrs_covered_confusion, hyrs_covered_confusion)
 
     brs_case_results = pd.DataFrame(index = ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence', 
                                          'Contradiction Acceptance Rate', 'Improvement w.r.t. TDL', 'Reconciliation Costs Incurred', 'Improved in TTL w.r.t. Human'], columns = ['Female', 'Male', 'Total'])
     
-    brs_case_results.loc['Advising Rate', :] = 1
-    brs_case_results.loc['Contradiction Rate', :] = (brs_confusion_contras.groupby(brs_confusion_contras.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
-    brs_case_results.loc['Advising Confidence', :] = brs_conf_confusion.groupby(brs_conf_confusion.index).agg('mean').drop(columns=['Elderly', 'Young'])['Total']
-    brs_case_results.loc['Contradiction Acceptance Rate', :] = (brs_confusion_contras_accepted.groupby(brs_confusion_contras_accepted.index).agg('sum')/brs_confusion_contras.groupby(brs_confusion_contras.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
-    brs_case_results.loc['Improvement w.r.t. TDL', :] = ((human_confusion.groupby(human_confusion.index).agg('sum')-brs_confusion.groupby(brs_confusion.index).agg('sum'))/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
-    brs_case_results.loc['Reconciliation Costs Incurred', :] = -(cost * brs_confusion_contras.groupby(brs_confusion_contras.index).agg('sum')/total/num_runs).drop(columns=['Elderly', 'Young'])['Total']
-    brs_case_results.loc['Improved in TTL w.r.t. Human', :] = brs_case_results.loc['Reconciliation Costs Incurred', :] + brs_case_results.loc['Improvement w.r.t. TDL', :]
-    brs_case_results.loc['Advising Accuracy', :] = 1-(brs_model_confusion.groupby(brs_model_confusion.index).agg('sum')/totals_confusion.groupby(totals_confusion.index).agg('sum')).drop(columns=['Elderly', 'Young'])['Total']
+    brs_case_results.loc['Advising Rate', :] = '1.000 \pm 0.000'
+    brs_case_results.loc['Contradiction Rate', :] = weighted_avg_and_std((brs_confusion_contras/totals_confusion), totals_confusion)
+    brs_case_results.loc['Advising Confidence', :] = weighted_avg_and_std((brs_conf_confusion), weights=totals_confusion)
+    brs_case_results.loc['Contradiction Acceptance Rate', :] = weighted_avg_and_std((brs_confusion_contras_accepted/brs_confusion_contras), brs_confusion_contras)
+    brs_case_results.loc['Improvement w.r.t. TDL', :] = weighted_avg_and_std(((human_confusion-brs_confusion)/total), totals_confusion)
+    brs_case_results.loc['Reconciliation Costs Incurred', :] = weighted_avg_and_std(-(cost * brs_confusion_contras)/total, totals_confusion)
+    brs_case_results.loc['Improved in TTL w.r.t. Human', :] = weighted_avg_and_std(((human_confusion-brs_confusion)-(cost * brs_confusion_contras))/total, totals_confusion)
+    brs_case_results.loc['Advising Accuracy', :] = weighted_avg_and_std(1-(brs_model_confusion/totals_confusion), totals_confusion)
 
     results_stderrs = results.apply(lambda x: x.apply(lambda y: np.std(y)/np.sqrt(len(y))))
 
@@ -1069,18 +1069,30 @@ case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, cos
 
 print('pause')
 
-def weighted_avg_and_std(values, weights, filter):
-    """
-    Return the weighted average and standard deviation.
+def weighted_avg_and_std(values, weights=None, filter=['Female','Male','Total'], num_runs=20):
+        """
+        Return the weighted average and standard deviation.
 
-    They weights are in effect first normalized so that they 
-    sum to 1 (and so they must not all be 0).
+        They weights are in effect first normalized so that they 
+        sum to 1 (and so they must not all be 0).
 
-    values, weights -- NumPy ndarrays with the same shape.
-    """
-    values = values.loc[filter, 'Total']
-    weights = weights.loc[filter, 'Total']
-    average = np.average(values, weights=weights)
-    # Fast and numerically precise:
-    variance = np.average((values-average)**2, weights=weights)
-    return (average, math.sqrt(variance))
+        values, weights -- NumPy ndarrays with the same shape.
+        """
+        if weights is not None:
+                new_weights = weights.copy()
+                new_weights[values.isna()] = 0
+        result = []
+        for pop in filter:
+                v = values.loc[pop, 'Total'][values.loc[pop, 'Total'].notna()]
+                if weights is None:
+                    w = np.ones(len(v))
+                    average = np.nanmean(v)
+                    variance = np.nanstd(v)**2
+                else:
+                        
+                        w = new_weights.loc[pop, 'Total'][values.loc[pop, 'Total'].notna()]
+                        average = np.average(v, weights=w)
+                
+                        variance = np.average((v-average)**2, weights=w)
+                result.append(str(round(average,3)) + ' \pm ' + str(round(math.sqrt(variance)/math.sqrt(num_runs), 3)))
+        return result
