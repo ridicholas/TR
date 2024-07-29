@@ -225,6 +225,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/brs_model_{human_name}.pkl', 'wb') as f:
             brs_model.make_lite()
             pickle.dump(brs_model, f)
+            del brs_model
 
     if 'tr' in which_models:
         #train estimates
@@ -251,6 +252,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr_model_{human_name}{appendType}.pkl', 'wb') as f:
             tr_model.make_lite()
             pickle.dump(tr_model, f)
+            del tr_model
 
     if 'tr2stage' in which_models:
         #train estimates
@@ -279,6 +281,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr2stage_model_{human_name}{appendType}.pkl', 'wb') as f:
                 tr_model.make_lite()
                 pickle.dump(tr_model, f)
+                del tr_model
 
         else:
             print('tr2stage already there!')
@@ -316,6 +319,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr-no(ADB)_model_{human_name}{appendType}.pkl', 'wb') as f:
                 tr_model.make_lite()
                 pickle.dump(tr_model, f)
+                del tr_model
         else:
             print('already there!')
 
