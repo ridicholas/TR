@@ -523,8 +523,8 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax):
     
     color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00'}  #75c361
     #ax.plot(results_means.index[0:10], results_means['hyrs_norecon_objective'].iloc[0:10], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
-    #ax.plot(results_means.index[0:10], results_means['trnoadb_team_w_reset_objective'].iloc[0:10], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:10], results_means['tr_team_w_reset_objective'].iloc[0:10], marker = '.', c='orange', label='TR', markersize=1.8, linewidth=0.9)
+    ax.plot(results_means.index[0:10], results_means['trnoadb_team_w_reset_objective'].iloc[0:10], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
+    #ax.plot(results_means.index[0:10], results_means['tr_team_w_reset_objective'].iloc[0:10], marker = '.', c='orange', label='TR', markersize=1.8, linewidth=0.9)
     ax.plot(results_means.index[0:10], results_means['tr2s_team_w_reset_objective'].iloc[0:10], marker = '.', label='TR2stage', c=color_dict['TR'], markersize=1.8, linewidth=0.9)
     #ax.plot(results_means.index[0:10], results_means['brs_team_objective'].iloc[0:10], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
     #ax.plot(results_means.index[0:10], results_means['brs_team_w_reset_objective'].iloc[0:10], marker = 'v', c=color_dict['BRSselect'], label='TR-SelectiveOnly', markersize=1.8, linewidth=0.9)
@@ -535,12 +535,12 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax):
                 results_means['human_decision_loss'].iloc[0:10]-1*(results_stderrs['human_decision_loss'].iloc[0:10]),
                 results_means['human_decision_loss'].iloc[0:10]+1*(results_stderrs['human_decision_loss'].iloc[0:10]) ,
                 color=color_dict['Human'], alpha=0.2)
-    '''
+    
     ax.fill_between(results_means.index[0:10], 
                 results_means['trnoadb_team_w_reset_objective'].iloc[0:10]-1*(results_stderrs['trnoadb_team_w_reset_objective'].iloc[0:10]),
                 results_means['trnoadb_team_w_reset_objective'].iloc[0:10]+1*(results_stderrs['trnoadb_team_w_reset_objective'].iloc[0:10]) ,
                 color=color_dict['HYRSRecon'], alpha=0.2)
-    
+    '''
     ax.fill_between(results_means.index[0:10], 
                 results_means['hyrs_norecon_objective'].iloc[0:10]-1*(results_stderrs['hyrs_norecon_objective'].iloc[0:10]),
                 results_means['hyrs_norecon_objective'].iloc[0:10]+1*(results_stderrs['hyrs_norecon_objective'].iloc[0:10]) ,
@@ -551,11 +551,12 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax):
                 results_means['brs_team_objective'].iloc[0:10]+1*(results_stderrs['brs_team_objective'].iloc[0:10]) ,
                 color=color_dict['BRS'], alpha=0.2)
     
-    '''
+    
     ax.fill_between(results_means.index[0:10], 
                 results_means['tr_team_w_reset_objective'].iloc[0:10]-1*(results_stderrs['tr_team_w_reset_objective'].iloc[0:10]),
                 results_means['tr_team_w_reset_objective'].iloc[0:10]+1*(results_stderrs['tr_team_w_reset_objective'].iloc[0:10]),
                 color='orange', alpha=0.2)
+    '''
     
     ax.fill_between(results_means.index[0:10], 
                 results_means['tr2s_team_w_reset_objective'].iloc[0:10]-1*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:10]),
@@ -767,7 +768,7 @@ def cost_plus_hyrs(rs):
 costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]
 
 num_runs = 10
-datasets = ['heart_disease']
+datasets = ['heart_disease', 'fico']
 names = ['biased', 'biased_dec_bias', 'offset_01']
 
 
