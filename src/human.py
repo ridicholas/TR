@@ -178,7 +178,7 @@ class Human(object):
                 #confidences[(X['age54.0'] == 1)] = 0.3
                 ##########################################
                 ####for feature decision and confidence bias#############
-                if not(hasattr(self, 'alteration')) or self.alteration == '' or self.alteration == '_dec_bias' or ('discretion' in self.alteration):
+                if not(hasattr(self, 'alteration')) or self.alteration == '' or self.alteration == '_dec_bias' or self.alteration == 'verytest' or ('discretion' in self.alteration):
                     confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal)] = 0.9
                     confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 1
                     confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9

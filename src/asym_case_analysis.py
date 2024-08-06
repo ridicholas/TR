@@ -14,6 +14,9 @@ from run import evaluate_adb_model
 from copy import deepcopy
 import os
 
+def noADB(human_conf, model_conf, agreement):
+    return np.ones(len(human_conf))
+
 def load_datasets(dataset, run_num):
     x_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/xtrain.csv', index_col=0).reset_index(drop=True)
     y_train = pd.read_csv(f'datasets/{dataset}/processed/run{run_num}/ytrain.csv', index_col=0).iloc[:, 0].reset_index(drop=True)
@@ -108,8 +111,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
         for cost in costs:
             print(f'producing for cost {cost} run {run}.....')
-            tr_mod = load_results(dataset, whichtype+"_asym", run, cost, 'tr')
-            hyrs_mod = load_results(dataset, whichtype, run, cost, 'hyrs')
+            tr_mod = load_results(dataset, whichtype+"_asym", run, cost, 'tr2stage')
+            hyrs_mod = load_results(dataset, whichtype, run, cost, 'tr-no(ADB)')
             #load e_y and e_yb mods
             #with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype+"_asym"}.pkl', 'rb') as f:
             #    e_yb_mod = pickle.load(f)
@@ -271,12 +274,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     tr_mod_confs = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)[0]
                 
 
-                    hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
-                    hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
+                    hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_team_preds = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
 
-                    hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
-                    hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, human.ADB, x_test)
+                    hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
 
 

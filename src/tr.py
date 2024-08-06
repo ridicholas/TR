@@ -830,10 +830,15 @@ class tr(object):
         agreement1 = (y_rules == 1) #hypothetical if human chooses 1
         conf_human0 = conf_human.copy()
         conf_human1 = conf_human.copy()
-        conf_human0[yb == 1] = -conf_human0[yb == 1] #confidence inverted if human expected to choose 1 because situation is hypothetical human chooses 0
-        conf_human1[yb == 0] = -conf_human1[yb == 0] #confidence inverted if human expected to choose 0 because situation is hypothetical human chooses 1
+        conf_human0[yb == 1] = conf_human0[yb == 1] #confidence inverted if human expected to choose 1 because situation is hypothetical human chooses 0
+        conf_human1[yb == 0] = conf_human1[yb == 0] #confidence inverted if human expected to choose 0 because situation is hypothetical human chooses 1
 
         p_a = ((yb==0).astype(int)*self.fA(conf_human0, conf_model, agreement0)) + ((yb==1).astype(int)*self.fA(conf_human1, conf_model, agreement1))
+        #above should be equivalent to the following
+        #conf_model_other, agreement_other = self.get_model_conf_agreement(x, yb, prs_min=prs, nrs_min=nrs) #recalculate model confidence and agreement
+        #p_a_other = self.fA(conf_human, conf_model_other, agreement_other)
+        #if sum(p_a != p_a_other) == 0:
+        #    print('p_a and p_a_other are the same')
 
         
 
