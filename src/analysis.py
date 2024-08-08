@@ -163,21 +163,21 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, train=Fa
         
         
         dataset = dataset
-        human, adb_mod, conf_mod = load_humans(dataset, whichtype, run)
+        human, adb_mod, conf_mod = load_humans(dataset, whichtype + "verytest", run)
 
         brs_mod = load_results(dataset, f'_{whichtype}' , run, 0.0, 'brs')
 
 
         for cost in costs:
             print(f'producing for cost {cost} run {run}.....')
-            tr_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr')
+            tr_mod = load_results(dataset, f'_{whichtype+ "verytest"}', run, cost, 'tr')
             hyrs_mod = load_results(dataset, f'_{whichtype}', run, cost, 'hyrs')
-            tr2s_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr2stage')
+            tr2s_mod = load_results(dataset, f'_{whichtype+ "verytest"}', run, cost, 'tr2stage')
             trnoadb_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr-no(ADB)')
             #load e_y and e_yb mods
             #with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype}.pkl', 'rb') as f:
             #    e_yb_mod = pickle.load(f)
-            with open(f'results/{dataset}/run{run}/cost{float(cost)}/ey_model_{whichtype}.pkl', 'rb') as f:
+            with open(f'results/{dataset}/run{run}/cost{float(cost)}/ey_model_{whichtype+ "verytest"}.pkl', 'rb') as f:
                 e_y_mod = pickle.load(f)
 
             tr_mod.df = x_train
@@ -358,7 +358,6 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, train=Fa
                     learned_adb = ADB(adb_mod)
                     human_decisions = human.get_decisions(x_test, y_test)
                     human_conf = human.get_confidence(x_test)
-                    e_y_mod = xgb.XGBClassifier().fit(pd.concat([x_train_non_binarized, x_test_non_binarized]), pd.concat([y_train, y_test]))
                     tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     tr2s_team_preds_with_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions,human_conf, human.ADB, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
@@ -529,6 +528,9 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, train=Fa
 
     return results_means, results_stderrs, results
 
+#rocs = []
+#for i in range(1000):
+#    rocs.append(roc_auc_score(y_train, e_y_mod.predict_proba(x_train_non_binarized)[:,1]))
 
 
 
@@ -849,7 +851,7 @@ cols = ['{}'.format(col) for col in ['Difficulty-Biased Decisions \n Feature-Bia
 rows = ['{}'.format(row) for row in ['Heart Disease', '    FICO    ', '     HR     ']]
 pad = 5
 
-means, std, rs = make_results('heart_disease', 'biased_dec_bias', 10, [0.5], validation=False, train=False)
+means, std, rs = make_results('heart_disease', 'biased', 5, [0.5], validation=False, train=False)
 
 for dataset in datasets:
     for name in names:

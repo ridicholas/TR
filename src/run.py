@@ -11,7 +11,8 @@ import pickle
 from scipy.stats import bernoulli, uniform
 from sklearn.metrics import accuracy_score, auc, roc_auc_score, roc_curve, mean_squared_error
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedKFold, RandomizedSearchCV
+from datetime import datetime
 
 
 
@@ -134,8 +135,30 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
                                             'model_confs': initial_task_model.predict_proba(x_learning).max(axis=1), 
                                             'agreement': (initial_task_model.predict(x_learning) == human.learning_decisions)})
             
+            adb_val_data = pd.DataFrame({'human_conf': human.get_confidence(x_val), 
+                                            'model_confs': initial_task_model.predict_proba(x_val).max(axis=1), 
+                                            'agreement': (initial_task_model.predict(x_val) == human.val_decisions)})
+            
+            adb_train_data = pd.DataFrame({'human_conf': human.get_confidence(x_train), 
+                                            'model_confs': initial_task_model.predict_proba(x_train).max(axis=1), 
+                                            'agreement': (initial_task_model.predict(x_train) == human.train_decisions)})
+            
             p_accepts = human.ADB(adb_learning_data['human_conf'], adb_learning_data['model_confs'], adb_learning_data['agreement'])
+            p_accepts_val = human.ADB(adb_val_data['human_conf'], adb_val_data['model_confs'], adb_val_data['agreement'])
+            p_accepts_train = human.ADB(adb_train_data['human_conf'], adb_train_data['model_confs'], adb_train_data['agreement'])
             realized_accepts = bernoulli.rvs(p=p_accepts, size=len(p_accepts))
+            roc_trains = []
+            roc_vals = []
+            roc_learnings = []
+            '''
+            for i in range(1000):
+                
+                realized_accepts_val = bernoulli.rvs(p=p_accepts_val, size=len(p_accepts_val))
+                realized_accepts_train = bernoulli.rvs(p=p_accepts_train, size=len(p_accepts_train))
+                roc_trains.append(roc_auc_score(realized_accepts_train[adb_train_data['agreement'] == False], adb_model.predict_proba(adb_train_data[adb_train_data['agreement'] == False])[:, 1]))
+                roc_vals.append(roc_auc_score(realized_accepts_val[adb_val_data['agreement'] == False], adb_model.predict_proba(adb_val_data[adb_val_data['agreement'] == False])[:, 1]))
+                roc_learnings.append(roc_auc_score(realized_accepts[adb_learning_data['agreement'] == False], adb_model.predict_proba(adb_learning_data[adb_learning_data['agreement'] == False])[:, 1]))
+            '''
             if use_true:
                 adb_model = human.ADB
             else:
@@ -229,7 +252,29 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
     if 'tr' in which_models:
         #train estimates
-        e_y_mod = xgb.XGBClassifier().fit(x_train_non_binarized, y_train)
+        params = {
+        'min_child_weight': [1, 5, 10],
+        'gamma': [0.5, 1, 1.5, 2, 5],
+        'subsample': [0.6, 0.8, 1.0],
+        'colsample_bytree': [0.6, 0.8, 1.0],
+        'max_depth': [3, 4, 5, 6],
+        'learning_rate': [0.001, 0.01, 0.02, 0.05]
+        }
+        e_y_mod = xgb.XGBClassifier()
+        folds = 3
+        param_comb = 5
+        skf = StratifiedKFold(n_splits=folds, shuffle = True, random_state = 1001)
+        random_search = RandomizedSearchCV(e_y_mod, param_distributions=params, n_iter=param_comb, scoring='roc_auc', n_jobs=-1, cv=skf.split(x_train_non_binarized,y_train), verbose=3, random_state=1001 )
+
+
+        
+        
+        random_search.fit(x_train_non_binarized,y_train)
+
+
+        e_y_mod = random_search.best_estimator_
+
+        
         #e_yb_mod = xgb.XGBClassifier().fit(x_train_non_binarized, human.get_decisions(x_train, y_train))
 
         tr_model = tr(x_train, y_train,
@@ -240,7 +285,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         tr_model.set_parameters(alpha = alpha, beta=beta, contradiction_reg=contradiction_reg, fairness_reg=fairness_reg, force_complete_coverage=False, asym_loss=asym_loss, fA=adb.ADB_model_wrapper)
 
         tr_model.generate_rulespace(supp = supp, maxlen=maxlen, N=Nrules, need_negcode=True, method='randomforest',criteria='precision')
-        _, _, _ = tr_model.train(Niteration=Niteration, T0=0.01, print_message=False)
+        _, _, _ = tr_model.train(Niteration=Niteration, T0=0.01, print_message=False, with_reset=True)
 
         #write ey and eyb models
         with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name}{appendType}.pkl', 'wb') as f:
@@ -258,8 +303,32 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         #train estimates
         if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr2stage_model_{human_name}{appendType}.pkl') or True:
             print('tr2tage result not there yet, starting training')
-            e_y_mod = xgb.XGBClassifier().fit(x_train_non_binarized, y_train)
+            #e_y_mod = xgb.XGBClassifier().fit(x_train_non_binarized, y_train)
             #e_yb_mod = xgb.XGBClassifier().fit(x_train_non_binarized, human.get_decisions(x_train, y_train))
+
+            params = {
+            'min_child_weight': [1, 5, 10],
+            'gamma': [0.5, 1, 1.5, 2, 5],
+            'subsample': [0.6, 0.8, 1.0],
+            'colsample_bytree': [0.6, 0.8, 1.0],
+            'max_depth': [3, 4, 5, 6],
+            'learning_rate': [0.001, 0.01, 0.02, 0.05]
+            }
+            e_y_mod = xgb.XGBClassifier()
+            folds = 3
+            param_comb = 5
+            skf = StratifiedKFold(n_splits=folds, shuffle = True, random_state = 1001)
+            random_search = RandomizedSearchCV(e_y_mod, param_distributions=params, n_iter=param_comb, scoring='roc_auc', n_jobs=-1, cv=skf.split(x_train_non_binarized,y_train), verbose=3, random_state=1001 )
+
+
+
+
+            
+            
+            random_search.fit(x_train_non_binarized,y_train)
+
+
+            e_y_mod = random_search.best_estimator_
 
             tr_model = tr(x_train, y_train,
                         human.train_decisions,
@@ -292,8 +361,32 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr-no(ADB)_model_{human_name}{appendType}.pkl') or True:
             print('result not there yet, starting training')
             #train estimates
-            e_y_mod = xgb.XGBClassifier().fit(x_train_non_binarized, y_train)
+            #e_y_mod = xgb.XGBClassifier().fit(x_train_non_binarized, y_train)
             #e_yb_mod = xgb.XGBClassifier().fit(x_train_non_binarized, human.get_decisions(x_train, y_train))
+
+            params = {
+            'min_child_weight': [1, 5, 10],
+            'gamma': [0.5, 1, 1.5, 2, 5],
+            'subsample': [0.6, 0.8, 1.0],
+            'colsample_bytree': [0.6, 0.8, 1.0],
+            'max_depth': [3, 4, 5, 6],
+            'learning_rate': [0.001, 0.01, 0.02, 0.05]
+            }
+            e_y_mod = xgb.XGBClassifier()
+            folds = 3
+            param_comb = 5
+            skf = StratifiedKFold(n_splits=folds, shuffle = True, random_state = 1001)
+            random_search = RandomizedSearchCV(e_y_mod, param_distributions=params, n_iter=param_comb, scoring='roc_auc', n_jobs=-1, cv=skf.split(x_train_non_binarized,y_train), verbose=3, random_state=1001 )
+
+
+
+
+            
+            
+            random_search.fit(x_train_non_binarized,y_train)
+
+
+            e_y_mod = random_search.best_estimator_
 
             tr_model = tr(x_train, y_train,
                         human.train_decisions,
@@ -307,7 +400,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             tr_model.set_parameters(alpha = alpha, beta=beta, contradiction_reg=contradiction_reg, fairness_reg=fairness_reg, force_complete_coverage=False, asym_loss=asym_loss, fA=adb.ADB_model_wrapper)
 
             tr_model.generate_rulespace(supp = supp, maxlen=maxlen, N=Nrules, need_negcode=True, method='randomforest',criteria='precision')
-            _, _, _ = tr_model.train(Niteration=Niteration, T0=0.01, print_message=False, with_reset=False)
+            _, _, _ = tr_model.train(Niteration=Niteration, T0=0.01, print_message=False, with_reset=True)
 
             #write ey and eyb models
             with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name}{appendType}.pkl', 'wb') as f:
@@ -325,13 +418,13 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
 
 
-os.chdir('..')
-#run('heart_disease', 0, 'biased', runtype='standard', which_models=['tr2stage', 'tr'], contradiction_reg=0.5, remake_humans=True, human_decision_bias=True, custom_name='verytest', use_true=False, subsplit=1)
-#run('heart_disease', 1, 'biased', runtype='standard', which_models=['tr2stage', 'tr'], contradiction_reg=0.5, remake_humans=True, human_decision_bias=True, custom_name='verytest', use_true=False, subsplit=1)
-#run('heart_disease', 2, 'biased', runtype='standard', which_models=['tr2stage', 'tr'], contradiction_reg=0.5, remake_humans=True, human_decision_bias=True, custom_name='verytest', use_true=False, subsplit=1)
-#run('heart_disease', 3, 'biased', runtype='standard', which_models=['tr2stage', 'tr'], contradiction_reg=0.5, remake_humans=True, human_decision_bias=True, custom_name='verytest', use_true=False, subsplit=1)
-#run('heart_disease', 4, 'biased', runtype='standard', which_models=['tr2stage', 'tr'], contradiction_reg=0.5, remake_humans=True, human_decision_bias=True, custom_name='verytest', use_true=False, subsplit=1)
-#run('heart_disease', 5, 'biased', runtype='standard', which_models=['tr2stage', 'tr'], contradiction_reg=0.5, remake_humans=True, human_decision_bias=True, custom_name='verytest', use_true=False, subsplit=1)
+#os.chdir('..')
+#run('heart_disease', 0, 'biased', runtype='standard', which_models=['tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='verytest', use_true=False, subsplit=1)
+#run('heart_disease', 1, 'biased', runtype='standard', which_models=['tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='verytest', use_true=False, subsplit=1)
+#run('heart_disease', 2, 'biased', runtype='standard', which_models=['tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='verytest', use_true=False, subsplit=1)
+#run('heart_disease', 3, 'biased', runtype='standard', which_models=['tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='verytest', use_true=False, subsplit=1)
+#run('heart_disease', 4, 'biased', runtype='standard', which_models=['tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='verytest', use_true=False, subsplit=1)
+#run('heart_disease', 5, 'biased', runtype='standard', which_models=['tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='verytest', use_true=False, subsplit=1)
 #run('heart_disease', 6, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case1', use_true=False, subsplit=1)
 #run('heart_disease', 7, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case1', use_true=False, subsplit=1)
 #run('heart_disease', 8, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case1', use_true=False, subsplit=1)
@@ -355,18 +448,18 @@ os.chdir('..')
 #run('heart_disease', 5, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
 #run('heart_disease', 6, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
 #run('heart_disease', 7, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-run('heart_disease', 8, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-run('heart_disease', 9, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-run('heart_disease', 10, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-run('heart_disease', 11, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-run('heart_disease', 12, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-run('heart_disease', 13, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-run('heart_disease', 14, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-run('heart_disease', 15, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-run('heart_disease', 16, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-run('heart_disease', 17, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-run('heart_disease', 18, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-run('heart_disease', 19, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 8, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 9, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 10, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 11, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 12, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 13, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 14, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 15, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 16, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 17, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 18, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 19, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
 
 
 
