@@ -107,7 +107,7 @@ class Human(object):
         final_decisions = p_a*advice + (1-p_a)*self.get_decisions(X)
         return final_decisions
     
-    def ADB(self, c_human, c_model, agreement, delta=5, beta=0.05, k=0.63, gamma=0.95):
+    def ADB(self, c_human, c_model, agreement, delta=5, beta=0.5, k=0.63, gamma=0.95):
         # from will you accept the AI recommendation
 
         def w(p, k):

@@ -247,14 +247,14 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, train=Fa
             hyrs_norecon_team_decision_loss = []
             hyrs_norecon_model_contradictions = []
             
-            if cost == 0.5:
+            if cost == 0.0:
                 brs_mod.df = x_train
                 brs_mod.Y = y_train
                 brs_model_preds = brs_predict(brs_mod.opt_rules, x_test)
                 brs_conf = brs_predict_conf(brs_mod.opt_rules, x_test, brs_mod)
                 hyrs_norecon_mod = deepcopy(trnoadb_mod)
             
-            for i in range(25):
+            for i in range(30):
                 
                 
 
@@ -851,7 +851,7 @@ cols = ['{}'.format(col) for col in ['Difficulty-Biased Decisions \n Feature-Bia
 rows = ['{}'.format(row) for row in ['Heart Disease', '    FICO    ', '     HR     ']]
 pad = 5
 
-means, std, rs = make_results('heart_disease', 'biased', 5, [0.5], validation=False, train=False)
+means, std, rs = make_results('heart_disease', 'biased', 5, [0.0], validation=False, train=False)
 
 for dataset in datasets:
     for name in names:
