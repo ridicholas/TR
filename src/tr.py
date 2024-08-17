@@ -87,6 +87,8 @@ class tr(object):
                     for n in range(n_estimators):
                         nrules.extend(extract_rules(clf.estimators_[n],self.df.columns))
                 nrules = [list(x) for x in set(tuple(np.sort(x)) for x in nrules)]
+
+
               
             df = 1-self.df 
             df.columns = [name.strip() + 'neg' for name in self.df.columns]
@@ -267,6 +269,8 @@ class tr(object):
         nprules = len(self.prules)
         pnrules = len(self.nrules)
         prs_curr = []
+
+
         if self.force_complete_coverage:
             nrs_curr = list(range(pnrules))
         else:
@@ -380,8 +384,8 @@ class tr(object):
             if (iter == 0) and (start_rules != None):
                 prs_new = start_rules['prs']
                 nrs_new = start_rules['nrs']
-                p = np.sum(self.pRMatrix[:,prs_curr],axis = 1)>0
-                n = np.sum(self.nRMatrix[:,nrs_curr],axis = 1)>0
+                p = np.sum(self.pRMatrix[:,prs_new],axis = 1)>0
+                n = np.sum(self.nRMatrix[:,nrs_new],axis = 1)>0
                 overlap_new = np.multiply(p,n)
                 pcovered_new = p
                 ncovered_new = n ^ overlap_new
@@ -409,6 +413,8 @@ class tr(object):
             else:
                 n_model_conf_new = np.zeros(len(ncovered_new)) 
 
+            for rule in self.brs_rules:
+                prs_new.append(self.prules.index(rule))
 
             self.covered1 = covered_new[:]
             self.Yhat_curr = Yhat_curr
@@ -469,6 +475,9 @@ class tr(object):
             self.nrs_min = nrs_opt
             self.pcovered_opt = pcovered_opt
             self.ncovered_opt = ncovered_opt
+
+            if iter == 1998:
+                print('pause')
         
             
 

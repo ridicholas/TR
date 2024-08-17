@@ -388,6 +388,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     learned_adb = ADB(adb_mod)
                     #human.ADB = learned_adb.ADB_model_wrapper
                     human_decisions = human.get_decisions(x_test, y_test)
+                    human_soft_decisions = human.get_soft_decisions(x_test, y_test)
                     human_conf = human.get_confidence(x_test)
                     tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions,human_conf, human.ADB, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]

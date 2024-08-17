@@ -15,7 +15,7 @@ from copy import deepcopy
 import os
 
 #making sure wd is file directory so hardcoded paths work
-os.chdir("..")
+#os.chdir("..")
 
 
 def noADB(human_conf, model_conf, agreement):
@@ -339,7 +339,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
                     #hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
                     #hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, human.ADB, x_test)
-                    brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
+                    #brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
                         
 
                 tr_team_w_reset_decision_loss.append(1 - accuracy_score(tr_team_preds_with_reset, y_test))
@@ -478,7 +478,7 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name):
     
     plt.fill_between(results_means.index[0:10], 
                 results_means['human_decision_loss'].iloc[0:10]-(results_stderrs['human_decision_loss'].iloc[0:10]),
-                results_means['human_decision_loss'].iloc[0:10]+(results_stderrs['human_decision_loss'].iloc[0:10]) ,
+                results_means['human_decision_loss'].iloc[0:10]+(results_stderrs['human_decision_loss'].iloc[0:10]),
                 color=color_dict['Human'], alpha=0.2)
     '''
     plt.fill_between(results_means.index[0:10], 
@@ -763,7 +763,7 @@ def cost_plus_hyrs(rs):
 costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]
 
 num_runs = 10
-datasets = ['heart_disease']
+datasets = ['fico']
 names = ['biased', 'biased_dec_bias', 'offset_01']
 
 

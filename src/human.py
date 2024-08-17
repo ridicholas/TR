@@ -99,6 +99,64 @@ class Human(object):
 
 
         return decisions
+    
+    def get_soft_decisions(self, X, y):
+        decisions = y.copy()
+        if self.decision_bias:
+            if self.dataset == 'heart_disease':
+                model_confidences = np.ones(X.shape[0])
+                ###asymmetric case version###############
+                #model_confidences[(X['age54.0'] == 0) | (X['sex_Male'] == 0)] = 0
+                #########################################
+                ###feature decision and confidence bias###
+                #if not(hasattr(self, 'alteration')) or self.alteration == '' or self.alteration == '_dec_bias' or self.alteration == 'quick' or self.alteration == 'quick'or self.alteration.contains('discretion'):
+                    #model_confidences[(X['age54.0'] == 0)] = 0
+                #else:
+                    #model_confidences[(X['sex_Male'] == 1)] = 0
+                if 'case1' in self.alteration:
+                    model_confidences[(X['sex_Male'] == 1)] = 0
+                else:
+                    model_confidences[(X['age54.0'] == 0)] = 0
+                
+                #########################################
+            if self.dataset == 'fico':
+                model_confidences = np.ones(X.shape[0]) 
+                model_confidences[(X['NumSatisfactoryTrades24.0'] == 1)] = 0
+            if self.dataset == 'adult':
+                model_confidences = np.ones(X.shape[0])
+                model_confidences[(X['race_White'] == 1)] = 0
+            if self.dataset == 'hr':
+                model_confidences = np.ones(X.shape[0])
+                model_confidences[(X['﻿Age32.0'] == 0)] = 0
+            
+                
+                
+        else:
+            model_confidences = np.abs(self.model.predict_proba(self.scaler.transform(X))[:, 1] - 0.5)*2
+        #low accuracy 60%
+        low = bernoulli.rvs(p=0.4, size=len(decisions)).astype(bool)
+        #high accuracy 100%
+        if self.decision_bias == True:
+
+
+            #for all other
+            high = np.zeros(len(decisions))+0.05 #bernoulli.rvs(p=0.05, size=len(decisions)).astype(bool)
+
+        else:
+            high = np.zeros(len(decisions)) #bernoulli.rvs(p=0.00, size=len(decisions)).astype(bool)
+        decisions[high] = 1-decisions[high]
+        decisions[(model_confidences > self.confVal) & low] = 1-decisions[(model_confidences > self.confVal) & low]
+        #if self.decision_bias & (self.dataset == 'heart_disease'):
+            #mid = bernoulli.rvs(p=0.15, size=len(decisions)).astype(bool)
+            #decisions[(X['sex_Male'] == 0) & (X['age54.0'] == 0)] = y[(X['sex_Male'] == 0) & (X['age54.0'] == 0)]
+            #decisions[(X['sex_Male'] == 0) & (X['age54.0'] == 0) & mid] = 1-decisions[(X['sex_Male'] == 0) & (X['age54.0'] == 0) & mid]
+
+            #mid = bernoulli.rvs(p=0.15, size=len(decisions)).astype(bool)
+            #decisions[(X['sex_Male'] == 1) & (X['age54.0'] == 1)] = y[(X['sex_Male'] == 1) & (X['age54.0'] == 1)]
+            #decisions[(X['sex_Male'] == 1) & (X['age54.0'] == 1) & mid] = 1-decisions[(X['sex_Male'] == 1) & (X['age54.0'] == 1) & mid]
+
+
+        return decisions
 
     def get_final_decisions(self, X, c_model, advice):
         c_human = self.get_confidence(X)
