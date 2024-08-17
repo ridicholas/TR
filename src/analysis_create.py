@@ -15,7 +15,7 @@ from copy import deepcopy
 import os
 
 #making sure wd is file directory so hardcoded paths work
-#os.chdir("..")
+os.chdir("..")
 
 
 def noADB(human_conf, model_conf, agreement):
