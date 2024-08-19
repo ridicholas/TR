@@ -155,7 +155,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype + "_dec_bias"
+    whichtype = whichtype + 'case2' #"_dec_bias"
     r_mean = []
     hyrs_R = []
     tr_R = []
@@ -191,7 +191,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                 brs_mod = load_results(dataset, whichtype , run, cost, 'brs')
             except: 
                 brs_mod = load_results(dataset, whichtype , run, 0.0, 'brs')
-            tr2s_mod = load_results(dataset, whichtype, run, cost, 'tr2stage')
+            tr2s_mod = load_results(dataset, whichtype, run, cost, 'tr')
             hyrs_mod = load_results(dataset, whichtype, run, cost, 'tr-no(ADB)')
             tr_mod = load_results(dataset, whichtype, run, cost, 'tr')
             
@@ -396,12 +396,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     tr_model_preds_no_reset, tr_mod_covered_no_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
                     tr_mod_confs = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)[0]
 
-                    tr2s_team_preds_with_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    tr2s_team_preds_no_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr2s_team_preds_with_reset = tr_team_preds_with_reset #tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr2s_team_preds_no_reset = tr_team_preds_no_reset #tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
-                    tr2s_model_preds_with_reset, tr2s_mod_covered_w_reset, _ = tr2s_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
-                    tr2s_model_preds_no_reset, tr2s_mod_covered_no_reset, _ = tr2s_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
-                    tr2s_mod_confs = tr2s_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr2s_mod.prs_min, nrs_min=tr2s_mod.nrs_min)[0]
+                    tr2s_model_preds_with_reset, tr2s_mod_covered_w_reset = tr_model_preds_with_reset, tr_mod_covered_w_reset#tr2s_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
+                    tr2s_model_preds_no_reset, tr2s_mod_covered_no_reset = tr_model_preds_no_reset, tr_mod_covered_no_reset#tr2s_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
+                    tr2s_mod_confs = tr_mod_confs#tr2s_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr2s_mod.prs_min, nrs_min=tr2s_mod.nrs_min)[0]
                 
 
                     #hyrs_model_preds, hyrs_model_covered, _ = hyrs_mod.predict(x_test, human_decisions) 
@@ -1235,7 +1235,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
 
 costs = [0.0]
-num_runs = 10
+num_runs = 5
 dataset = 'heart_disease'
 case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, costs, False, asym_costs=[1,1])
    

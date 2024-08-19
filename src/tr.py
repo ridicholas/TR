@@ -413,8 +413,8 @@ class tr(object):
             else:
                 n_model_conf_new = np.zeros(len(ncovered_new)) 
 
-            for rule in self.brs_rules:
-                prs_new.append(self.prules.index(rule))
+            #for rule in self.brs_rules:
+            #    prs_new.append(self.prules.index(rule))
 
             self.covered1 = covered_new[:]
             self.Yhat_curr = Yhat_curr
