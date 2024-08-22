@@ -534,68 +534,13 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, train=Fa
 
 
 
-
-def make_TL_v_cost_plot(results_means, results_stderrs, name):
-    fig = plt.figure(figsize=(3, 2), dpi=200)
-    color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00'}  #75c361
-    #plt.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
-    #plt.plot(results_means.index[0:stopat], results_means['hyrs_team_objective'].iloc[0:stopat], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
-    #plt.plot(results_means.index[0:stopat], results_means['tr_team_w_reset_objective'].iloc[0:stopat], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
-    plt.plot(results_means.index[0:stopat], results_means['brs_team_objective'].iloc[0:stopat], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
-   #plt.plot(results_means.index[0:stopat], results_means['brs_team_w_reset_objective'].iloc[0:stopat], marker = 'v', c=color_dict['BRSselect'], label='TR-SelectiveOnly', markersize=1.8, linewidth=0.9)
-    
-    plt.plot(results_means.index[0:stopat], results_means['human_decision_loss'].iloc[0:stopat], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
-    
-    plt.fill_between(results_means.index[0:stopat], 
-                results_means['human_decision_loss'].iloc[0:stopat]-(results_stderrs['human_decision_loss'].iloc[0:stopat]),
-                results_means['human_decision_loss'].iloc[0:stopat]+(results_stderrs['human_decision_loss'].iloc[0:stopat]) ,
-                color=color_dict['Human'], alpha=0.2)
-    '''
-    plt.fill_between(results_means.index[0:stopat], 
-                results_means['hyrs_team_objective'].iloc[0:stopat]-(results_stderrs['hyrs_team_objective'].iloc[0:stopat]),
-                results_means['hyrs_team_objective'].iloc[0:stopat]+(results_stderrs['hyrs_team_objective'].iloc[0:stopat]) ,
-                color=color_dict['HYRSRecon'], alpha=0.2)'''
-    '''
-    plt.fill_between(results_means.index[0:stopat], 
-                results_means['hyrs_norecon_objective'].iloc[0:stopat]-(results_stderrs['hyrs_norecon_objective'].iloc[0:stopat]),
-                results_means['hyrs_norecon_objective'].iloc[0:stopat]+(results_stderrs['hyrs_norecon_objective'].iloc[0:stopat]) ,
-                color=color_dict['HYRS'], alpha=0.2)
-                '''
-    plt.fill_between(results_means.index[0:stopat], 
-                results_means['brs_team_objective'].iloc[0:stopat]-(results_stderrs['brs_team_objective'].iloc[0:stopat]),
-                results_means['brs_team_objective'].iloc[0:stopat]+(results_stderrs['brs_team_objective'].iloc[0:stopat]) ,
-                color=color_dict['BRS'], alpha=0.2)
-    '''
-    plt.fill_between(results_means.index[0:stopat], 
-                results_means['tr_team_w_reset_objective'].iloc[0:stopat]-(results_stderrs['tr_team_w_reset_objective'].iloc[0:stopat]),
-                results_means['tr_team_w_reset_objective'].iloc[0:stopat]+(results_stderrs['tr_team_w_reset_objective'].iloc[0:stopat]),
-                color=color_dict['TR'], alpha=0.2)'''
-    '''
-    plt.fill_between(results_means.iloc[0:stopat].index,
-                     results_means['brs_team_w_reset_objective'].iloc[0:stopat]-(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
-                results_means['brs_team_w_reset_objective'].iloc[0:stopat]+(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
-                color=color_dict['BRSselect'], alpha=0.2)'''
-   
-    plt.xlabel('Reconciliation Cost', fontsize=12)
-    plt.ylabel('Total Team Loss', fontsize=12)
-    plt.tick_params(labelrotation=45, labelsize=10)
-    #plt.title('{} Setting'.format(setting), fontsize=15)
-    #plt.title('Income Prediction (Adult Dataset)', fontsize=15)
-    plt.legend(prop={'size': 5})
-    plt.grid('on', linestyle='dotted', linewidth=0.2, color='black')
-
-    fig.savefig(f'results/{dataset}/plots/TL_{dataset}_{name}.png', bbox_inches='tight')
-    #plt.show()
-
-    #plt.clf()
-
 def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=10):
     
     color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00'}  #75c361
     #ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
     #ax.plot(results_means.index[0:stopat], results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
     ax.plot(results_means.index[0:stopat], results_means['tr_team_w_reset_objective'].iloc[0:stopat], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:stopat], results_means['tr2s_team_w_reset_objective'].iloc[0:stopat], marker = '.', label='TR2stage', c='purple', markersize=1.8, linewidth=0.9)
+    #ax.plot(results_means.index[0:stopat], results_means['tr2s_team_w_reset_objective'].iloc[0:stopat], marker = '.', label='TR2stage', c='purple', markersize=1.8, linewidth=0.9)
     #ax.plot(results_means.index[0:stopat], results_means['brs_team_objective'].iloc[0:stopat], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
     ax.plot(results_means.index[0:stopat], results_means['brs_team_w_reset_objective'].iloc[0:stopat], marker = 'v', c=color_dict['BRSselect'], label='TR-SelectiveOnly', markersize=1.8, linewidth=0.9)
     
@@ -628,9 +573,9 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=1
                 color=color_dict['TR'], alpha=0.2)
     
     
-    ax.fill_between(results_means.index[0:stopat], 
-                results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]-1*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]),
-                results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]+1*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]), color = 'purple', alpha=0.2)
+    #ax.fill_between(results_means.index[0:stopat], 
+    #            results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]-1*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]),
+    #            results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]+1*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]), color = 'purple', alpha=0.2)
     
     ax.fill_between(results_means.iloc[0:stopat].index,
                      results_means['brs_team_w_reset_objective'].iloc[0:stopat]-(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
@@ -718,7 +663,7 @@ def robust_rules(rs, val_rs):
                 curr_val_objective = val_rs['brs_team_objective'][cost][i]
                 if i not in tracker[cost]:
                     tracker[cost].append(i)
-            
+            '''
             if val_rs['brs_team_w_reset_objective'][cost][i] < curr_val_objective:
                 new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['brs_model_w_reset_contradictions'][cost][i].copy()
                 new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['brs_team_w_reset_decision_loss'][cost][i].copy()
@@ -727,7 +672,7 @@ def robust_rules(rs, val_rs):
                 curr_val_objective = val_rs['brs_team_w_reset_objective'][cost][i]
                 if i not in tracker[cost]:
                     tracker[cost].append(i)
-            
+            '''
             if val_rs['hyrs_team_w_reset_objective'][cost][i] < curr_val_objective:
                 new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['hyrs_model_w_reset_contradictions'][cost][i].copy()
                 new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['hyrs_team_w_reset_decision_loss'][cost][i].copy()
@@ -872,30 +817,33 @@ for dataset in datasets:
             with open(f'results/{dataset}/val_{name}_std.pkl', 'rb') as f:
                 val_std = pickle.load(f)
             
-            means['tr2s_team_w_reset_objective'] = means['human_decision_loss'] - means['tr2s_team_w_reset_objective']
-            means['trnoadb_team_w_reset_objective'] = means['human_decision_loss'] - means['trnoadb_team_w_reset_objective']
-            means['tr_team_w_reset_objective'] = means['human_decision_loss'] - means['tr_team_w_reset_objective']
-            means['brs_team_objective'] = means['human_decision_loss'] - means['brs_team_objective']
-            means['brs_team_w_reset_objective'] = means['human_decision_loss'] - means['brs_team_w_reset_objective']
-            means['hyrs_team_objective'] = means['human_decision_loss'] - means['hyrs_team_objective']
-            means['hyrs_team_w_reset_objective'] = means['human_decision_loss'] - means['hyrs_team_w_reset_objective']
-            means['hyrs_norecon_objective'] = means['human_decision_loss'] - means['hyrs_norecon_objective']
-            means['hyrs_model_w_reset_objective'] = means['human_decision_loss'] - means['hyrs_model_w_reset_objective']
-            means['hyrs_model_w_reset_contradictions'] = means['human_decision_loss'] - means['hyrs_model_w_reset_contradictions']
-            means['brs_model_w_reset_objective'] = means['human_decision_loss'] - means['brs_model_w_reset_objective']
-            means['brs_model_w_reset_contradictions'] = means['human_decision_loss'] - means['brs_model_w_reset_contradictions']
-            means['human_decision_loss'] = means['human_decision_loss'] - means['human_decision_loss']
+
             
 
 
             #cval_means, cval_stderss, cval_rs, cost_tracker, final_cost = cost_validation(rs, val_rs)
             #cval_means, cval_stderss, cval_rs = cost_plus(rs)
             #cval_val_means, cval_val_stderrs, cval_val_rs = cost_plus(val_rs)
-            #rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(rs, val_rs)
+            rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(rs, val_rs)
+
+
+            rval_means['tr2s_team_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['tr2s_team_w_reset_objective']
+            rval_means['trnoadb_team_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['trnoadb_team_w_reset_objective']
+            rval_means['tr_team_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['tr_team_w_reset_objective']
+            rval_means['brs_team_objective'] = rval_means['human_decision_loss'] - rval_means['brs_team_objective']
+            rval_means['brs_team_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['brs_team_w_reset_objective']
+            rval_means['hyrs_team_objective'] = rval_means['human_decision_loss'] - rval_means['hyrs_team_objective']
+            rval_means['hyrs_team_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['hyrs_team_w_reset_objective']
+            rval_means['hyrs_norecon_objective'] = rval_means['human_decision_loss'] - rval_means['hyrs_norecon_objective']
+            rval_means['hyrs_model_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['hyrs_model_w_reset_objective']
+            rval_means['hyrs_model_w_reset_contradictions'] = rval_means['human_decision_loss'] - rval_means['hyrs_model_w_reset_contradictions']
+            rval_means['brs_model_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['brs_model_w_reset_objective']
+            rval_means['brs_model_w_reset_contradictions'] = rval_means['human_decision_loss'] - rval_means['brs_model_w_reset_contradictions']
+            rval_means['human_decision_loss'] = rval_means['human_decision_loss'] - rval_means['human_decision_loss']
             #ccval_means, ccval_stderss, ccval_rs, _, _ = cost_validation(val_rs, val_rs) 
             #rcval_means, rcval_stderss, rcval_rs, both_tracker = robust_rules(cval_rs, ccval_rs)   
-            #make_multi_TL_v_cost_plot(rval_means, rval_stderss, name, axs[datarow, behaviorrow])
-            make_multi_TL_v_cost_plot(means, std, name, axs[datarow, behaviorrow], stopat=10)
+            make_multi_TL_v_cost_plot(rval_means, rval_stderss, name, axs[datarow, behaviorrow])
+            #make_multi_TL_v_cost_plot(means, std, name, axs[datarow, behaviorrow], stopat=6)
             
 
 

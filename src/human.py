@@ -58,7 +58,7 @@ class Human(object):
                 if 'case1' in self.alteration:
                     model_confidences[(X['sex_Male'] == 1)] = 0
                 else:
-                    model_confidences[(X['age54.0'] == 1)] = 0
+                    model_confidences[(X['age50.0'] == 1)] = 0
                 
                 #########################################
             if self.dataset == 'fico':
@@ -236,7 +236,7 @@ class Human(object):
                 #confidences[(X['age54.0'] == 1)] = 0.3
                 ##########################################
                 ####for feature decision and confidence bias#############
-                if not(hasattr(self, 'alteration')) or self.alteration == '' or self.alteration == '_dec_bias' or self.alteration == 'verytest' or ('discretion' in self.alteration):
+                if not(hasattr(self, 'alteration')) or self.alteration == '' or self.alteration == '_dec_bias' or self.alteration == 'case2bia' or ('discretion' in self.alteration):
                     confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal)] = 0.9
                     confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 1
                     confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
