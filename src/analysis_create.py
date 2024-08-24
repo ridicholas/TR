@@ -13,10 +13,17 @@ from run import ADB
 from run import evaluate_adb_model
 from copy import deepcopy
 import os
+import inspect
 
 #making sure wd is file directory so hardcoded paths work
 os.chdir("..")
-
+def get_default_args(func):
+    signature = inspect.signature(func)
+    return {
+        k: v.default
+        for k, v in signature.parameters.items()
+        if v.default is not inspect.Parameter.empty
+    }
 
 def noADB(human_conf, model_conf, agreement):
     return np.ones(len(human_conf))
@@ -763,8 +770,8 @@ def cost_plus_hyrs(rs):
 costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]
 
 num_runs = 10
-datasets = ['hr']
-names = ['biased', 'biased_dec_bias', 'offset_01']
+datasets = ['heart_disease']
+names = ['biased_dec_bias']
 
 
 for dataset in datasets:

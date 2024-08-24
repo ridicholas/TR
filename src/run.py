@@ -69,10 +69,14 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
     if not os.path.exists(f'results/{dataset}/run{run_num}'):
         os.makedirs(f'results/{dataset}/run{run_num}')
 
-    # make human
+    
+
     if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/{human_name}.pkl'):
         human = Human(human_name, x_human_train, y_human_train, dataset=dataset, decision_bias=human_decision_bias, alteration=custom_name)
         human_name = human_name + custom_name
+        if runtype != 'standard':
+            human_name += f'_{runtype}'
+
         human.train_decisions = human.get_decisions(x_train, y_train)
         human.val_decisions = human.get_decisions(x_val, y_val)
         human.test_decisions = human.get_decisions(x_test, y_test)
@@ -81,6 +85,8 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             pickle.dump(human, f)
     else:
         human_name = human_name + custom_name
+        if runtype != 'standard':
+            human_name += f'_{runtype}'
         if shared_human:
             with open(f'results/{dataset}/run{0}/{human_name}.pkl', 'rb') as f:
                 human = pickle.load(f)
@@ -88,6 +94,8 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             with open(f'results/{dataset}/run{run_num}/{human_name}.pkl', 'rb') as f:
                 human = pickle.load(f)
 
+    if runtype == 'asym':
+        human.beta = 1
     print('humans loaded')
     #train confidence model
     if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/conf_model_{human_name}.pkl'):
@@ -142,7 +150,9 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             adb_train_data = pd.DataFrame({'human_conf': human.get_confidence(x_train), 
                                             'model_confs': initial_task_model.predict_proba(x_train).max(axis=1), 
                                             'agreement': (initial_task_model.predict(x_train) == human.train_decisions)})
-            
+
+            if runtype == 'asym':
+                human.beta = 1
             p_accepts = human.ADB(adb_learning_data['human_conf'], adb_learning_data['model_confs'], adb_learning_data['agreement'])
             p_accepts_val = human.ADB(adb_val_data['human_conf'], adb_val_data['model_confs'], adb_val_data['agreement'])
             p_accepts_train = human.ADB(adb_train_data['human_conf'], adb_train_data['model_confs'], adb_train_data['agreement'])
@@ -452,26 +462,26 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
 
 
-#run('heart_disease', 0, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 1, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 2, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 3, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 4, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 5, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 6, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 7, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 8, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 9, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 10, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 11, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 12, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 13, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 14, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 15, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 16, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 17, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 18, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 19, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr2stage', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 0, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 1, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 2, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 3, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 4, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 5, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 6, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 7, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 8, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 9, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 10, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 11, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 12, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 13, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 14, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 15, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 16, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 17, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 18, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 19, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
 
 
 

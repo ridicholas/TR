@@ -537,12 +537,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, train=Fa
 def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=10):
     
     color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00'}  #75c361
-    #ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
-    #ax.plot(results_means.index[0:stopat], results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
+    ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
+    ax.plot(results_means.index[0:stopat], results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
     ax.plot(results_means.index[0:stopat], results_means['tr_team_w_reset_objective'].iloc[0:stopat], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
     #ax.plot(results_means.index[0:stopat], results_means['tr2s_team_w_reset_objective'].iloc[0:stopat], marker = '.', label='TR2stage', c='purple', markersize=1.8, linewidth=0.9)
-    #ax.plot(results_means.index[0:stopat], results_means['brs_team_objective'].iloc[0:stopat], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:stopat], results_means['brs_team_w_reset_objective'].iloc[0:stopat], marker = 'v', c=color_dict['BRSselect'], label='TR-SelectiveOnly', markersize=1.8, linewidth=0.9)
+    ax.plot(results_means.index[0:stopat], results_means['brs_team_objective'].iloc[0:stopat], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
+    #ax.plot(results_means.index[0:stopat], results_means['brs_team_w_reset_objective'].iloc[0:stopat], marker = 'v', c=color_dict['BRSselect'], label='TR-SelectiveOnly', markersize=1.8, linewidth=0.9)
     
     ax.plot(results_means.index[0:stopat], results_means['human_decision_loss'].iloc[0:stopat], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
     
@@ -550,7 +550,7 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=1
                 results_means['human_decision_loss'].iloc[0:stopat]-1*(results_stderrs['human_decision_loss'].iloc[0:stopat]),
                 results_means['human_decision_loss'].iloc[0:stopat]+1*(results_stderrs['human_decision_loss'].iloc[0:stopat]) ,
                 color=color_dict['Human'], alpha=0.2)
-    '''
+    
     ax.fill_between(results_means.index[0:stopat], 
                 results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat]-1*(results_stderrs['trnoadb_team_w_reset_objective'].iloc[0:stopat]),
                 results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat]+1*(results_stderrs['trnoadb_team_w_reset_objective'].iloc[0:stopat]) ,
@@ -566,7 +566,7 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=1
                 results_means['brs_team_objective'].iloc[0:stopat]+1*(results_stderrs['brs_team_objective'].iloc[0:stopat]) ,
                 color=color_dict['BRS'], alpha=0.2)
     
-    '''
+    
     ax.fill_between(results_means.index[0:stopat], 
                 results_means['tr_team_w_reset_objective'].iloc[0:stopat]-1*(results_stderrs['tr_team_w_reset_objective'].iloc[0:stopat]),
                 results_means['tr_team_w_reset_objective'].iloc[0:stopat]+1*(results_stderrs['tr_team_w_reset_objective'].iloc[0:stopat]),
@@ -577,10 +577,10 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=1
     #            results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]-1*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]),
     #            results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]+1*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]), color = 'purple', alpha=0.2)
     
-    ax.fill_between(results_means.iloc[0:stopat].index,
-                     results_means['brs_team_w_reset_objective'].iloc[0:stopat]-(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
-                results_means['brs_team_w_reset_objective'].iloc[0:stopat]+(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
-                color=color_dict['BRSselect'], alpha=0.2)
+    #ax.fill_between(results_means.iloc[0:stopat].index,
+    #                 results_means['brs_team_w_reset_objective'].iloc[0:stopat]-(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
+    #            results_means['brs_team_w_reset_objective'].iloc[0:stopat]+(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
+    #            color=color_dict['BRSselect'], alpha=0.2)
    
     ax.set_xlabel('Reconciliation Cost', fontsize=9)
     ax.set_ylabel('Value Added', fontsize=9)

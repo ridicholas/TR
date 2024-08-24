@@ -90,7 +90,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype + 'asymCase'
+    whichtype = whichtype + 'asymCase_asym'
     for run in bar(range(num_runs)):
 
         
@@ -730,7 +730,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
 
 costs = [0.0]
-num_runs = 20
+num_runs = 4
 dataset = 'heart_disease'
 case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, costs, False, asym_costs=[3,1])
    

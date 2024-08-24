@@ -13,6 +13,7 @@ class Human(object):
         self.y = y
         self.scaler = StandardScaler().fit(self.X)
         self.model = LogisticRegression().fit(self.scaler.transform(self.X), y)
+        self.beta = 0.5
         self.dataset = dataset
         if dataset == 'heart_disease':
             self.confVal = 0.6
@@ -167,6 +168,9 @@ class Human(object):
     
     def ADB(self, c_human, c_model, agreement, delta=5, beta=0.5, k=0.63, gamma=0.95):
         # from will you accept the AI recommendation
+        
+        if hasattr(self, 'beta'):
+            beta = self.beta
 
         def w(p, k):
             return (p**k)/((p**k)+(1-p)**k)
