@@ -111,7 +111,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
         for cost in costs:
             print(f'producing for cost {cost} run {run}.....')
-            tr_mod = load_results(dataset, whichtype+"_asym", run, cost, 'tr2stage')
+            tr_mod = load_results(dataset, whichtype+"_asym", run, cost, 'tr')
             hyrs_mod = load_results(dataset, whichtype, run, cost, 'tr-no(ADB)')
             #load e_y and e_yb mods
             #with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype+"_asym"}.pkl', 'rb') as f:
