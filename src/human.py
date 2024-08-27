@@ -59,7 +59,7 @@ class Human(object):
                 if 'case1' in self.alteration:
                     model_confidences[(X['sex_Male'] == 1)] = 0
                 else:
-                    model_confidences[(X['age50.0'] == 1)] = 0
+                    model_confidences[(X['age54.0'] == 0)] = 0
                 
                 #########################################
             if self.dataset == 'fico':

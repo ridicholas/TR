@@ -534,7 +534,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, train=Fa
 
 
 
-def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=10):
+def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6):
     
     color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00'}  #75c361
     ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
@@ -824,7 +824,9 @@ for dataset in datasets:
             #cval_means, cval_stderss, cval_rs, cost_tracker, final_cost = cost_validation(rs, val_rs)
             #cval_means, cval_stderss, cval_rs = cost_plus(rs)
             #cval_val_means, cval_val_stderrs, cval_val_rs = cost_plus(val_rs)
-            rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(rs, val_rs)
+            #rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(rs, val_rs)
+            rval_means = means
+            rval_stderss = std
 
 
             rval_means['tr2s_team_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['tr2s_team_w_reset_objective']
@@ -883,7 +885,7 @@ for ax, row in zip(axs[:,0], rows):
 
 
 fig.tight_layout()
-fig.savefig(f'results/combined_plots_final_05.png', dpi=600)
+fig.savefig(f'results/combined_plots_final.png', dpi=600)
 
 
 

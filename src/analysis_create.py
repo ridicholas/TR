@@ -167,13 +167,13 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
         human, adb_mod, conf_mod = load_humans(dataset, whichtype, run)
 
         brs_mod = load_results(dataset, f'_{whichtype}' , run, 0.0, 'brs')
+        tr2s_mod = load_results(dataset, f'_{whichtype}', run, 0.0, 'tr')
 
 
         for cost in costs:
             print(f'producing for cost {cost} run {run}.....')
             tr_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr')
             hyrs_mod = load_results(dataset, f'_{whichtype}', run, cost, 'hyrs')
-            tr2s_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr2stage')
             trnoadb_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr-no(ADB)')
             #load e_y and e_yb mods
             #with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype}.pkl', 'rb') as f:
@@ -262,13 +262,23 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
                     learned_adb = ADB(adb_mod)
 
-                    tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    tr_model_preds_with_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    if 'tr' in which_to_do:
+                        tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr_model_preds_with_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    else:
+                        tr_model_preds_with_reset = np.ones(len(y_test))
+                        tr_team_preds_with_reset = np.ones(len(y_test))
+                        tr_model_preds_no_reset = np.ones(len(y_test))
+                        tr_team_preds_no_reset = np.ones(len(y_test))
 
-                    tr2s_team_preds_with_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    tr2s_model_preds_with_reset = tr2s_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    if 'tr2s' in which_to_do:
+                        tr2s_team_preds_with_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr2s_model_preds_with_reset = tr2s_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    else:
+                        tr2s_team_preds_with_reset = np.ones(len(y_test))
+                        tr2s_model_preds_with_reset = np.ones(len(y_test))
                     
 
                     
@@ -283,20 +293,33 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     #hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
                     #hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
                     
+                    if 'tr-no(adb)' in which_to_do:
+                        trnoadb_model_preds_w_reset = trnoadb_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        trnoadb_team_preds_w_reset = trnoadb_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    else:
+                        trnoadb_model_preds_w_reset = np.ones(len(y_test))
+                        trnoadb_team_preds_w_reset = np.ones(len(y_test))
+                        hyrs_norecon_model_preds = np.ones(len(y_test))
+                        hyrs_norecon_team_preds = np.ones(len(y_test))
 
-                    trnoadb_model_preds_w_reset = trnoadb_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    trnoadb_team_preds_w_reset = trnoadb_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    if 'brs' in which_to_do:
+                        brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, learned_adb.ADB_model_wrapper)
+                        brs_reset = brs_expected_loss_filter(brs_mod, x_test, brs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=brs_conf, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=cost)
+                        brs_team_preds_w_reset = brs_team_preds.copy()
+                        brs_team_preds_w_reset[brs_reset] = human_decisions[brs_reset]
+                        brs_model_preds_w_reset = brs_model_preds.copy()
+                        brs_model_preds_w_reset[brs_reset] = human_decisions[brs_reset]
+                    else:
+                        brs_team_preds = np.ones(len(y_test))
+                        brs_model_preds = np.ones(len(y_test))
+                        brs_conf = np.ones(len(y_test))
+                        brs_reset = np.zeros(len(y_test))
+                        brs_team_preds_w_reset = np.ones(len(y_test))
+                        brs_model_preds_w_reset = np.ones(len(y_test))
 
-                    brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, learned_adb.ADB_model_wrapper)
-                    brs_reset = brs_expected_loss_filter(brs_mod, x_test, brs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=brs_conf, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=cost)
-                    brs_team_preds_w_reset = brs_team_preds.copy()
-                    brs_team_preds_w_reset[brs_reset] = human_decisions[brs_reset]
-                    brs_model_preds_w_reset = brs_model_preds.copy()
-                    brs_model_preds_w_reset[brs_reset] = human_decisions[brs_reset]
 
-                    c_model = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)[0]
 
 
 
@@ -305,16 +328,29 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     learned_adb = ADB(adb_mod)
                     human_decisions = human.get_decisions(x_test, y_test)
                     human_conf = human.get_confidence(x_test)
-                    tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    tr2s_team_preds_with_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions,human_conf, human.ADB, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
-                    tr_model_preds_with_reset, tr_mod_covered_w_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
-                    tr_model_preds_no_reset, tr_mod_covered_no_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
-                    tr_mod_confs = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)[0]
+                    if 'tr' in which_to_do:
+                        tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions,human_conf, human.ADB, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
-                    tr2s_model_preds_with_reset, tr2s_mod_covered_w_reset, _ = tr2s_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
-                    tr2s_mod_confs = tr2s_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr2s_mod.prs_min, nrs_min=tr2s_mod.nrs_min)[0]
+                        tr_model_preds_with_reset, tr_mod_covered_w_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
+                        tr_model_preds_no_reset, tr_mod_covered_no_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
+                        tr_mod_confs = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)[0]
+                    else:
+                        tr_model_preds_with_reset = np.ones(len(y_test))
+                        tr_team_preds_with_reset = np.ones(len(y_test))
+                        tr_mod_covered_w_reset = np.ones(len(y_test))
+                        tr_mod_confs = np.ones(len(y_test))
+
+                    if 'tr2s' in which_to_do:
+                        tr2s_team_preds_with_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr2s_model_preds_with_reset, tr2s_mod_covered_w_reset, _ = tr2s_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
+                        tr2s_mod_confs = tr2s_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr2s_mod.prs_min, nrs_min=tr2s_mod.nrs_min)[0]
+                    else:
+                        tr2s_model_preds_with_reset = np.ones(len(y_test))
+                        tr2s_team_preds_with_reset = np.ones(len(y_test))
+                        tr2s_mod_covered_w_reset = np.ones(len(y_test))
+                        tr2s_mod_confs = np.ones(len(y_test))
                 
                     
                     #hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
@@ -326,22 +362,35 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
                     #hyrs_model_preds_w_reset[hyrs_reset] = human_decisions[hyrs_reset]
                     #hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
                     
+                    if 'tr-no(adb)' in which_to_do:
+                        trnoadb_model_preds_w_reset = trnoadb_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        
+                        trnoadb_team_preds_w_reset = trnoadb_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        
 
-                    trnoadb_model_preds_w_reset = trnoadb_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    
-                    trnoadb_team_preds_w_reset = trnoadb_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    
+                        hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    else:
+                        trnoadb_model_preds_w_reset = np.ones(len(y_test))
+                        trnoadb_team_preds_w_reset = np.ones(len(y_test))
+                        hyrs_norecon_model_preds = np.ones(len(y_test))
+                        hyrs_norecon_team_preds = np.ones(len(y_test))
 
-                    hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    if 'brs' in which_to_do:
+                        brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
+                        brs_reset = brs_expected_loss_filter(brs_mod, x_test, brs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=brs_conf, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=cost)
+                        brs_team_preds_w_reset = brs_team_preds.copy()
+                        brs_team_preds_w_reset[brs_reset] = human_decisions[brs_reset]
+                        brs_model_preds_w_reset = brs_model_preds.copy()
+                        brs_model_preds_w_reset[brs_reset] = human_decisions[brs_reset]
+                    else:
+                        brs_team_preds = np.ones(len(y_test))
+                        brs_model_preds = np.ones(len(y_test))
+                        brs_conf = np.ones(len(y_test))
+                        brs_reset = np.zeros(len(y_test))
+                        brs_team_preds_w_reset = np.ones(len(y_test))
+                        brs_model_preds_w_reset = np.ones(len(y_test))
 
-
-                    brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
-                    brs_reset = brs_expected_loss_filter(brs_mod, x_test, brs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=brs_conf, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=cost)
-                    brs_team_preds_w_reset = brs_team_preds.copy()
-                    brs_team_preds_w_reset[brs_reset] = human_decisions[brs_reset]
-                    brs_model_preds_w_reset = brs_model_preds.copy()
-                    brs_model_preds_w_reset[brs_reset] = human_decisions[brs_reset]
                     
 
                     #hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
@@ -526,258 +575,22 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name):
 
     #plt.clf()
 
-def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax):
-    
-    color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00'}  #75c361
-    #ax.plot(results_means.index[0:10], results_means['hyrs_norecon_objective'].iloc[0:10], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:10], results_means['hyrs_team_objective'].iloc[0:10], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:10], results_means['tr_team_w_reset_objective'].iloc[0:10], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:10], results_means['tr2s_team_w_reset_objective'].iloc[0:10], marker = '.', label='TR2s', c='orange', markersize=1.8, linewidth=0.9)
-    #ax.plot(results_means.index[0:10], results_means['brs_team_objective'].iloc[0:10], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
-    #ax.plot(results_means.index[0:10], results_means['brs_team_w_reset_objective'].iloc[0:10], marker = 'v', c=color_dict['BRSselect'], label='TR-SelectiveOnly', markersize=1.8, linewidth=0.9)
-    
-    ax.plot(results_means.index[0:10], results_means['human_decision_loss'].iloc[0:10], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
-    '''
-    ax.fill_between(results_means.index[0:10], 
-                results_means['human_decision_loss'].iloc[0:10]-1.96*(results_stderrs['human_decision_loss'].iloc[0:10]),
-                results_means['human_decision_loss'].iloc[0:10]+1.96*(results_stderrs['human_decision_loss'].iloc[0:10]) ,
-                color=color_dict['Human'], alpha=0.2)
-    ax.fill_between(results_means.index[0:10], 
-                results_means['hyrs_team_w_reset_objective'].iloc[0:10]-1.96*(results_stderrs['hyrs_team_w_reset_objective'].iloc[0:10]),
-                results_means['hyrs_team_w_reset_objective'].iloc[0:10]+1.96*(results_stderrs['hyrs_team_w_reset_objective'].iloc[0:10]) ,
-                color=color_dict['HYRSRecon'], alpha=0.2)
-    
-    ax.fill_between(results_means.index[0:10], 
-                results_means['hyrs_norecon_objective'].iloc[0:10]-1.96*(results_stderrs['hyrs_norecon_objective'].iloc[0:10]),
-                results_means['hyrs_norecon_objective'].iloc[0:10]+1.96*(results_stderrs['hyrs_norecon_objective'].iloc[0:10]) ,
-                color=color_dict['HYRS'], alpha=0.2)
-    ax.fill_between(results_means.index[0:10], 
-                results_means['brs_team_objective'].iloc[0:10]-1.96*(results_stderrs['brs_team_objective'].iloc[0:10]),
-                results_means['brs_team_objective'].iloc[0:10]+1.96*(results_stderrs['brs_team_objective'].iloc[0:10]) ,
-                color=color_dict['BRS'], alpha=0.2)
-    '''
-    ax.fill_between(results_means.index[0:10], 
-                results_means['tr_team_w_reset_objective'].iloc[0:10]-1.96*(results_stderrs['tr_team_w_reset_objective'].iloc[0:10]),
-                results_means['tr_team_w_reset_objective'].iloc[0:10]+1.96*(results_stderrs['tr_team_w_reset_objective'].iloc[0:10]),
-                color=color_dict['TR'], alpha=0.2)
-    ax.fill_between(results_means.index[0:10], 
-                results_means['tr2s_team_w_reset_objective'].iloc[0:10]-1.96*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:10]),
-                results_means['tr2s_team_w_reset_objective'].iloc[0:10]+1.96*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:10]), color = 'orange', alpha=0.2)
-    '''
-    ax.fill_between(results_means.iloc[0:10].index,
-                     results_means['brs_team_w_reset_objective'].iloc[0:10]-(results_stderrs['brs_team_w_reset_objective'].iloc[0:10]),
-                results_means['brs_team_w_reset_objective'].iloc[0:10]+(results_stderrs['brs_team_w_reset_objective'].iloc[0:10]),
-                color=color_dict['BRSselect'], alpha=0.2)'''
-   
-    ax.set_xlabel('Reconciliation Cost', fontsize=9)
-    ax.set_ylabel('TTL', fontsize=9)
-    ax.tick_params(labelrotation=45, labelsize=10)
-    #ax.title('{} Setting'.format(setting), fontsize=15)
-    #ax.title('Income Prediction (Adult Dataset)', fontsize=15)
-    ax.legend(prop={'size': 4})
-    ax.grid('on', linestyle='dotted', linewidth=0.2, color='black')
-
-    #fig.savefig(f'results/{dataset}/plots/TL_{dataset}_{name}.png', bbox_inches='tight')
-    #plt.show()
-
-    #plt.clf()
-
-
-def make_contradictions_v_decisionloss_plot(results_means, results_stderrs, name):
-    fig = plt.figure(figsize=(3, 2), dpi=400)
-    color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42'}
-    plt.plot(results_means['brs_model_contradictions'], results_means['brs_team_decision_loss'].iloc[0:10], marker = 'v', c=color_dict['BRS'], label = 'Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
-    #plt.plot(results_means['hyrs_model_contradictions'], results_means['hyrs_team_objective'].iloc[0:10], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
-    plt.plot(results_means['tr_model_w_reset_contradictions'], results_means['tr_team_w_reset_decision_loss'].iloc[0:10], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
-    
-    
-    
-    plt.plot([0,0,0,0,0, 0], results_means['human_decision_loss'].iloc[0:10], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
-    
-    for cost in results_stderrs.index:
-        plt.fill_between(np.linspace(results_means.loc[cost, 'brs_model_contradictions'] - results_stderrs.loc[cost, 'brs_model_contradictions'], 
-                                     results_means.loc[cost, 'brs_model_contradictions'] + results_stderrs.loc[cost, 'brs_model_contradictions'], 50), 
-                    results_means.loc[cost, 'brs_team_decision_loss']-(results_stderrs.loc[cost, 'brs_team_decision_loss']),
-                    results_means.loc[cost, 'brs_team_decision_loss']+(results_stderrs.loc[cost, 'brs_team_decision_loss']),
-                    color=color_dict['BRS'], alpha=0.2)
-        
-        #plt.text(results_means.loc[cost, 'tr_model_w_reset_contradictions'], results_means.loc[cost, 'tr_team_w_reset_decision_loss'], f'cost = {str(cost)}', fontsize=4)
-        
-        plt.fill_between(np.linspace(results_means.loc[cost, 'tr_model_w_reset_contradictions'] - results_stderrs.loc[cost, 'tr_model_w_reset_contradictions'], 
-                                    results_means.loc[cost, 'tr_model_w_reset_contradictions'] + results_stderrs.loc[cost, 'tr_model_w_reset_contradictions'], 50), 
-                    results_means.loc[cost, 'tr_team_w_reset_decision_loss']-(results_stderrs.loc[cost, 'tr_team_w_reset_decision_loss']),
-                    results_means.loc[cost, 'tr_team_w_reset_decision_loss']+(results_stderrs.loc[cost, 'tr_team_w_reset_decision_loss']),
-                    color=color_dict['TR'], alpha=0.2)
-   
-    plt.xlabel('Contradictions', fontsize=9)
-    plt.ylabel('Team Decision Loss', fontsize=9)
-    plt.tick_params(labelrotation=45, labelsize=10)
-    #plt.title('{} Setting'.format(setting), fontsize=15)
-    plt.legend(prop={'size': 3})
-    plt.grid('on', linestyle='dotted', linewidth=0.2, color='black')
-
-    fig.savefig(f'results/{dataset}/plots/TDL_{dataset}_{name}.png', bbox_inches='tight', format='svg', dpi=1200)
-    #plt.show()
-
-    #plt.clf()
-
-
-
-def robust_rules(rs, val_rs):
-    tracker = {}
-    new_rs = deepcopy(rs)
-    for cost in rs.index:
-        tracker[cost] = []
-        for column in rs.columns:
-            new_rs.loc[cost, column] = deepcopy(rs.loc[cost, column])
-        for i in range(len(val_rs['tr_team_w_reset_objective'][cost])):
-            x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized= load_datasets(dataset, i)
-            curr_val_objective = val_rs['tr_team_w_reset_objective'][cost][i]
-            '''
-            if val_rs['hyrs_team_objective'][cost][i] < curr_val_objective:
-                new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['hyrs_model_contradictions'][cost][i].copy()
-                new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['hyrs_team_decision_loss'][cost][i].copy()
-                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][cost][i] + cost*new_rs['tr_model_w_reset_contradictions'][cost][i]/len(y_test)
-                print(f"cost: {cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
-                if i not in tracker[cost]:
-                    tracker[cost].append(i)
-                curr_val_objective = val_rs['hyrs_team_objective'][cost][i]
-            if val_rs['brs_team_objective'][cost][i] < curr_val_objective:
-                new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['brs_model_contradictions'][cost][i].copy()
-                new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['brs_team_decision_loss'][cost][i].copy()
-                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][cost][i] + cost*new_rs['tr_model_w_reset_contradictions'][cost][i]/len(y_test)
-                print(f"cost: {cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
-                curr_val_objective = val_rs['brs_team_objective'][cost][i]
-                if i not in tracker[cost]:
-                    tracker[cost].append(i)
-            
-            if val_rs['brs_team_w_reset_objective'][cost][i] < curr_val_objective:
-                new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['brs_model_w_reset_contradictions'][cost][i].copy()
-                new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['brs_team_w_reset_decision_loss'][cost][i].copy()
-                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][cost][i] + cost*new_rs['tr_model_w_reset_contradictions'][cost][i]/len(y_test)
-                print(f"cost: {cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
-                curr_val_objective = val_rs['brs_team_w_reset_objective'][cost][i]
-                if i not in tracker[cost]:
-                    tracker[cost].append(i)
-            
-            if val_rs['hyrs_team_w_reset_objective'][cost][i] < curr_val_objective:
-                new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['hyrs_model_w_reset_contradictions'][cost][i].copy()
-                new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['hyrs_team_w_reset_decision_loss'][cost][i].copy()
-                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][cost][i] + cost*new_rs['tr_model_w_reset_contradictions'][cost][i]/len(y_test)
-                print(f"cost: {cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
-                curr_val_objective = val_rs['hyrs_team_w_reset_objective'][cost][i]
-                if i not in tracker[cost]:
-                    tracker[cost].append(i)
-            '''
-
-            
-            
-             
-            if val_rs['human_decision_loss'][cost][i] < curr_val_objective:
-                new_rs['tr_model_w_reset_contradictions'][cost][i] = 0
-                new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['human_decision_loss'][cost][i].copy()
-                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][cost][i].copy()
-                print(f"cost: {cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
-                curr_val_objective = val_rs['human_decision_loss'][cost][i]
-                if i not in tracker[cost]:
-                    tracker[cost].append(i)
-                
-    new_results_means = new_rs.apply(lambda x: x.apply(lambda y: mean(y)))
-    new_results_stderrs = new_rs.apply(lambda x: x.apply(lambda y: np.std(y)/np.sqrt(len(y))))
-    return new_results_means, new_results_stderrs, new_rs, tracker
-
-    
-def cost_validation(rs, val_rs):
-    tracker = {}
-    final_cost = {}
-    new_rs = deepcopy(rs)
-    for cost in rs.index:
-        tracker[(cost)] = []
-        for column in rs.columns:
-            new_rs.loc[cost, column] = deepcopy(rs.loc[cost, column])
-        for i in range(len(val_rs['tr_team_w_reset_objective'][cost])):
-            x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized= load_datasets(dataset, i)
-            curr_val_objective = val_rs['tr_team_w_reset_objective'][cost][i]
-            for alt_cost in rs.index:
-                if alt_cost <= cost or alt_cost > cost + 0.2:
-                    continue
-                alt_val_objective = val_rs['tr_team_w_reset_decision_loss'][alt_cost][i] + cost*(val_rs['tr_model_w_reset_contradictions'][alt_cost][i])/len(y_val)
-                if alt_val_objective < curr_val_objective:
-                    new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['tr_model_w_reset_contradictions'][alt_cost][i].copy()
-                    new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['tr_team_w_reset_decision_loss'][alt_cost][i].copy()
-                    new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][alt_cost][i] + cost*new_rs['tr_model_w_reset_contradictions'][alt_cost][i]/len(y_test)
-                    print(f"cost: {cost}, new cost: {alt_cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
-                    curr_val_objective = alt_val_objective
-                    if i not in tracker[cost]:
-                        tracker[cost].append(i)
-                    final_cost[(cost, i)] = alt_cost
-    new_results_means = new_rs.apply(lambda x: x.apply(lambda y: mean(y)))
-    new_results_stderrs = new_rs.apply(lambda x: x.apply(lambda y: np.std(y)/np.sqrt(len(y))))
-
-    return new_results_means, new_results_stderrs, new_rs, tracker, final_cost
-
-def cost_plus(rs):
-    new_rs = deepcopy(rs)
-    cost_dex = 1
-    
-    for cost in rs.index:
-        if cost not in [1.0]:
-            if cost == 0.8:
-                additional = 0
-            else:
-                additional = 1
-            for column in rs.columns:
-                new_rs.loc[cost, column] = deepcopy(rs.loc[cost, column])
-            for i in range(len(val_rs['tr_team_w_reset_objective'][cost])):
-                x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized= load_datasets(dataset, i)
-                new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['tr_model_w_reset_contradictions'][rs.index[cost_dex+additional]][i].copy()
-                new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['tr_team_w_reset_decision_loss'][rs.index[cost_dex+additional]][i].copy()
-                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][rs.index[cost_dex+additional]][i] + cost*new_rs['tr_model_w_reset_contradictions'][rs.index[cost_dex+additional]][i]/len(y_test)
-        cost_dex+=1
-    new_results_means = new_rs.apply(lambda x: x.apply(lambda y: mean(y)))
-    new_results_stderrs = new_rs.apply(lambda x: x.apply(lambda y: np.std(y)/np.sqrt(len(y))))
-
-    return new_results_means, new_results_stderrs, new_rs
-
-def cost_plus_hyrs(rs):
-    new_rs = deepcopy(rs)
-    cost_dex = 1
-    
-    for cost in rs.index:
-        if cost not in [1.0]:
-            if cost == 0.8:
-                additional = 0
-            else:
-                additional = 1
-            for column in rs.columns:
-                new_rs.loc[cost, column] = deepcopy(rs.loc[cost, column])
-            for i in range(len(val_rs['tr_team_w_reset_objective'][cost])):
-                x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized= load_datasets(dataset, i)
-                new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['tr_model_w_reset_contradictions'][rs.index[cost_dex+additional]][i].copy()
-                new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['tr_team_w_reset_decision_loss'][rs.index[cost_dex+additional]][i].copy()
-                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][rs.index[cost_dex+additional]][i] + cost*new_rs['tr_model_w_reset_contradictions'][rs.index[cost_dex+additional]][i]/len(y_test)
-        cost_dex+=1
-    new_results_means = new_rs.apply(lambda x: x.apply(lambda y: mean(y)))
-    new_results_stderrs = new_rs.apply(lambda x: x.apply(lambda y: np.std(y)/np.sqrt(len(y))))
-
-    return new_results_means, new_results_stderrs, new_rs
-
-
-
 
 
 
 costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]
 
 num_runs = 10
-datasets = ['heart_disease']
-names = ['biased_dec_bias']
+datasets = ['heart_disease', 'fico', 'hr']
+names = ['biased', 'biased_dec_bias', 'offset_01']
+which_to_do = ['tr2s']
 
 
 for dataset in datasets:
     for name in names:
         #if (name == 'biased') and (datasets == 'heart_disease'):
         #    continue
+        name = f'{name}_trnoval'
         if os.path.isfile(f'results/{dataset}/{name}_rs.pkl') and False:
             with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
