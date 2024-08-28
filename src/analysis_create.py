@@ -92,7 +92,7 @@ def load_humans(dataset, setting, run_num):
 
 
 
-def make_results(dataset, whichtype, num_runs, costs, validation=False):
+def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to_do=['tr', 'tr-no(adb)', 'brs']):
 
     #create dataframe of empty lists with column headers below
 
@@ -150,6 +150,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False):
 
     bar=progressbar.ProgressBar()
     whichtype = whichtype
+    
     for run in bar(range(num_runs)):
         
 
@@ -582,15 +583,16 @@ costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]
 
 num_runs = 10
 datasets = ['heart_disease', 'fico', 'hr']
-names = ['biased', 'biased_dec_bias', 'offset_01']
-which_to_do = ['tr2s']
-
+names = ['biased_dec_bias']
+which_to_do = ['tr', 'tr2s', 'tr-no(adb)', 'brs']
 
 for dataset in datasets:
     for name in names:
         #if (name == 'biased') and (datasets == 'heart_disease'):
         #    continue
-        name = f'{name}_trnoval'
+
+        if 'tr' not in which_to_do or 'tr2s' not in which_to_do or 'tr-no(adb)' not in which_to_do or 'brs' not in which_to_do:
+            name = f'{name}_{which_to_do}'
         if os.path.isfile(f'results/{dataset}/{name}_rs.pkl') and False:
             with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
@@ -619,7 +621,7 @@ for dataset in datasets:
 
 
         else:
-            means, std, rs = make_results(dataset, name, num_runs, costs, validation=False)
+            means, std, rs = make_results(dataset, name, num_runs, costs, validation=False, which_to_do=which_to_do)
             #pickle and write means, std, and rs to file
             with open(f'results/{dataset}/{name}_means.pkl', 'wb') as f:
                 pickle.dump(means, f)
@@ -629,7 +631,7 @@ for dataset in datasets:
                 pickle.dump(rs, f)
         
             print(f'running for val {dataset} {name}')
-            val_means, val_std, val_rs = make_results(dataset, name, num_runs, costs, validation=True)
+            val_means, val_std, val_rs = make_results(dataset, name, num_runs, costs, validation=True, which_to_do=which_to_do)
             #pickle and write means, std, and rs to file
             with open(f'results/{dataset}/val_{name}_means.pkl', 'wb') as f:
                 pickle.dump(val_means, f)
