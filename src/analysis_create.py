@@ -583,7 +583,7 @@ costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]
 
 num_runs = 10
 datasets = ['heart_disease', 'fico', 'hr']
-names = ['biased_dec_bias']
+names = ['biased', 'offset_01']
 which_to_do = ['tr', 'tr2s', 'tr-no(adb)', 'brs']
 
 for dataset in datasets:
