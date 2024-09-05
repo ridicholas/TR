@@ -155,7 +155,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype + 'case2bia' #"_dec_bias"
+    whichtype = whichtype + 'case1' #"_dec_bias"
     r_mean = []
     hyrs_R = []
     tr_R = []
@@ -1263,12 +1263,62 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     brs_w_reset_case_results.loc['Advising Accuracy', :] = weighted_avg_and_std(1-(brs_w_reset_model_confusion/totals_confusion), totals_confusion)
     results_stderrs = results.apply(lambda x: x.apply(lambda y: np.std(y)/np.sqrt(len(y))))
 
+    import seaborn as sns
+    d_tr = ((human_confusion-tr_confusion)-(cost * tr_confusion_contras))/totals_confusion
+    d_hyrs = ((human_confusion-hyrs_confusion)-(cost * hyrs_confusion_contras))/totals_confusion
+    d_brs = ((human_confusion-brs_confusion)-(cost * brs_confusion_contras))/totals_confusion
+    d_brs_reset = ((human_confusion-brs_confusion)-(cost * brs_w_reset_confusion_contras))/totals_confusion
+    #d_tr = tr_conf_confusion
+    #d_hyrs = hyrs_conf_confusion
+    #d_brs = brs_conf_confusion
+    #d_tr = tr_confusion_contras/totals_confusion
+    #d_hyrs = hyrs_confusion_contras/totals_confusion
+    #d_brs = brs_confusion_contras/totals_confusion
+    d_tr = d_tr['Total']
+    d_hyrs = d_hyrs['Total']
+    d_brs = d_brs['Total']
+    d_brs_reset = d_brs_reset['Total']
+    d_tr = pd.DataFrame(d_tr)
+    d_hyrs = pd.DataFrame(d_hyrs)
+    d_brs = pd.DataFrame(d_brs)
+    d_brs_reset = pd.DataFrame(d_brs_reset)
+    d_tr["Method"] = 'TR'
+    d_hyrs["Method"] = 'TR-no(ADB)'
+    d_brs["Method"] = 'Task-Only (Current Practice)'
+    d_brs_reset["Method"] = 'TR-SelectiveOnly'
+    bplot_data = pd.concat([d_tr, d_brs, d_brs_reset, d_hyrs])
+    bplot_data['Group'] = bplot_data.index
+    sns.boxplot(data=bplot_data, x='Group', y='Total', hue='Method')
+
+    bplot_data_a = pd.read_pickle('results/conf_bplot_docA.pkl')
+    bplot_val_data_a = pd.read_pickle('results/val_bplot_docA.pkl')
+    conf_contra_docB = pd.read_pickle('results/conf_contra_docB.pkl')
+
+    plt.scatter(y = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'TR-no(ADB)') & (conf_contra_all.Doctor == 'Doctor A')]['Average Confidence'].mean(), x = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'TR-no(ADB)') & (conf_contra_all.Doctor == 'Doctor A')]['Contradiction Rate'].mean(), label='TR-no(ADB) - Doctor A', c=color_dict['HYRSRecon'], marker='$A$', s=100)
+    plt.scatter(y = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'TR') & (conf_contra_all.Doctor == 'Doctor A')]['Average Confidence'].mean(), x = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'TR') & (conf_contra_all.Doctor == 'Doctor A')]['Contradiction Rate'].mean(), label='TR - Doctor A', c=color_dict['TR'], marker='$A$', s=100)
+    plt.scatter(y = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'Task-Only (Current Practice)') & (conf_contra_all.Doctor == 'Doctor A')]['Average Confidence'].mean(), x = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'Task-Only (Current Practice)') & (conf_contra_all.Doctor == 'Doctor A')]['Contradiction Rate'].mean(), label='Task-Only (Current Practice) - Doctor A', c=color_dict['BRS'], marker='$A$', s=100)
+
+    plt.errorbar(y = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'TR-no(ADB)') & (conf_contra_all.Doctor == 'Doctor A')]['Average Confidence'].mean(), x = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'TR-no(ADB)') & (conf_contra_all.Doctor == 'Doctor A')]['Contradiction Rate'].mean(), linestyle="None", yerr=conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'TR-no(ADB)') & (conf_contra_all.Doctor == 'Doctor A')]['Average Confidence'].std()/(20**0.5), xerr=conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'TR-no(ADB)') & (conf_contra_all.Doctor == 'Doctor A')]['Contradiction Rate'].std()/(20**0.5), c=color_dict['HYRSRecon'], alpha=0.5)
+
+    plt.scatter(y = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'TR') & (conf_contra_all.Doctor == 'Doctor B')]['Average Confidence'].mean(), x = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'TR') & (conf_contra_all.Doctor == 'Doctor B')]['Contradiction Rate'].mean(), label='TR - Doctor B', c=color_dict['TR'], marker='$B$', s=100)
+    plt.scatter(y = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'Task-Only (Current Practice)') & (conf_contra_all.Doctor == 'Doctor B')]['Average Confidence'].mean(), x = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'Task-Only (Current Practice)') & (conf_contra_all.Doctor == 'Doctor B')]['Contradiction Rate'].mean(), label='Task-Only (Current Practice) - Doctor B', c=color_dict['BRS'], marker='$B$', s=100)
+
+    plt.scatter(y = conf_contra_all[(conf_contra_all.Group == 'Male') & (conf_contra_all.Method == 'TR-no(ADB)') & (conf_contra_all.Doctor == 'Doctor A')]['Average Confidence'].mean(), x = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'TR-no(ADB)')]['Contradiction Rate'].mean(), label='TR-no(ADB)', c=color_dict['HYRSRecon'], marker='$M|A$', s=200)
+    plt.scatter(y = conf_contra_all[(conf_contra_all.Group == 'Male') & (conf_contra_all.Method == 'TR') & (conf_contra_all.Doctor == 'Doctor A')]['Average Confidence'].mean(), x = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'TR')]['Contradiction Rate'].mean(), label='TR', c=color_dict['TR'], marker='$M|A$', s=200)
+    plt.scatter(y = conf_contra_all[(conf_contra_all.Group == 'Male') & (conf_contra_all.Method == 'Task-Only (Current Practice)') & (conf_contra_all.Doctor == 'Doctor A')]['Average Confidence'].mean(), x = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'Task-Only (Current Practice)')]['Contradiction Rate'].mean(), label='Task-Only (Current Practice)', c=color_dict['BRS'], marker='$M|A$', s=200)
+
+
+    plt.scatter(y = conf_contra_all[(conf_contra_all.Group == 'Male') & (conf_contra_all.Method == 'TR-no(ADB)') & (conf_contra_all.Doctor == 'Doctor B')]['Average Confidence'].mean(), x = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'TR-no(ADB)')]['Contradiction Rate'].mean(), label='TR-no(ADB)', c=color_dict['HYRSRecon'], marker='$M|B$', s=200)
+    plt.scatter(y = conf_contra_all[(conf_contra_all.Group == 'Male') & (conf_contra_all.Method == 'TR') & (conf_contra_all.Doctor == 'Doctor B')]['Average Confidence'].mean(), x = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'TR')]['Contradiction Rate'].mean(), label='TR', c=color_dict['TR'], marker='$M|B$', s=200)
+    plt.scatter(y = conf_contra_all[(conf_contra_all.Group == 'Male') & (conf_contra_all.Method == 'Task-Only (Current Practice)') & (conf_contra_all.Doctor == 'Doctor B')]['Average Confidence'].mean(), x = conf_contra_all[(conf_contra_all.Group == 'Female') & (conf_contra_all.Method == 'Task-Only (Current Practice)')]['Contradiction Rate'].mean(), label='Task-Only (Current Practice)', c=color_dict['BRS'], marker='$M|B$', s=200)
+    color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00'}
+
     return results_means, results_stderrs, results
 
 
 
 costs = [0.1]
-num_runs = 5
+num_runs = 20
 dataset = 'heart_disease'
 case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, costs, False, asym_costs=[1,1])
    

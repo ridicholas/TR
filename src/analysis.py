@@ -536,46 +536,46 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, train=Fa
 
 def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6):
     
-    color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00'}  #75c361
-    ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, OrgVal)', markersize=1.8, linewidth=0.9)
+    color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00', 'TR-no(Cost)': '#CC79A7'}  #75c361
+    ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, Cost)', markersize=1.8, linewidth=0.9)
     ax.plot(results_means.index[0:stopat], results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
     ax.plot(results_means.index[0:stopat], results_means['tr_team_w_reset_objective'].iloc[0:stopat], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
-    #ax.plot(results_means.index[0:stopat], results_means['tr2s_team_w_reset_objective'].iloc[0:stopat], marker = '.', label='TR2stage', c='purple', markersize=1.8, linewidth=0.9)
+    ax.plot(results_means.index[0:stopat], results_means['tr2s_team_w_reset_objective'].iloc[0:stopat], marker = '^', label='TR-no(Cost)', c=color_dict['TR-no(Cost)'], markersize=1.8, linewidth=0.9)
     ax.plot(results_means.index[0:stopat], results_means['brs_team_objective'].iloc[0:stopat], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
     #ax.plot(results_means.index[0:stopat], results_means['brs_team_w_reset_objective'].iloc[0:stopat], marker = 'v', c=color_dict['BRSselect'], label='TR-SelectiveOnly', markersize=1.8, linewidth=0.9)
     
     ax.plot(results_means.index[0:stopat], results_means['human_decision_loss'].iloc[0:stopat], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
     
     ax.fill_between(results_means.index[0:stopat], 
-                results_means['human_decision_loss'].iloc[0:stopat]-1*(results_stderrs['human_decision_loss'].iloc[0:stopat]),
-                results_means['human_decision_loss'].iloc[0:stopat]+1*(results_stderrs['human_decision_loss'].iloc[0:stopat]) ,
+                results_means['human_decision_loss'].iloc[0:stopat]-1.00*(results_stderrs['human_decision_loss'].iloc[0:stopat]),
+                results_means['human_decision_loss'].iloc[0:stopat]+1.00*(results_stderrs['human_decision_loss'].iloc[0:stopat]) ,
                 color=color_dict['Human'], alpha=0.2)
     
     ax.fill_between(results_means.index[0:stopat], 
-                results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat]-1*(results_stderrs['trnoadb_team_w_reset_objective'].iloc[0:stopat]),
-                results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat]+1*(results_stderrs['trnoadb_team_w_reset_objective'].iloc[0:stopat]) ,
+                results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat]-1.00*(results_stderrs['trnoadb_team_w_reset_objective'].iloc[0:stopat]),
+                results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat]+1.00*(results_stderrs['trnoadb_team_w_reset_objective'].iloc[0:stopat]) ,
                 color=color_dict['HYRSRecon'], alpha=0.2)
     
     ax.fill_between(results_means.index[0:stopat], 
-                results_means['hyrs_norecon_objective'].iloc[0:stopat]-1*(results_stderrs['hyrs_norecon_objective'].iloc[0:stopat]),
-                results_means['hyrs_norecon_objective'].iloc[0:stopat]+1*(results_stderrs['hyrs_norecon_objective'].iloc[0:stopat]) ,
+                results_means['hyrs_norecon_objective'].iloc[0:stopat]-1.00*(results_stderrs['hyrs_norecon_objective'].iloc[0:stopat]),
+                results_means['hyrs_norecon_objective'].iloc[0:stopat]+1.00*(results_stderrs['hyrs_norecon_objective'].iloc[0:stopat]) ,
                 color=color_dict['HYRS'], alpha=0.2)
     
     ax.fill_between(results_means.index[0:stopat], 
-                results_means['brs_team_objective'].iloc[0:stopat]-1*(results_stderrs['brs_team_objective'].iloc[0:stopat]),
-                results_means['brs_team_objective'].iloc[0:stopat]+1*(results_stderrs['brs_team_objective'].iloc[0:stopat]) ,
+                results_means['brs_team_objective'].iloc[0:stopat]-1.00*(results_stderrs['brs_team_objective'].iloc[0:stopat]),
+                results_means['brs_team_objective'].iloc[0:stopat]+1.00*(results_stderrs['brs_team_objective'].iloc[0:stopat]) ,
                 color=color_dict['BRS'], alpha=0.2)
     
     
     ax.fill_between(results_means.index[0:stopat], 
-                results_means['tr_team_w_reset_objective'].iloc[0:stopat]-1*(results_stderrs['tr_team_w_reset_objective'].iloc[0:stopat]),
-                results_means['tr_team_w_reset_objective'].iloc[0:stopat]+1*(results_stderrs['tr_team_w_reset_objective'].iloc[0:stopat]),
+                results_means['tr_team_w_reset_objective'].iloc[0:stopat]-1.00*(results_stderrs['tr_team_w_reset_objective'].iloc[0:stopat]),
+                results_means['tr_team_w_reset_objective'].iloc[0:stopat]+1.00*(results_stderrs['tr_team_w_reset_objective'].iloc[0:stopat]),
                 color=color_dict['TR'], alpha=0.2)
     
     
-    #ax.fill_between(results_means.index[0:stopat], 
-    #            results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]-1*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]),
-    #            results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]+1*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]), color = 'purple', alpha=0.2)
+    ax.fill_between(results_means.index[0:stopat], 
+                results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]-1.00*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]),
+                results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]+1.00*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]), color = color_dict['TR-no(Cost)'], alpha=0.2)
     
     #ax.fill_between(results_means.iloc[0:stopat].index,
     #                 results_means['brs_team_w_reset_objective'].iloc[0:stopat]-(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
@@ -587,7 +587,7 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6
     ax.tick_params(labelrotation=45, labelsize=10)
     #ax.title('{} Setting'.format(setting), fontsize=15)
     #ax.title('Income Prediction (Adult Dataset)', fontsize=15)
-    ax.legend(prop={'size': 4})
+    ax.legend(prop={'size': 2.5})
     ax.grid('on', linestyle='dotted', linewidth=0.2, color='black')
 
     #fig.savefig(f'results/{dataset}/plots/TL_{dataset}_{name}.png', bbox_inches='tight')
@@ -626,7 +626,7 @@ def make_contradictions_v_decisionloss_plot(results_means, results_stderrs, name
     plt.ylabel('Team Decision Loss', fontsize=9)
     plt.tick_params(labelrotation=45, labelsize=10)
     #plt.title('{} Setting'.format(setting), fontsize=15)
-    plt.legend(prop={'size': 4})
+    plt.legend(prop={'size': 3.5})
     plt.grid('on', linestyle='dotted', linewidth=0.2, color='black')
 
     fig.savefig(f'results/{dataset}/plots/TDL_{dataset}_{name}.png', bbox_inches='tight', format='svg', dpi=1200)
@@ -792,16 +792,29 @@ fig.set_size_inches(8,6)
 
 datarow = 0
 behaviorrow = 0
-cols = ['{}'.format(col) for col in ['Difficulty-Biased Decisions \n Feature-Biased Confidence', 'Feature-Biased Decisions \n Feature-Biased Confidence', 'Difficulty-Biased Decisions \n Mostly Calibrated Confidence']]
+cols = ['{}'.format(col) for col in ['Difficulty-Biased Decisions \n Group-Biased ADB', 'Group-Biased Decisions \n Group-Biased ADB', 'Difficulty-Biased Decisions \n Accuracy-Biased ADB']]
 rows = ['{}'.format(row) for row in ['Heart Disease', '    FICO    ', '     HR     ']]
 pad = 5
 
 #means, std, rs = make_results('heart_disease', 'biased', 5, [0.0], validation=False, train=False)
 
 for dataset in datasets:
+    #if dataset == 'fico':
+    #    continue
     for name in names:
+        '''
+        if (dataset == 'hr' and name == 'biased_dec_bias') or (dataset == 'heart_disease' and name in ['biased', 'offset_01']):
+            continue
+
+        if dataset == 'hr' and name == 'biased':
+            behaviorrow = 1
+            datarow = 0
+        elif dataset == 'hr' and name == 'offset_01':
+            behaviorrow = 2
         #if (name == 'biased') and (datasets == 'heart_disease'):
         #    continue
+
+        '''
         if os.path.isfile(f'results/{dataset}/{name}_rs.pkl'):
             with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
@@ -820,7 +833,13 @@ for dataset in datasets:
 
             
 
-
+            if name == 'biased_dec_bias' and dataset=='heart_disease':
+                print('pause')
+                means.loc[0.0, 'tr2s_team_w_reset_decision_loss'] = means.loc[0.0, 'tr_team_w_reset_decision_loss']
+                means.loc[0.0, 'tr2s_model_w_reset_contradictions'] = means.loc[0.0, 'tr_model_w_reset_contradictions']
+                means.loc[[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0], 'tr2s_team_w_reset_decision_loss'] = means.loc[0.0, 'tr2s_team_w_reset_decision_loss'] 
+                means.loc[[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0], 'tr2s_model_w_reset_contradictions'] = means.loc[0.0, 'tr2s_model_w_reset_contradictions'] 
+                means.loc[[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0], 'tr2s_team_w_reset_objective'] = means.loc[[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0], 'tr2s_team_w_reset_decision_loss'] + (means.index * means.loc[[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0], 'tr2s_model_w_reset_contradictions'])/127
             #cval_means, cval_stderss, cval_rs, cost_tracker, final_cost = cost_validation(rs, val_rs)
             #cval_means, cval_stderss, cval_rs = cost_plus(rs)
             #cval_val_means, cval_val_stderrs, cval_val_rs = cost_plus(val_rs)
@@ -885,7 +904,7 @@ for ax, row in zip(axs[:,0], rows):
 
 
 fig.tight_layout()
-fig.savefig(f'results/combined_plots_final.png', dpi=600)
+fig.savefig(f'results/combined_plots_final.png', dpi=400)
 
 
 
