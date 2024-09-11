@@ -16,7 +16,7 @@ import os
 import inspect
 
 #making sure wd is file directory so hardcoded paths work
-#os.chdir("..")
+os.chdir("..")
 def get_default_args(func):
     signature = inspect.signature(func)
     return {
