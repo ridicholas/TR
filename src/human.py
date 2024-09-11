@@ -58,6 +58,8 @@ class Human(object):
                     #model_confidences[(X['sex_Male'] == 1)] = 0
                 if 'case1' in self.alteration:
                     model_confidences[(X['sex_Male'] == 1)] = 0
+                elif 'asym' in self.alteration:
+                    model_confidences[(X['age54.0'] == 0) | (X['sex_Male'] == 0)] = 0
                 else:
                     model_confidences[(X['age50.0'] == 1)] = 0
                 
@@ -172,6 +174,8 @@ class Human(object):
         if hasattr(self, 'beta'):
             beta = self.beta
 
+        
+
         def w(p, k):
             return (p**k)/((p**k)+(1-p)**k)
 
@@ -240,7 +244,7 @@ class Human(object):
                 #confidences[(X['age54.0'] == 1)] = 0.3
                 ##########################################
                 ####for feature decision and confidence bias#############
-                if not(hasattr(self, 'alteration')) or self.alteration == '' or self.alteration == '_dec_bias' or self.alteration == 'case2bia' or ('discretion' in self.alteration):
+                if not(hasattr(self, 'alteration')) or self.alteration == '' or self.alteration == '_dec_bias' or self.alteration == 'case2bia' or ('discretion' in self.alteration) or ('asym' in self.alteration):
                     confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal)] = 0.9
                     confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 1
                     confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9

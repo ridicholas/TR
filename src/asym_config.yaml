@@ -11,4 +11,4 @@ sample_ratio: 1
 alpha: 0
 beta: 0
 fairness_reg: 0
-asym_loss: [5,1]
+asym_loss: [3,1]

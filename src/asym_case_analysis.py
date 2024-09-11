@@ -90,7 +90,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype + 'asymCase_asym'
+    whichtype = whichtype + 'asym1'
     for run in bar(range(num_runs)):
 
         
@@ -106,13 +106,13 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         dataset = dataset
         human, adb_mod, conf_mod = load_humans(dataset, whichtype, run)
 
-        brs_mod = load_results(dataset, whichtype , run, 0.0, 'brs')
+        brs_mod = load_results(dataset, whichtype+'_asym' , run, 0.0, 'brs')
 
 
         for cost in costs:
             print(f'producing for cost {cost} run {run}.....')
-            tr_mod = load_results(dataset, whichtype+"_asym", run, cost, 'tr')
-            hyrs_mod = load_results(dataset, whichtype, run, cost, 'tr-no(ADB)')
+            tr_mod = load_results(dataset, whichtype+'_asym', run, cost, 'tr')
+            hyrs_mod = load_results(dataset, whichtype+'_asym', run, cost, 'tr-no(ADB)')
             #load e_y and e_yb mods
             #with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype+"_asym"}.pkl', 'rb') as f:
             #    e_yb_mod = pickle.load(f)
@@ -232,7 +232,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
 
             totals = {}
-            for i in range(50):
+            for i in range(10):
                 
                 
 
@@ -267,10 +267,11 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     human_decisions = human.get_decisions(x_test, y_test)
                     human_conf = human.get_confidence(x_test)
                     tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions,human_conf, human.ADB, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr_team_preds_no_reset = tr_team_preds_with_reset #tr_mod.predictHumanInLoop(x_test, human_decisions,human_conf, human.ADB, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
                     tr_model_preds_with_reset, tr_mod_covered_w_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
-                    tr_model_preds_no_reset, tr_mod_covered_no_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
+                    #tr_model_preds_no_reset, tr_mod_covered_no_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
+                    tr_model_preds_no_reset = tr_model_preds_with_reset
                     tr_mod_confs = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)[0]
                 
 
@@ -730,7 +731,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
 
 costs = [0.0]
-num_runs = 20
+num_runs = 4
 dataset = 'heart_disease'
 case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, costs, False, asym_costs=[3,1])
    

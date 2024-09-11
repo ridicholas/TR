@@ -847,7 +847,7 @@ for dataset in datasets:
             rval_means = means
             rval_stderss = std
 
-
+            '''
             rval_means['tr2s_team_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['tr2s_team_w_reset_objective']
             rval_means['trnoadb_team_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['trnoadb_team_w_reset_objective']
             rval_means['tr_team_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['tr_team_w_reset_objective']
@@ -861,6 +861,7 @@ for dataset in datasets:
             rval_means['brs_model_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['brs_model_w_reset_objective']
             rval_means['brs_model_w_reset_contradictions'] = rval_means['human_decision_loss'] - rval_means['brs_model_w_reset_contradictions']
             rval_means['human_decision_loss'] = rval_means['human_decision_loss'] - rval_means['human_decision_loss']
+            '''
             #ccval_means, ccval_stderss, ccval_rs, _, _ = cost_validation(val_rs, val_rs) 
             #rcval_means, rcval_stderss, rcval_rs, both_tracker = robust_rules(cval_rs, ccval_rs)   
             make_multi_TL_v_cost_plot(rval_means, rval_stderss, name, axs[datarow, behaviorrow])

@@ -575,7 +575,7 @@ class tr(object):
         else:
             self.Paccept = np.ones(len(self.Y))
         err = (np.abs(self.Y - Yhat) * self.Paccept) + (np.abs(self.Y - self.Yb) * (1-self.Paccept)) * asymCosts
-        contras = np.where((rulePreds != self.Yb) & covered & (self.Paccept < self.contradiction_reg))[0] 
+        contras = np.where((rulePreds != self.Yb) & covered & (self.Paccept*asymCosts < self.contradiction_reg))[0] 
         err[contras] += self.contradiction_reg
 
         #if random() <= 0.5: #randomly allow for top 5% of errors or take max error only
@@ -589,7 +589,7 @@ class tr(object):
 
 
 
-        if sum(covered) == self.N and not(self.force_complete_coverage): # covering all examples.
+        if (sum(covered) == self.N and not(self.force_complete_coverage)): #or ((len(prs_in) + len(nrs_in)) > 30): # covering all examples.
             if print_message:
                 print('===== already covering all examples ===== ')
             # print('0')

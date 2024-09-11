@@ -69,57 +69,52 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
     if not os.path.exists(f'results/{dataset}/run{run_num}'):
         os.makedirs(f'results/{dataset}/run{run_num}')
 
-    
 
-    if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/{human_name}.pkl'):
+
+    if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/{human_name+custom_name}.pkl'):
         human = Human(human_name, x_human_train, y_human_train, dataset=dataset, decision_bias=human_decision_bias, alteration=custom_name)
-        human_name = human_name + custom_name
-        if runtype != 'standard':
-            human_name += f'_{runtype}'
+
 
         human.train_decisions = human.get_decisions(x_train, y_train)
         human.val_decisions = human.get_decisions(x_val, y_val)
         human.test_decisions = human.get_decisions(x_test, y_test)
         human.learning_decisions = human.get_decisions(x_learning, y_learning)
-        with open(f'results/{dataset}/run{run_num}/{human_name}.pkl', 'wb') as f:
+        with open(f'results/{dataset}/run{run_num}/{human_name+custom_name}.pkl', 'wb') as f:
             pickle.dump(human, f)
     else:
-        human_name = human_name + custom_name
-        if runtype != 'standard':
-            human_name += f'_{runtype}'
         if shared_human:
-            with open(f'results/{dataset}/run{0}/{human_name}.pkl', 'rb') as f:
+            with open(f'results/{dataset}/run{0}/{human_name+custom_name}.pkl', 'rb') as f:
                 human = pickle.load(f)
         else:
-            with open(f'results/{dataset}/run{run_num}/{human_name}.pkl', 'rb') as f:
+            with open(f'results/{dataset}/run{run_num}/{human_name+custom_name}.pkl', 'rb') as f:
                 human = pickle.load(f)
 
     if runtype == 'asym':
-        human.beta = 1
+        human.beta = 0.5
     print('humans loaded')
     #train confidence model
-    if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/conf_model_{human_name}.pkl'):
+    if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/conf_model_{human_name+custom_name}.pkl'):
         if subsplit != 1:
             x_learning_non_binarized, _, x_learning, _, y_learning, _ = train_test_split(x_learning_non_binarized, x_learning, y_learning, test_size=1-subsplit, stratify=y_learning)
             human.learning_decisions = human.get_decisions(x_learning, y_learning)
-            with open(f'results/{dataset}/run{run_num}/{human_name}.pkl', 'wb') as f:
+            with open(f'results/{dataset}/run{run_num}/{human_name+custom_name}.pkl', 'wb') as f:
                 pickle.dump(human, f)
 
         #conf_model = xgb.XGBRegressor().fit(x_learning_non_binarized, human.get_confidence(x_learning))
         conf_model = human.get_confidence
         if shared_human and run_num == 0:
             human.learning_indexes = x_learning.index
-            with open(f'results/{dataset}/run{run_num}/{human_name}.pkl', 'wb') as f:
+            with open(f'results/{dataset}/run{run_num}/{human_name+custom_name}.pkl', 'wb') as f:
                 pickle.dump(human, f)
 
-        with open(f'results/{dataset}/run{run_num}/conf_model_{human_name}.pkl', 'wb') as f:
+        with open(f'results/{dataset}/run{run_num}/conf_model_{human_name+custom_name}.pkl', 'wb') as f:
             pickle.dump(conf_model, f)
     else:
         if shared_human:
-            with open(f'results/{dataset}/run{0}/conf_model_{human_name}.pkl', 'rb') as f:
+            with open(f'results/{dataset}/run{0}/conf_model_{human_name+custom_name}.pkl', 'rb') as f:
                 conf_model = pickle.load(f)
         else:
-            with open(f'results/{dataset}/run{run_num}/conf_model_{human_name}.pkl', 'rb') as f:
+            with open(f'results/{dataset}/run{run_num}/conf_model_{human_name+custom_name}.pkl', 'rb') as f:
                 conf_model = pickle.load(f)
     
     #if use_true:
@@ -130,7 +125,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
     _, x_initial, _, y_initial = train_test_split(x_train, y_train, test_size=100/len(y_train), stratify=y_train)
     initial_task_model = xgb.XGBClassifier().fit(x_initial, y_initial)
 
-    if (remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl')):
+    if (remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/adb_model_{human_name+custom_name}.pkl')):
 
         if not(shared_human and run_num != 0):
             
@@ -153,6 +148,8 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
             if runtype == 'asym':
                 human.beta = 1
+
+            
             p_accepts = human.ADB(adb_learning_data['human_conf'], adb_learning_data['model_confs'], adb_learning_data['agreement'])
             p_accepts_val = human.ADB(adb_val_data['human_conf'], adb_val_data['model_confs'], adb_val_data['agreement'])
             p_accepts_train = human.ADB(adb_train_data['human_conf'], adb_train_data['model_confs'], adb_train_data['agreement'])
@@ -174,20 +171,20 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             else:
                 adb_model = xgb.XGBClassifier().fit(adb_learning_data[adb_learning_data['agreement'] == False], realized_accepts[adb_learning_data['agreement'] == False])
             
-            with open(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl', 'wb') as f:
+            with open(f'results/{dataset}/run{run_num}/adb_model_{human_name+custom_name}.pkl', 'wb') as f:
                 pickle.dump(adb_model, f)
     else:
 
 
-        with open(f'results/{dataset}/run{run_num}/adb_model_{human_name}.pkl', 'rb') as f:
+        with open(f'results/{dataset}/run{run_num}/adb_model_{human_name+custom_name}.pkl', 'rb') as f:
             adb_model = pickle.load(f)
 
     if shared_human:
-        with open(f'results/{dataset}/run{0}/adb_model_{human_name}.pkl', 'rb') as f:
+        with open(f'results/{dataset}/run{0}/adb_model_{human_name+custom_name}.pkl', 'rb') as f:
             adb_model = pickle.load(f)
-        with open(f'results/{dataset}/run{0}/{human_name}.pkl', 'rb') as f:
+        with open(f'results/{dataset}/run{0}/{human_name+custom_name}.pkl', 'rb') as f:
             human = pickle.load(f)
-        with open(f'results/{dataset}/run{0}/conf_model_{human_name}.pkl', 'rb') as f:
+        with open(f'results/{dataset}/run{0}/conf_model_{human_name+custom_name}.pkl', 'rb') as f:
             conf_model = pickle.load(f)
 
     
@@ -242,7 +239,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         _, _, _ = hyrs_model.train(Niteration=Niteration, T0=0.01, print_message=False)
 
         #write hyrs model
-        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/hyrs_model_{human_name}.pkl', 'wb') as f:
+        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/hyrs_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
             hyrs_model.make_lite()
             pickle.dump(hyrs_model, f)
     
@@ -255,7 +252,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         _ = brs_model.fit(Niteration=Niteration, Nchain=1, print_message=True, asym_loss=asym_loss)
 
         #write brs model
-        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/brs_model_{human_name}.pkl', 'wb') as f:
+        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/brs_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
             brs_model.make_lite()
             pickle.dump(brs_model, f)
             #del brs_model
@@ -298,20 +295,20 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         _, _, _ = tr_model.train(Niteration=Niteration, T0=0.01, print_message=False, with_reset=True)
 
         #write ey and eyb models
-        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name}{appendType}.pkl', 'wb') as f:
+        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
             pickle.dump(e_y_mod, f)
         #with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/eyb_model_{human_name}{appendType}.pkl', 'wb') as f:
         #    pickle.dump(e_yb_mod, f)
 
         #write tr model
-        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr_model_{human_name}{appendType}.pkl', 'wb') as f:
+        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
             tr_model.make_lite()
             pickle.dump(tr_model, f)
             del tr_model
 
     if 'tr2stage' in which_models:
         #train estimates
-        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr2stage_model_{human_name}{appendType}.pkl') or True:
+        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr2stage_model_{human_name+custom_name}{appendType}.pkl') or True:
             print('tr2tage result not there yet, starting training')
             #e_y_mod = xgb.XGBClassifier().fit(x_train_non_binarized, y_train)
             #e_yb_mod = xgb.XGBClassifier().fit(x_train_non_binarized, human.get_decisions(x_train, y_train))
@@ -351,13 +348,13 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             _, _, _ = tr_model.train(Niteration=Niteration, T0=0.01, print_message=False, with_reset=False)
 
             #write ey and eyb models
-            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name}{appendType}.pkl', 'wb') as f:
+            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
                 pickle.dump(e_y_mod, f)
             #with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/eyb_model_{human_name}{appendType}.pkl', 'wb') as f:
             #    pickle.dump(e_yb_mod, f)
 
             #write tr model
-            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr2stage_model_{human_name}{appendType}.pkl', 'wb') as f:
+            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr2stage_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
                 tr_model.make_lite()
                 pickle.dump(tr_model, f)
                 del tr_model
@@ -368,7 +365,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
     if 'tr-no(ADB)' in which_models:
         print('tr-no(ADB) in whichmodels')
 
-        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr-no(ADB)_model_{human_name}{appendType}.pkl') or True:
+        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr-no(ADB)_model_{human_name+custom_name}{appendType}.pkl') or True:
             print('result not there yet, starting training')
             #train estimates
             #e_y_mod = xgb.XGBClassifier().fit(x_train_non_binarized, y_train)
@@ -413,13 +410,13 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             _, _, _ = tr_model.train(Niteration=Niteration, T0=0.01, print_message=False, with_reset=True)
 
             #write ey and eyb models
-            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name}{appendType}.pkl', 'wb') as f:
+            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
                 pickle.dump(e_y_mod, f)
             #with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/eyb_model_{human_name}{appendType}.pkl', 'wb') as f:
             #    pickle.dump(e_yb_mod, f)
 
             #write tr model
-            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr-no(ADB)_model_{human_name}{appendType}.pkl', 'wb') as f:
+            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr-no(ADB)_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
                 tr_model.make_lite()
                 pickle.dump(tr_model, f)
                 del tr_model
@@ -462,11 +459,11 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
 
 
-#run('heart_disease', 0, 'biased', runtype='asym', which_models=['tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 1, 'biased', runtype='asym', which_models=['tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 2, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 3, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 4, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
+#run('heart_disease', 0, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
+#run('heart_disease', 1, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
+#run('heart_disease', 2, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
+#run('heart_disease', 3, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
+#run('heart_disease', 4, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
 #run('heart_disease', 5, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
 #run('heart_disease', 6, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
 #run('heart_disease', 7, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
