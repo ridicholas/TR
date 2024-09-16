@@ -14,9 +14,10 @@ from run import evaluate_adb_model
 from copy import deepcopy
 import os
 import inspect
+from scipy.stats import bernoulli, uniform
 
 #making sure wd is file directory so hardcoded paths work
-os.chdir("..")
+#os.chdir("..")
 def get_default_args(func):
     signature = inspect.signature(func)
     return {
@@ -27,6 +28,127 @@ def get_default_args(func):
 
 def noADB(human_conf, model_conf, agreement):
     return np.ones(len(human_conf))
+
+def randADB(human_conf, model_conf, agreement):
+    return np.random.rand(len(human_conf))
+
+def halfADB(human_conf, model_conf, agreement):
+    return np.ones(len(human_conf))*0.5
+
+def advADB(c_human, c_model, agreement, delta=5, beta=0.5, k=0.63, gamma=0.95):
+    # from will you accept the AI recommendation
+    
+
+    
+
+    def w(p, k):
+        return (p**k)/((p**k)+(1-p)**k)
+
+    c_human_new = c_human.copy()
+    c_human_new[c_human_new <= 0] = 0.0000001
+    c_human_new[c_human_new >= 1] = 0.9999999
+
+    # transform human confidence back to probability of human's estimate of their choice being correct
+    c_human_new = (c_human_new/2)+0.5
+
+    c_model_new = c_model.copy()
+    c_model_new[c_model_new <= 0] = 0.0000001
+    c_model_new[c_model_new >= 1] = 0.9999999
+
+    c_human_new[~agreement] = 1-c_human_new[~agreement]
+    a = (c_model_new**gamma)/((c_model_new**gamma)+((1-c_model_new)**gamma))
+    b = (c_human_new**gamma)/((c_human_new**gamma)+((1-c_human_new)**gamma))
+
+    conf = 1/(1+(((1-a)*(1-b))/(a*b)))
+
+    util_accept = (1+beta)*w(conf, k)-beta
+    util_reject = 1-(1+beta)*w(conf, k)
+
+    prob = np.exp(delta*util_accept) / \
+        (np.exp(delta*util_accept)+np.exp(delta*util_reject))
+    df = pd.DataFrame({'c_human': c_human, 'c_human_new': c_human_new,
+                    'conf': conf, 'c_model': c_model, 'agreement': agreement, 'prob': prob})
+
+    return 1-prob
+
+
+def parADB(c_human, c_model, agreement, delta=5, beta=0.5, k=0.63, gamma=0.95):
+    # from will you accept the AI recommendation
+    
+
+    
+
+    def w(p, k):
+        return (p**k)/((p**k)+(1-p)**k)
+
+    c_human_new = c_human.copy()
+    c_human_new[c_human_new <= 0] = 0.0000001
+    c_human_new[c_human_new >= 1] = 0.9999999
+
+    # transform human confidence back to probability of human's estimate of their choice being correct
+    c_human_new = (c_human_new/2)+0.5
+
+    c_model_new = c_model.copy()
+    c_model_new[c_model_new <= 0] = 0.0000001
+    c_model_new[c_model_new >= 1] = 0.9999999
+
+    c_human_new[~agreement] = 1-c_human_new[~agreement]
+    a = (c_model_new**gamma)/((c_model_new**gamma)+((1-c_model_new)**gamma))
+    b = (c_human_new**gamma)/((c_human_new**gamma)+((1-c_human_new)**gamma))
+
+    conf = 1/(1+(((1-a)*(1-b))/(a*b)))
+
+    util_accept = (1+beta)*w(conf, k)-beta
+    util_reject = 1-(1+beta)*w(conf, k)
+
+    prob = np.exp(delta*util_accept) / \
+        (np.exp(delta*util_accept)+np.exp(delta*util_reject))
+    df = pd.DataFrame({'c_human': c_human, 'c_human_new': c_human_new,
+                    'conf': conf, 'c_model': c_model, 'agreement': agreement, 'prob': prob})
+    
+    prob = np.where(random(len(prob)) > 0.9, 1-prob, prob)
+
+
+    return prob
+
+def par30ADB(c_human, c_model, agreement, delta=5, beta=0.5, k=0.63, gamma=0.95):
+    # from will you accept the AI recommendation
+    
+
+    
+
+    def w(p, k):
+        return (p**k)/((p**k)+(1-p)**k)
+
+    c_human_new = c_human.copy()
+    c_human_new[c_human_new <= 0] = 0.0000001
+    c_human_new[c_human_new >= 1] = 0.9999999
+
+    # transform human confidence back to probability of human's estimate of their choice being correct
+    c_human_new = (c_human_new/2)+0.5
+
+    c_model_new = c_model.copy()
+    c_model_new[c_model_new <= 0] = 0.0000001
+    c_model_new[c_model_new >= 1] = 0.9999999
+
+    c_human_new[~agreement] = 1-c_human_new[~agreement]
+    a = (c_model_new**gamma)/((c_model_new**gamma)+((1-c_model_new)**gamma))
+    b = (c_human_new**gamma)/((c_human_new**gamma)+((1-c_human_new)**gamma))
+
+    conf = 1/(1+(((1-a)*(1-b))/(a*b)))
+
+    util_accept = (1+beta)*w(conf, k)-beta
+    util_reject = 1-(1+beta)*w(conf, k)
+
+    prob = np.exp(delta*util_accept) / \
+        (np.exp(delta*util_accept)+np.exp(delta*util_reject))
+    df = pd.DataFrame({'c_human': c_human, 'c_human_new': c_human_new,
+                    'conf': conf, 'c_model': c_model, 'agreement': agreement, 'prob': prob})
+    
+    prob = np.where(random(len(prob)) > 0.7, 1-prob, prob)
+
+
+    return prob
 
 
 def load_datasets(dataset, run_num):
@@ -150,7 +272,15 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
 
     bar=progressbar.ProgressBar()
     whichtype = whichtype
-    
+    r_adb = []
+    r_par30 = []
+    r_par = []
+    r_adv = []
+    r_no = []
+    r_half = []
+    r_rand = []
+    r_human = []
+
     for run in bar(range(num_runs)):
         
 
@@ -167,15 +297,16 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
         dataset = dataset
         human, adb_mod, conf_mod = load_humans(dataset, whichtype, run)
 
-        brs_mod = load_results(dataset, f'_{whichtype}' , run, 0.0, 'brs')
-        tr2s_mod = load_results(dataset, f'_{whichtype}', run, 0.0, 'tr')
+
 
 
         for cost in costs:
             print(f'producing for cost {cost} run {run}.....')
             tr_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr')
-            hyrs_mod = load_results(dataset, f'_{whichtype}', run, cost, 'hyrs')
-            trnoadb_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr-no(ADB)')
+            hyrs_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr')
+            trnoadb_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr')
+            brs_mod = load_results(dataset, f'_{whichtype}' , run, cost, 'tr')
+            tr2s_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr')
             #load e_y and e_yb mods
             #with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype}.pkl', 'rb') as f:
             #    e_yb_mod = pickle.load(f)
@@ -243,12 +374,16 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
             hyrs_norecon_team_decision_loss = []
             hyrs_norecon_model_contradictions = []
             
-            if cost == 0.0:
-                brs_mod.df = x_train
-                brs_mod.Y = y_train
-                brs_model_preds = brs_predict(brs_mod.opt_rules, x_test)
-                brs_conf = brs_predict_conf(brs_mod.opt_rules, x_test, brs_mod)
-                hyrs_norecon_mod = deepcopy(trnoadb_mod)
+
+            brs_mod.df = x_train
+            brs_mod.Y = y_train
+            hyrs_norecon_mod = deepcopy(trnoadb_mod)
+
+            rocs = []
+            for i in range(1000):
+                rocs.append(roc_auc_score(y_train, e_y_mod.predict_proba(x_train_non_binarized)[:,1]))
+
+
             
             for i in range(50):
                 
@@ -256,16 +391,16 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
 
                 if validation: 
 
-                    trNoADB = ADB(noADB)
+
                     human_decisions = human.get_decisions(x_test, y_test)
                     human_conf = human.get_confidence(x_test)
                     #conf_mod_preds = conf_mod.predict(x_test_non_binarized)
 
-                    learned_adb = ADB(adb_mod)
+                    learned_adb = tr_mod.fA
 
                     if 'tr' in which_to_do:
-                        tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                        tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, parADB, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                         tr_model_preds_with_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                         tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     else:
@@ -275,7 +410,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
                         tr_team_preds_no_reset = np.ones(len(y_test))
 
                     if 'tr2s' in which_to_do:
-                        tr2s_team_preds_with_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr2s_team_preds_with_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, randADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                         tr2s_model_preds_with_reset = tr2s_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     else:
                         tr2s_team_preds_with_reset = np.ones(len(y_test))
@@ -283,22 +418,13 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
                     
 
                     
-                    #hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
-                    #hyrs_reset = hyrs_mod.expected_loss_filter(x_test, hyrs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=None, fA=noADB, asym_loss=[1,1], contradiction_reg=cost)
-                    #hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
-                    #hyrs_team_preds_w_reset = hyrs_team_preds.copy()
-                    #hyrs_team_preds_w_reset[hyrs_reset] = human_decisions[hyrs_reset]
-                    #hyrs_model_preds_w_reset = hyrs_model_preds.copy()
-                    #hyrs_model_preds_w_reset[hyrs_reset] = human_decisions[hyrs_reset]
 
-                    #hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions)[0]
-                    #hyrs_norecon_team_preds = hyrs_norecon_mod.humanifyPreds(hyrs_norecon_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
                     
                     if 'tr-no(adb)' in which_to_do:
                         trnoadb_model_preds_w_reset = trnoadb_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                        trnoadb_team_preds_w_reset = trnoadb_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        trnoadb_team_preds_w_reset = trnoadb_mod.predictHumanInLoop(x_test, human_decisions, human_conf, advADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                         hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                        hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, halfADB, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     else:
                         trnoadb_model_preds_w_reset = np.ones(len(y_test))
                         trnoadb_team_preds_w_reset = np.ones(len(y_test))
@@ -306,12 +432,10 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
                         hyrs_norecon_team_preds = np.ones(len(y_test))
 
                     if 'brs' in which_to_do:
-                        brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, learned_adb.ADB_model_wrapper)
-                        brs_reset = brs_expected_loss_filter(brs_mod, x_test, brs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=brs_conf, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=cost)
-                        brs_team_preds_w_reset = brs_team_preds.copy()
-                        brs_team_preds_w_reset[brs_reset] = human_decisions[brs_reset]
-                        brs_model_preds_w_reset = brs_model_preds.copy()
-                        brs_model_preds_w_reset[brs_reset] = human_decisions[brs_reset]
+                        brs_team_preds = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        brs_team_preds_w_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, par30ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        brs_model_preds = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        brs_model_preds_w_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     else:
                         brs_team_preds = np.ones(len(y_test))
                         brs_model_preds = np.ones(len(y_test))
@@ -326,25 +450,64 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
 
                         
                 else:
-                    learned_adb = ADB(adb_mod)
+
+                    learned_adb = tr_mod.fA
                     human_decisions = human.get_decisions(x_test, y_test)
                     human_conf = human.get_confidence(x_test)
 
                     if 'tr' in which_to_do:
                         tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                        tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions,human_conf, human.ADB, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions,human_conf, parADB, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
                         tr_model_preds_with_reset, tr_mod_covered_w_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
                         tr_model_preds_no_reset, tr_mod_covered_no_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
-                        tr_mod_confs = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)[0]
+                        tr_mod_confs, agreement = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)
+
+                        if i == 0:
+                            rocs_adb = []
+                            rocs_no = []
+                            rocs_rand = []
+                            rocs_half = []
+                            rocs_adv = []
+                            rocs_par = []
+                            rocs_par30 = []
+                            rocs_learned = []
+                            rocs_human = []
+
+                            for i in range(1000):
+                                p = learned_adb(human_conf, tr_mod_confs, agreement)[agreement==False]
+                                p_adb = human.ADB(human_conf, tr_mod_confs, agreement)[agreement==False]
+                                p_noADB = noADB(human_conf, tr_mod_confs, agreement)[agreement==False]
+                                p_randADB = randADB(human_conf, tr_mod_confs, agreement)[agreement==False]
+                                p_halfADB = halfADB(human_conf, tr_mod_confs, agreement)[agreement==False]
+                                p_advADB = advADB(human_conf, tr_mod_confs, agreement)[agreement==False]
+                                p_parADB = parADB(human_conf, tr_mod_confs, agreement)[agreement==False]
+                                p_par30ADB = par30ADB(human_conf, tr_mod_confs, agreement)[agreement==False]
+                                p_human = human.ADB(human_conf, tr_mod_confs, agreement)[agreement==False]
+
+                                rocs_adb.append(roc_auc_score(bernoulli.rvs(p=p_adb, size=(agreement==False).sum()).astype(bool), p))
+                                
+                                rocs_no.append(accuracy_score(bernoulli.rvs(p=p_noADB, size=(agreement==False).sum()).astype(bool), bernoulli.rvs(p=p, size=(agreement==False).sum()).astype(bool)))
+                                rocs_rand.append(roc_auc_score(bernoulli.rvs(p=p_randADB, size=(agreement==False).sum()).astype(bool), p))
+                                rocs_half.append(roc_auc_score(bernoulli.rvs(p=p_halfADB, size=(agreement==False).sum()).astype(bool), p))
+                                rocs_adv.append(roc_auc_score(bernoulli.rvs(p=p_advADB, size=(agreement==False).sum()).astype(bool), p))
+                                rocs_par.append(roc_auc_score(bernoulli.rvs(p=p_parADB, size=(agreement==False).sum()).astype(bool), p))
+                                rocs_par30.append(roc_auc_score(bernoulli.rvs(p=p_par30ADB, size=(agreement==False).sum()).astype(bool), p))
+                                try:
+                                    rocs_learned.append(roc_auc_score(bernoulli.rvs(p=p, size=(agreement==False).sum()).astype(bool), p))
+                                except: 
+                                    rocs_learned.append(((bernoulli.rvs(p=p, size=(agreement==False).sum()).astype(bool) - p)**2).sum())
+                                rocs_human.append(roc_auc_score(bernoulli.rvs(p=p_human, size=(agreement==False).sum()).astype(bool), p))
                     else:
                         tr_model_preds_with_reset = np.ones(len(y_test))
                         tr_team_preds_with_reset = np.ones(len(y_test))
                         tr_mod_covered_w_reset = np.ones(len(y_test))
                         tr_mod_confs = np.ones(len(y_test))
 
+
+
                     if 'tr2s' in which_to_do:
-                        tr2s_team_preds_with_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr2s_team_preds_with_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, randADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                         tr2s_model_preds_with_reset, tr2s_mod_covered_w_reset, _ = tr2s_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
                         tr2s_mod_confs = tr2s_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr2s_mod.prs_min, nrs_min=tr2s_mod.nrs_min)[0]
                     else:
@@ -354,23 +517,16 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
                         tr2s_mod_confs = np.ones(len(y_test))
                 
                     
-                    #hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
-                    #hyrs_reset = hyrs_mod.expected_loss_filter(x_test, hyrs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=None, fA= noADB, asym_loss=[1,1], contradiction_reg=cost)
-                    #hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
-                    #hyrs_team_preds_w_reset = hyrs_team_preds.copy()
-                    #hyrs_team_preds_w_reset[hyrs_reset] = human_decisions[hyrs_reset]
-                    #hyrs_model_preds_w_reset = hyrs_model_preds.copy()
-                    #hyrs_model_preds_w_reset[hyrs_reset] = human_decisions[hyrs_reset]
-                    #hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, human.ADB, x_test)
+
                     
                     if 'tr-no(adb)' in which_to_do:
                         trnoadb_model_preds_w_reset = trnoadb_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                         
-                        trnoadb_team_preds_w_reset = trnoadb_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        trnoadb_team_preds_w_reset = trnoadb_mod.predictHumanInLoop(x_test, human_decisions, human_conf, advADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                         
 
                         hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                        hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, halfADB, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     else:
                         trnoadb_model_preds_w_reset = np.ones(len(y_test))
                         trnoadb_team_preds_w_reset = np.ones(len(y_test))
@@ -378,12 +534,10 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
                         hyrs_norecon_team_preds = np.ones(len(y_test))
 
                     if 'brs' in which_to_do:
-                        brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
-                        brs_reset = brs_expected_loss_filter(brs_mod, x_test, brs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=brs_conf, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=cost)
-                        brs_team_preds_w_reset = brs_team_preds.copy()
-                        brs_team_preds_w_reset[brs_reset] = human_decisions[brs_reset]
-                        brs_model_preds_w_reset = brs_model_preds.copy()
-                        brs_model_preds_w_reset[brs_reset] = human_decisions[brs_reset]
+                        brs_team_preds = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        brs_team_preds_w_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, par30ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        brs_model_preds = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        brs_model_preds_w_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     else:
                         brs_team_preds = np.ones(len(y_test))
                         brs_model_preds = np.ones(len(y_test))
@@ -505,11 +659,26 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
             #results.loc[cost, 'hyrs_team_w_reset_objective'].append(mean(hyrs_team_w_reset_objective))
             #results.loc[cost, 'hyrs_model_w_reset_objective'].append(mean(hyrs_model_w_reset_objective))
             #results.loc[cost, 'hyrs_model_w_reset_contradictions'].append(mean(hyrs_model_w_reset_contradictions))
+            if validation == False:
+                r_half = mean(rocs_half)
+                r_rand = mean(rocs_rand)
+                r_no = mean(rocs_no)
+                r_adv = mean(rocs_adv)
+                r_par = mean(rocs_par)
+                r_par30 = mean(rocs_par30)
+                r_adb = mean(rocs_adb)
+                r_human = mean(rocs_human)
+                r_learned = mean(rocs_learned)
+
 
             
             
     
     results_means = results.apply(lambda x: x.apply(lambda y: mean(y)))
+    roc_dict = pd.DataFrame({'r_half': r_half, 'r_rand': r_rand, 'r_no': r_no, 'r_adv': r_adv, 'r_par': r_par, 'r_par30': r_par30, 'r_adb': r_adb, 'r_human': r_human, 'r_learned': r_learned}, index=[f'{dataset}_{whichtype}'])
+    roc_dict.to_pickle(f'results/{dataset}/roc_dict_{whichtype}.pkl')
+
+    
 
 
 
@@ -571,7 +740,7 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name):
     plt.legend(prop={'size': 5})
     plt.grid('on', linestyle='dotted', linewidth=0.2, color='black')
 
-    fig.savefig(f'results/{dataset}/plots/TL_{dataset}_{name}.png', bbox_inches='tight')
+    fig.savefig(f'results/{dataset}/plots/TL_{dataset}_{name}_discretion.png', bbox_inches='tight')
     #plt.show()
 
     #plt.clf()
@@ -581,9 +750,9 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name):
 
 costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5]
 
-num_runs = 20
-datasets = ['fico']
-names = ['biased', 'biased_dec_bias', 'offset_01']
+num_runs = 5
+datasets = ['heart_disease']
+names = ['offset_01']
 which_to_do = ['tr', 'tr2s', 'tr-no(adb)', 'brs']
 
 for dataset in datasets:
@@ -592,20 +761,20 @@ for dataset in datasets:
         #    continue
 
         if 'tr' not in which_to_do or 'tr2s' not in which_to_do or 'tr-no(adb)' not in which_to_do or 'brs' not in which_to_do:
-            name = f'{name}_{which_to_do}'
-        if os.path.isfile(f'results/{dataset}/{name}_rs.pkl') and False:
-            with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
+            name = f'{name}_discretion_{which_to_do}'
+        if os.path.isfile(f'results/{dataset}/{name}_discretion_rs.pkl') and False:
+            with open(f'results/{dataset}/{name}_discretion_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
-            with open(f'results/{dataset}/{name}_means.pkl', 'rb') as f:
+            with open(f'results/{dataset}/{name}_discretion_means.pkl', 'rb') as f:
                 means = pickle.load(f)
-            with open(f'results/{dataset}/{name}_std.pkl', 'rb') as f:
+            with open(f'results/{dataset}/{name}_discretion_std.pkl', 'rb') as f:
                 std = pickle.load(f)
 
-            with open(f'results/{dataset}/val_{name}_rs.pkl', 'rb') as f:
+            with open(f'results/{dataset}/val_{name}_discretion_rs.pkl', 'rb') as f:
                 val_rs = pickle.load(f)
-            with open(f'results/{dataset}/val_{name}_means.pkl', 'rb') as f:
+            with open(f'results/{dataset}/val_{name}_discretion_means.pkl', 'rb') as f:
                 val_means = pickle.load(f)
-            with open(f'results/{dataset}/val_{name}_std.pkl', 'rb') as f:
+            with open(f'results/{dataset}/val_{name}_discretion_std.pkl', 'rb') as f:
                 val_std = pickle.load(f)
 
 
@@ -623,21 +792,21 @@ for dataset in datasets:
         else:
             means, std, rs = make_results(dataset, name, num_runs, costs, validation=False, which_to_do=which_to_do)
             #pickle and write means, std, and rs to file
-            with open(f'results/{dataset}/{name}_means.pkl', 'wb') as f:
+            with open(f'results/{dataset}/{name}_discretion_means.pkl', 'wb') as f:
                 pickle.dump(means, f)
-            with open(f'results/{dataset}/{name}_std.pkl', 'wb') as f:
+            with open(f'results/{dataset}/{name}_discretion_std.pkl', 'wb') as f:
                 pickle.dump(std, f)
-            with open(f'results/{dataset}/{name}_rs.pkl', 'wb') as f:
+            with open(f'results/{dataset}/{name}_discretion_rs.pkl', 'wb') as f:
                 pickle.dump(rs, f)
         
-            print(f'running for val {dataset} {name}')
+            print(f'running for val {dataset} {name}_discretion')
             val_means, val_std, val_rs = make_results(dataset, name, num_runs, costs, validation=True, which_to_do=which_to_do)
             #pickle and write means, std, and rs to file
-            with open(f'results/{dataset}/val_{name}_means.pkl', 'wb') as f:
+            with open(f'results/{dataset}/val_{name}_discretion_means.pkl', 'wb') as f:
                 pickle.dump(val_means, f)
-            with open(f'results/{dataset}/val_{name}_std.pkl', 'wb') as f:
+            with open(f'results/{dataset}/val_{name}_discretion_std.pkl', 'wb') as f:
                 pickle.dump(val_std, f)
-            with open(f'results/{dataset}/val_{name}_rs.pkl', 'wb') as f:
+            with open(f'results/{dataset}/val_{name}_discretion_rs.pkl', 'wb') as f:
                 pickle.dump(val_rs, f)
     
 

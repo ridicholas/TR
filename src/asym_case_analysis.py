@@ -90,7 +90,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype + 'asym1'
+    whichtype = whichtype + 'asymFinal'
     for run in bar(range(num_runs)):
 
         
