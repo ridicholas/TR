@@ -534,15 +534,20 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, train=Fa
 
 
 
-def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6):
+def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6, rocs_dict=None):
+
+    r_translator = {'TR-No(ADB, Cost)': 'r_half', 'TR-no(Cost)': 'r_rand', 'Task-Only (Current Practice)': 'r_no', 'TR-No(ADB)': 'r_adv', 'r_par': 'r_par', 'TR-SelectiveOnly': 'r_par30', 'TR': 'r_adb', 'r_human': 'r_human', 'r_learned': 'r_learned'}
+
+
     
     color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00', 'TR-no(Cost)': '#CC79A7'}  #75c361
-    ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, Cost)', markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:stopat], results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:stopat], results_means['tr_team_w_reset_objective'].iloc[0:stopat], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:stopat], results_means['tr2s_team_w_reset_objective'].iloc[0:stopat], marker = '^', label='TR-no(Cost)', c=color_dict['TR-no(Cost)'], markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:stopat], results_means['brs_team_objective'].iloc[0:stopat], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
-    #ax.plot(results_means.index[0:stopat], results_means['brs_team_w_reset_objective'].iloc[0:stopat], marker = 'v', c=color_dict['BRSselect'], label='TR-SelectiveOnly', markersize=1.8, linewidth=0.9)
+    names_dict = {'TR': 'Learned ADB', 'TR-No(ADB, Cost)': 'Half ADB', 'Task-Only (Current Practice)':'no ADB', 'Human': 'Human', 'HYRSRecon': 'HYRS-Recon', 'TR-SelectiveOnly': 'Par30 ADB', 'TR-no(Cost)': 'Random ADB', 'TR-No(ADB)': 'Adversarial ADB'}
+    ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = names_dict['TR-No(ADB, Cost)'] + f' AUC: {rocs_dict[r_translator["TR-No(ADB, Cost)"]][0]}', markersize=1.8, linewidth=0.9)
+    ax.plot(results_means.index[0:stopat], results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat], marker = 'x', c=color_dict['HYRSRecon'], label = names_dict['TR-No(ADB)'] + f' AUC: {rocs_dict[r_translator["TR-No(ADB)"]][0]}', markersize=1.8, linewidth=0.9)
+    ax.plot(results_means.index[0:stopat], results_means['tr_team_w_reset_objective'].iloc[0:stopat], marker = '.', c=color_dict['TR'], label=names_dict['TR'] + f' AUC: {rocs_dict[r_translator["TR"]][0]}', markersize=1.8, linewidth=0.9)
+    ax.plot(results_means.index[0:stopat], results_means['tr2s_team_w_reset_objective'].iloc[0:stopat], marker = '^', label=names_dict['TR-no(Cost)'] + f' AUC: {rocs_dict[r_translator["TR-no(Cost)"]][0]}', c=color_dict['TR-no(Cost)'], markersize=1.8, linewidth=0.9)
+    ax.plot(results_means.index[0:stopat], results_means['brs_team_objective'].iloc[0:stopat], marker = 's', c=color_dict['BRS'], label=names_dict['Task-Only (Current Practice)'] + f' AUC: {rocs_dict[r_translator["Task-Only (Current Practice)"]][0]}', markersize=1.8, linewidth=0.9)
+    ax.plot(results_means.index[0:stopat], results_means['brs_team_w_reset_objective'].iloc[0:stopat], marker = 'v', c=color_dict['BRSselect'], label=names_dict['TR-SelectiveOnly'] + f' AUC: {rocs_dict[r_translator["TR-SelectiveOnly"]][0]}', markersize=1.8, linewidth=0.9)
     
     ax.plot(results_means.index[0:stopat], results_means['human_decision_loss'].iloc[0:stopat], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
     
@@ -577,17 +582,17 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6
                 results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]-1.00*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]),
                 results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]+1.00*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]), color = color_dict['TR-no(Cost)'], alpha=0.2)
     
-    #ax.fill_between(results_means.iloc[0:stopat].index,
-    #                 results_means['brs_team_w_reset_objective'].iloc[0:stopat]-(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
-    #            results_means['brs_team_w_reset_objective'].iloc[0:stopat]+(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
-    #            color=color_dict['BRSselect'], alpha=0.2)
+    ax.fill_between(results_means.iloc[0:stopat].index,
+                     results_means['brs_team_w_reset_objective'].iloc[0:stopat]-(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
+                results_means['brs_team_w_reset_objective'].iloc[0:stopat]+(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
+                color=color_dict['BRSselect'], alpha=0.2)
    
     ax.set_xlabel('Reconciliation Cost', fontsize=9)
     ax.set_ylabel('Value Added', fontsize=9)
     ax.tick_params(labelrotation=45, labelsize=10)
     #ax.title('{} Setting'.format(setting), fontsize=15)
     #ax.title('Income Prediction (Adult Dataset)', fontsize=15)
-    ax.legend(prop={'size': 2.5})
+    ax.legend(prop={'size': 4.5})
     ax.grid('on', linestyle='dotted', linewidth=0.2, color='black')
 
     #fig.savefig(f'results/{dataset}/plots/TL_{dataset}_{name}_discretion.png', bbox_inches='tight')
@@ -780,15 +785,15 @@ def cost_plus_hyrs(rs):
 
 
 
-costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]
+costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5]
 
-num_runs = 10
-datasets = ['heart_disease', 'fico', 'hr']
+num_runs = 5
+datasets = ['heart_disease']
 names = ['biased', 'biased_dec_bias', 'offset_01']
 
 
 fig, axs = plt.subplots(3,3)
-fig.set_size_inches(8,6)
+fig.set_size_inches(7,5)
 
 datarow = 0
 behaviorrow = 0
@@ -832,7 +837,7 @@ for dataset in datasets:
             
 
             
-
+            '''
             if name == 'biased_dec_bias' and dataset=='heart_disease':
                 print('pause')
                 means.loc[0.0, 'tr2s_team_w_reset_decision_loss'] = means.loc[0.0, 'tr_team_w_reset_decision_loss']
@@ -840,14 +845,18 @@ for dataset in datasets:
                 means.loc[[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0], 'tr2s_team_w_reset_decision_loss'] = means.loc[0.0, 'tr2s_team_w_reset_decision_loss'] 
                 means.loc[[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0], 'tr2s_model_w_reset_contradictions'] = means.loc[0.0, 'tr2s_model_w_reset_contradictions'] 
                 means.loc[[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0], 'tr2s_team_w_reset_objective'] = means.loc[[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0], 'tr2s_team_w_reset_decision_loss'] + (means.index * means.loc[[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0], 'tr2s_model_w_reset_contradictions'])/127
+            '''
             #cval_means, cval_stderss, cval_rs, cost_tracker, final_cost = cost_validation(rs, val_rs)
             #cval_means, cval_stderss, cval_rs = cost_plus(rs)
             #cval_val_means, cval_val_stderrs, cval_val_rs = cost_plus(val_rs)
             #rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(rs, val_rs)
             rval_means = means
             rval_stderss = std
+            rocs_dict = pd.read_pickle(f'results/{dataset}/roc_dict_{name}.pkl')
+            for key, value in rocs_dict.items():
+                rocs_dict[key] = np.round(value, 3)
 
-            '''
+            
             rval_means['tr2s_team_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['tr2s_team_w_reset_objective']
             rval_means['trnoadb_team_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['trnoadb_team_w_reset_objective']
             rval_means['tr_team_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['tr_team_w_reset_objective']
@@ -861,10 +870,10 @@ for dataset in datasets:
             rval_means['brs_model_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['brs_model_w_reset_objective']
             rval_means['brs_model_w_reset_contradictions'] = rval_means['human_decision_loss'] - rval_means['brs_model_w_reset_contradictions']
             rval_means['human_decision_loss'] = rval_means['human_decision_loss'] - rval_means['human_decision_loss']
-            '''
+            
             #ccval_means, ccval_stderss, ccval_rs, _, _ = cost_validation(val_rs, val_rs) 
             #rcval_means, rcval_stderss, rcval_rs, both_tracker = robust_rules(cval_rs, ccval_rs)   
-            make_multi_TL_v_cost_plot(rval_means, rval_stderss, name, axs[datarow, behaviorrow])
+            make_multi_TL_v_cost_plot(rval_means, rval_stderss, name, axs[datarow, behaviorrow], rocs_dict=rocs_dict)
             #make_multi_TL_v_cost_plot(means, std, name, axs[datarow, behaviorrow], stopat=6)
             
 
@@ -905,7 +914,7 @@ for ax, row in zip(axs[:,0], rows):
 
 
 fig.tight_layout()
-fig.savefig(f'results/combined_plots_final.png', dpi=400)
+fig.savefig(f'results/combined_plots_final_discretion.png', dpi=400)
 
 
 

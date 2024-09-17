@@ -244,71 +244,79 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             pickle.dump(hyrs_model, f)
     
     if 'brs' in which_models: 
-        brs_model = brs(x_train, y_train)
-        brs_model.generate_rules(supp = supp, maxlen=maxlen, N=Nrules,  method='randomforest')
-        brs_model.set_parameters()
+        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/brs_model_{human_name+custom_name}{appendType}.pkl'):
+            print('tr result not there yet, starting training')
+            brs_model = brs(x_train, y_train)
+            brs_model.generate_rules(supp = supp, maxlen=maxlen, N=Nrules,  method='randomforest')
+            brs_model.set_parameters()
 
-       
-        _ = brs_model.fit(Niteration=Niteration, Nchain=1, print_message=True, asym_loss=asym_loss)
+        
+            _ = brs_model.fit(Niteration=Niteration, Nchain=1, print_message=True, asym_loss=asym_loss)
 
-        #write brs model
-        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/brs_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
-            brs_model.make_lite()
-            pickle.dump(brs_model, f)
-            #del brs_model
+            #write brs model
+            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/brs_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
+                brs_model.make_lite()
+                pickle.dump(brs_model, f)
+                #del brs_model
+        else:
+            print('brs already there!')
 
     if 'tr' in which_models:
-        #train estimates
-        params = {
-        'min_child_weight': [1, 5, 10],
-        'gamma': [0.5, 1, 1.5, 2, 5],
-        'subsample': [0.6, 0.8, 1.0],
-        'colsample_bytree': [0.6, 0.8, 1.0],
-        'max_depth': [3, 4, 5, 6],
-        'learning_rate': [0.001, 0.01, 0.02, 0.05]
-        }
-        e_y_mod = xgb.XGBClassifier()
-        folds = 3
-        param_comb = 5
-        skf = StratifiedKFold(n_splits=folds, shuffle = True, random_state = 1001)
-        random_search = RandomizedSearchCV(e_y_mod, param_distributions=params, n_iter=param_comb, scoring='roc_auc', n_jobs=-1, cv=skf.split(x_train_non_binarized,y_train), verbose=3, random_state=1001 )
+        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr_model_{human_name+custom_name}{appendType}.pkl'):
+            print('tr result not there yet, starting training')
+            #train estimates
+            params = {
+            'min_child_weight': [1, 5, 10],
+            'gamma': [0.5, 1, 1.5, 2, 5],
+            'subsample': [0.6, 0.8, 1.0],
+            'colsample_bytree': [0.6, 0.8, 1.0],
+            'max_depth': [3, 4, 5, 6],
+            'learning_rate': [0.001, 0.01, 0.02, 0.05]
+            }
+            e_y_mod = xgb.XGBClassifier()
+            folds = 3
+            param_comb = 5
+            skf = StratifiedKFold(n_splits=folds, shuffle = True, random_state = 1001)
+            random_search = RandomizedSearchCV(e_y_mod, param_distributions=params, n_iter=param_comb, scoring='roc_auc', n_jobs=-1, cv=skf.split(x_train_non_binarized,y_train), verbose=3, random_state=1001 )
 
 
-        
-        
-        random_search.fit(x_train_non_binarized,y_train)
+            
+            
+            random_search.fit(x_train_non_binarized,y_train)
 
 
-        e_y_mod = random_search.best_estimator_
+            e_y_mod = random_search.best_estimator_
 
-        
-        #e_yb_mod = xgb.XGBClassifier().fit(x_train_non_binarized, human.get_decisions(x_train, y_train))
+            
+            #e_yb_mod = xgb.XGBClassifier().fit(x_train_non_binarized, human.get_decisions(x_train, y_train))
 
-        tr_model = tr(x_train, y_train,
-                    human.train_decisions,
-                    human.get_confidence(x_train), 
-                    p_y=e_y_mod.predict_proba(x_train_non_binarized))
+            tr_model = tr(x_train, y_train,
+                        human.train_decisions,
+                        human.get_confidence(x_train), 
+                        p_y=e_y_mod.predict_proba(x_train_non_binarized))
 
-        tr_model.set_parameters(alpha = alpha, beta=beta, contradiction_reg=contradiction_reg, fairness_reg=fairness_reg, force_complete_coverage=False, asym_loss=asym_loss, fA=adb.ADB_model_wrapper)
+            tr_model.set_parameters(alpha = alpha, beta=beta, contradiction_reg=contradiction_reg, fairness_reg=fairness_reg, force_complete_coverage=False, asym_loss=asym_loss, fA=adb.ADB_model_wrapper)
 
-        tr_model.generate_rulespace(supp = supp, maxlen=maxlen, N=Nrules, need_negcode=True, method='randomforest',criteria='precision')
-        _, _, _ = tr_model.train(Niteration=Niteration, T0=0.01, print_message=False, with_reset=True)
+            tr_model.generate_rulespace(supp = supp, maxlen=maxlen, N=Nrules, need_negcode=True, method='randomforest',criteria='precision')
+            _, _, _ = tr_model.train(Niteration=Niteration, T0=0.01, print_message=False, with_reset=True)
 
-        #write ey and eyb models
-        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
-            pickle.dump(e_y_mod, f)
-        #with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/eyb_model_{human_name}{appendType}.pkl', 'wb') as f:
-        #    pickle.dump(e_yb_mod, f)
+            #write ey and eyb models
+            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
+                pickle.dump(e_y_mod, f)
+            #with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/eyb_model_{human_name}{appendType}.pkl', 'wb') as f:
+            #    pickle.dump(e_yb_mod, f)
 
-        #write tr model
-        with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
-            tr_model.make_lite()
-            pickle.dump(tr_model, f)
-            del tr_model
+            #write tr model
+            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
+                tr_model.make_lite()
+                pickle.dump(tr_model, f)
+                del tr_model
+        else:
+            print('tr already there!')
 
     if 'tr2stage' in which_models:
         #train estimates
-        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr2stage_model_{human_name+custom_name}{appendType}.pkl') or True:
+        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr2stage_model_{human_name+custom_name}{appendType}.pkl'):
             print('tr2tage result not there yet, starting training')
             #e_y_mod = xgb.XGBClassifier().fit(x_train_non_binarized, y_train)
             #e_yb_mod = xgb.XGBClassifier().fit(x_train_non_binarized, human.get_decisions(x_train, y_train))
@@ -365,7 +373,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
     if 'tr-no(ADB)' in which_models:
         print('tr-no(ADB) in whichmodels')
 
-        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr-no(ADB)_model_{human_name+custom_name}{appendType}.pkl') or True:
+        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr-no(ADB)_model_{human_name+custom_name}{appendType}.pkl'):
             print('result not there yet, starting training')
             #train estimates
             #e_y_mod = xgb.XGBClassifier().fit(x_train_non_binarized, y_train)

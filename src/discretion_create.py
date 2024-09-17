@@ -400,9 +400,9 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
 
                     if 'tr' in which_to_do:
                         tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                        tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, parADB, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, parADB, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                         tr_model_preds_with_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                        tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     else:
                         tr_model_preds_with_reset = np.ones(len(y_test))
                         tr_team_preds_with_reset = np.ones(len(y_test))
@@ -457,10 +457,10 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
 
                     if 'tr' in which_to_do:
                         tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                        tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions,human_conf, parADB, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions,human_conf, parADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
                         tr_model_preds_with_reset, tr_mod_covered_w_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
-                        tr_model_preds_no_reset, tr_mod_covered_no_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
+                        tr_model_preds_no_reset, tr_mod_covered_no_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
                         tr_mod_confs, agreement = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)
 
                         if i == 0:
@@ -536,7 +536,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
                     if 'brs' in which_to_do:
                         brs_team_preds = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                         brs_team_preds_w_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, par30ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                        brs_model_preds = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        brs_model_preds = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                         brs_model_preds_w_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     else:
                         brs_team_preds = np.ones(len(y_test))
