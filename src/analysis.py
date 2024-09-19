@@ -167,13 +167,25 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, train=Fa
 
         brs_mod = load_results(dataset, f'_{whichtype}' , run, 0.0, 'brs')
 
-
+    for run in range(10):
         for cost in costs:
             print(f'producing for cost {cost} run {run}.....')
-            tr_mod = load_results(dataset, f'_{whichtype+ "verytest"}', run, cost, 'tr')
-            hyrs_mod = load_results(dataset, f'_{whichtype}', run, cost, 'hyrs')
-            tr2s_mod = load_results(dataset, f'_{whichtype+ "verytest"}', run, cost, 'tr2stage')
-            trnoadb_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr-no(ADB)')
+            try:
+                tr_mod = load_results(dataset, f'_{whichtype+ "verytest"}', run, cost, 'tr')
+            except:
+                print(f'failed to load tr model for cost {cost} run {run}')
+            try:
+                hyrs_mod = load_results(dataset, f'_{whichtype}', run, cost, 'hyrs')
+            except:
+                print(f'failed to load hyrs model for cost {cost} run {run}')
+            try:
+                tr2s_mod = load_results(dataset, f'_{whichtype+ "verytest"}', run, cost, 'tr2stage')
+            except:
+                print(f'failed to load tr2s model for cost {cost} run {run}')
+            try:
+                trnoadb_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr-no(ADB)')
+            except:
+                print(f'failed to load trnoadb model for cost {cost} run {run}')
             #load e_y and e_yb mods
             #with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype}.pkl', 'rb') as f:
             #    e_yb_mod = pickle.load(f)
@@ -537,12 +549,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, train=Fa
 def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6):
     
     color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00', 'TR-no(Cost)': '#CC79A7'}  #75c361
-    ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, Cost)', markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:stopat], results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
+    #ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, Cost)', markersize=1.8, linewidth=0.9)
+    #ax.plot(results_means.index[0:stopat], results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=1.8, linewidth=0.9)
     ax.plot(results_means.index[0:stopat], results_means['tr_team_w_reset_objective'].iloc[0:stopat], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:stopat], results_means['tr2s_team_w_reset_objective'].iloc[0:stopat], marker = '^', label='TR-no(Cost)', c=color_dict['TR-no(Cost)'], markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:stopat], results_means['brs_team_objective'].iloc[0:stopat], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
-    #ax.plot(results_means.index[0:stopat], results_means['brs_team_w_reset_objective'].iloc[0:stopat], marker = 'v', c=color_dict['BRSselect'], label='TR-SelectiveOnly', markersize=1.8, linewidth=0.9)
+    #ax.plot(results_means.index[0:stopat], results_means['tr2s_team_w_reset_objective'].iloc[0:stopat], marker = '^', label='TR-no(Cost)', c=color_dict['TR-no(Cost)'], markersize=1.8, linewidth=0.9)
+    #ax.plot(results_means.index[0:stopat], results_means['brs_team_objective'].iloc[0:stopat], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=1.8, linewidth=0.9)
+    ax.plot(results_means.index[0:stopat], results_means['brs_team_w_reset_objective'].iloc[0:stopat], marker = 'v', c=color_dict['BRSselect'], label='TR-SelectiveOnly', markersize=1.8, linewidth=0.9)
     
     ax.plot(results_means.index[0:stopat], results_means['human_decision_loss'].iloc[0:stopat], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
     
@@ -550,7 +562,7 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6
                 results_means['human_decision_loss'].iloc[0:stopat]-1.00*(results_stderrs['human_decision_loss'].iloc[0:stopat]),
                 results_means['human_decision_loss'].iloc[0:stopat]+1.00*(results_stderrs['human_decision_loss'].iloc[0:stopat]) ,
                 color=color_dict['Human'], alpha=0.2)
-    
+    '''
     ax.fill_between(results_means.index[0:stopat], 
                 results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat]-1.00*(results_stderrs['trnoadb_team_w_reset_objective'].iloc[0:stopat]),
                 results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat]+1.00*(results_stderrs['trnoadb_team_w_reset_objective'].iloc[0:stopat]) ,
@@ -566,21 +578,21 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6
                 results_means['brs_team_objective'].iloc[0:stopat]+1.00*(results_stderrs['brs_team_objective'].iloc[0:stopat]) ,
                 color=color_dict['BRS'], alpha=0.2)
     
-    
+    '''
     ax.fill_between(results_means.index[0:stopat], 
                 results_means['tr_team_w_reset_objective'].iloc[0:stopat]-1.00*(results_stderrs['tr_team_w_reset_objective'].iloc[0:stopat]),
                 results_means['tr_team_w_reset_objective'].iloc[0:stopat]+1.00*(results_stderrs['tr_team_w_reset_objective'].iloc[0:stopat]),
                 color=color_dict['TR'], alpha=0.2)
     
-    
+    '''
     ax.fill_between(results_means.index[0:stopat], 
                 results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]-1.00*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]),
                 results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]+1.00*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]), color = color_dict['TR-no(Cost)'], alpha=0.2)
-    
-    #ax.fill_between(results_means.iloc[0:stopat].index,
-    #                 results_means['brs_team_w_reset_objective'].iloc[0:stopat]-(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
-    #            results_means['brs_team_w_reset_objective'].iloc[0:stopat]+(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
-    #            color=color_dict['BRSselect'], alpha=0.2)
+    '''
+    ax.fill_between(results_means.iloc[0:stopat].index,
+                     results_means['brs_team_w_reset_objective'].iloc[0:stopat]-(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
+                results_means['brs_team_w_reset_objective'].iloc[0:stopat]+(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
+                color=color_dict['BRSselect'], alpha=0.2)
    
     ax.set_xlabel('Reconciliation Cost', fontsize=9)
     ax.set_ylabel('Value Added', fontsize=9)
@@ -847,7 +859,7 @@ for dataset in datasets:
             rval_means = means
             rval_stderss = std
 
-            '''
+            
             rval_means['tr2s_team_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['tr2s_team_w_reset_objective']
             rval_means['trnoadb_team_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['trnoadb_team_w_reset_objective']
             rval_means['tr_team_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['tr_team_w_reset_objective']
@@ -861,7 +873,7 @@ for dataset in datasets:
             rval_means['brs_model_w_reset_objective'] = rval_means['human_decision_loss'] - rval_means['brs_model_w_reset_objective']
             rval_means['brs_model_w_reset_contradictions'] = rval_means['human_decision_loss'] - rval_means['brs_model_w_reset_contradictions']
             rval_means['human_decision_loss'] = rval_means['human_decision_loss'] - rval_means['human_decision_loss']
-            '''
+            
             #ccval_means, ccval_stderss, ccval_rs, _, _ = cost_validation(val_rs, val_rs) 
             #rcval_means, rcval_stderss, rcval_rs, both_tracker = robust_rules(cval_rs, ccval_rs)   
             make_multi_TL_v_cost_plot(rval_means, rval_stderss, name, axs[datarow, behaviorrow])
@@ -905,7 +917,7 @@ for ax, row in zip(axs[:,0], rows):
 
 
 fig.tight_layout()
-fig.savefig(f'results/combined_plots_final.png', dpi=400)
+fig.savefig(f'results/selective_v_specialization.png', dpi=400)
 
 
 

@@ -168,7 +168,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype + 'case2' #"_dec_bias"
+    whichtype = whichtype + 'case2_cal' #"_dec_bias"
     r_mean = []
     hyrs_R = []
     tr_R = []
@@ -1294,8 +1294,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         for group in ['Female', 'Male', 'Total']:
             for metric in ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence', 'Contradiction Acceptance Rate', 'Improvement w.r.t. TDL', 'Reconciliation Costs Incurred', 'Improved in TTL w.r.t. Human', 'Self Advising Rate']:
                 bars = bars.append({'Method': method, 'Group': group, 'Mean': float(method_dict[method].loc[metric, group].split(' \pm ')[0]), 'Std': float(method_dict[method].loc[metric, group].split(' \pm ')[1]), 'Metric': metric}, ignore_index=True)
-    bars['Doctor'] = 'Doctor 2A'
-    bars.to_pickle('results/bars_doc2A.pkl')
+    bars['Doctor'] = 'Doctor 2B'
+    bars.to_pickle('results/bars_doc2B.pkl')
 
 
     
@@ -1360,8 +1360,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     bplot_data['Group'] = bplot_data.index
     
     
-    bplot_data['Doctor'] = 'Doctor A'
-    bplot_data.to_pickle('results/bplot2A.pkl')
+    bplot_data['Doctor'] = 'Doctor B'
+    bplot_data.to_pickle('results/bplot2B.pkl')
     
     color_dict = {'TR': '#348ABD', 'tr': '#348ABD', 'TR-no(ADB)': '#8EBA42', 'tr-no(ADB)': '#8EBA42', 'Task-Only (Current Practice)':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00'}
     '''
@@ -1371,7 +1371,7 @@ color_dict = {'TR': '#348ABD', 'tr': '#348ABD', 'TR-no(ADB)': '#8EBA42',
     
 # Methods ordered from top to bottom: 'tr', 'Task-Only (Current Practice)', 'tr-no(ADB)'
 methods = ['TR', 'Task-Only (Current Practice)', 'TR-no(ADB)']
-docs = ['Doctor A']
+docs = ['Doctor B']
 
 # Initialize structures to store male and female proportions for each method
 bar_means_female = {}
@@ -1394,12 +1394,12 @@ for method in methods:
 # Set up figure and axes for two side-by-side horizontal bar plots
 fig, ax = plt.subplots(1, 1, figsize=(12, 6))
 
-# Data for Doctor A (first entry) and Doctor B (second entry)
-doc_a_female = [bar_means_female[method][0] for method in methods]  # Female percentages for Doctor A
-doc_a_male = [bar_means_male[method][0] for method in methods]      # Male percentages for Doctor A
+# Data for Doctor B (first entry) and Doctor B (second entry)
+doc_a_female = [bar_means_female[method][0] for method in methods]  # Female percentages for Doctor B
+doc_a_male = [bar_means_male[method][0] for method in methods]      # Male percentages for Doctor B
 
-#doc_b_female = [bar_means_female[method][1] for method in methods]  # Female percentages for Doctor B
-#doc_b_male = [bar_means_male[method][1] for method in methods]      # Male percentages for Doctor B
+doc_b_female = [bar_means_female[method][0] for method in methods]  # Female percentages for Doctor B
+doc_b_male = [bar_means_male[method][0] for method in methods]      # Male percentages for Doctor B
 
 # X-axis positions for the methods (reverse the order to display them top to bottom correctly)
 x_pos = np.arange(len(methods))[::-1]
@@ -1412,21 +1412,21 @@ def add_percentage_labels(ax, male_values, female_values, x_pos):
         # Adding Female label
         ax.text(male + female / 2, x_pos[i], f'Female: {female:.2%}', va='center', ha='center', color='black', fontweight='bold')
 
-# Doctor A plot
+# Doctor B plot
 for i, method in enumerate(methods):
     # Male bar (no hatch)
-    ax.barh(x_pos[i], doc_a_male[i], color=color_dict[method], label='Male', edgecolor='black')
+    ax.barh(x_pos[i], doc_b_male[i], color=color_dict[method], label='Male', edgecolor='black')
     # Female bar (dash hatch, alpha=0.7)
-    ax.barh(x_pos[i], doc_a_female[i], left=doc_a_male[i], color=color_dict[method], edgecolor='black',  alpha=0.7)
+    ax.barh(x_pos[i], doc_b_female[i], left=doc_b_male[i], color=color_dict[method], edgecolor='black',  alpha=0.7)
 
 ax.set_yticks(x_pos)
 ax.set_yticklabels(methods, rotation=45)
-ax.set_title('Doctor A')
+ax.set_title('Doctor B')
 ax.set_xlim(0, 1)
 ax.set_xlabel('Proportion of Contradicting Advice Given')
 
-# Add percentage labels for Doctor A
-add_percentage_labels(ax, doc_a_male, doc_a_female, x_pos)
+# Add percentage labels for Doctor B
+add_percentage_labels(ax, doc_b_male, doc_b_female, x_pos)
 
 # Doctor B plot
 for i, method in enumerate(methods):
@@ -1483,7 +1483,7 @@ for col, group in enumerate(groups):
         'TR-no(ADB)': '.',  # Dotted pattern
         'Task-Only (Current Practice)': '-'  # Horizontal line
     }
-    docs = ['Doctor A']
+    docs = ['Doctor B']
     methods = ['TR', 'Task-Only (Current Practice)', 'TR-no(ADB)']
     cleaned_methods = ['TR', 'Task-Only \n (Current Practice)', 'TR-no(ADB)']
     

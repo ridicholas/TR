@@ -542,11 +542,11 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6
     
     color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00', 'TR-no(Cost)': '#CC79A7'}  #75c361
     names_dict = {'TR': 'Learned ADB', 'TR-No(ADB, Cost)': 'Half ADB', 'Task-Only (Current Practice)':'no ADB', 'Human': 'Human', 'HYRSRecon': 'HYRS-Recon', 'TR-SelectiveOnly': 'Par30 ADB', 'TR-no(Cost)': 'Random ADB', 'TR-No(ADB)': 'Adversarial ADB'}
-    ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = names_dict['TR-No(ADB, Cost)'] + f' AUC: {rocs_dict[r_translator["TR-No(ADB, Cost)"]][0]}', markersize=1.8, linewidth=0.9)
+    #ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = names_dict['TR-No(ADB, Cost)'] + f' AUC: {rocs_dict[r_translator["TR-No(ADB, Cost)"]][0]}', markersize=1.8, linewidth=0.9)
     ax.plot(results_means.index[0:stopat], results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat], marker = 'x', c=color_dict['HYRSRecon'], label = names_dict['TR-No(ADB)'] + f' AUC: {rocs_dict[r_translator["TR-No(ADB)"]][0]}', markersize=1.8, linewidth=0.9)
     ax.plot(results_means.index[0:stopat], results_means['tr_team_w_reset_objective'].iloc[0:stopat], marker = '.', c=color_dict['TR'], label=names_dict['TR'] + f' AUC: {rocs_dict[r_translator["TR"]][0]}', markersize=1.8, linewidth=0.9)
     ax.plot(results_means.index[0:stopat], results_means['tr2s_team_w_reset_objective'].iloc[0:stopat], marker = '^', label=names_dict['TR-no(Cost)'] + f' AUC: {rocs_dict[r_translator["TR-no(Cost)"]][0]}', c=color_dict['TR-no(Cost)'], markersize=1.8, linewidth=0.9)
-    ax.plot(results_means.index[0:stopat], results_means['brs_team_objective'].iloc[0:stopat], marker = 's', c=color_dict['BRS'], label=names_dict['Task-Only (Current Practice)'] + f' AUC: {rocs_dict[r_translator["Task-Only (Current Practice)"]][0]}', markersize=1.8, linewidth=0.9)
+    #ax.plot(results_means.index[0:stopat], results_means['brs_team_objective'].iloc[0:stopat], marker = 's', c=color_dict['BRS'], label=names_dict['Task-Only (Current Practice)'] + f' AUC: {rocs_dict[r_translator["Task-Only (Current Practice)"]][0]}', markersize=1.8, linewidth=0.9)
     ax.plot(results_means.index[0:stopat], results_means['brs_team_w_reset_objective'].iloc[0:stopat], marker = 'v', c=color_dict['BRSselect'], label=names_dict['TR-SelectiveOnly'] + f' AUC: {rocs_dict[r_translator["TR-SelectiveOnly"]][0]}', markersize=1.8, linewidth=0.9)
     
     ax.plot(results_means.index[0:stopat], results_means['human_decision_loss'].iloc[0:stopat], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
@@ -561,15 +561,15 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6
                 results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat]+1.00*(results_stderrs['trnoadb_team_w_reset_objective'].iloc[0:stopat]) ,
                 color=color_dict['HYRSRecon'], alpha=0.2)
     
-    ax.fill_between(results_means.index[0:stopat], 
-                results_means['hyrs_norecon_objective'].iloc[0:stopat]-1.00*(results_stderrs['hyrs_norecon_objective'].iloc[0:stopat]),
-                results_means['hyrs_norecon_objective'].iloc[0:stopat]+1.00*(results_stderrs['hyrs_norecon_objective'].iloc[0:stopat]) ,
-                color=color_dict['HYRS'], alpha=0.2)
+    #ax.fill_between(results_means.index[0:stopat], 
+    #            results_means['hyrs_norecon_objective'].iloc[0:stopat]-1.00*(results_stderrs['hyrs_norecon_objective'].iloc[0:stopat]),
+    #            results_means['hyrs_norecon_objective'].iloc[0:stopat]+1.00*(results_stderrs['hyrs_norecon_objective'].iloc[0:stopat]) ,
+    #            color=color_dict['HYRS'], alpha=0.2)
     
-    ax.fill_between(results_means.index[0:stopat], 
-                results_means['brs_team_objective'].iloc[0:stopat]-1.00*(results_stderrs['brs_team_objective'].iloc[0:stopat]),
-                results_means['brs_team_objective'].iloc[0:stopat]+1.00*(results_stderrs['brs_team_objective'].iloc[0:stopat]) ,
-                color=color_dict['BRS'], alpha=0.2)
+    #ax.fill_between(results_means.index[0:stopat], 
+    #            results_means['brs_team_objective'].iloc[0:stopat]-1.00*(results_stderrs['brs_team_objective'].iloc[0:stopat]),
+    #            results_means['brs_team_objective'].iloc[0:stopat]+1.00*(results_stderrs['brs_team_objective'].iloc[0:stopat]) ,
+    #            color=color_dict['BRS'], alpha=0.2)
     
     
     ax.fill_between(results_means.index[0:stopat], 
@@ -639,66 +639,77 @@ def make_contradictions_v_decisionloss_plot(results_means, results_stderrs, name
 
     #plt.clf()
 
+def methods(t):    
+    methods = [f'tr_{t}_w_reset', f'hyrs_{t}', f'brs_{t}', f'tr2s_{t}_w_reset', f'trnoadb_{t}_w_reset', f'brs_{t}_w_reset']
+    return methods
 
+def robust_rules(rs, val_rs, team_method, model_method):
+    
 
-def robust_rules(rs, val_rs):
-    tracker = {}
-    new_rs = deepcopy(rs)
-    for cost in rs.index:
-        tracker[cost] = []
-        for column in rs.columns:
-            new_rs.loc[cost, column] = deepcopy(rs.loc[cost, column])
-        for i in range(len(val_rs['tr_team_w_reset_objective'][cost])):
-            x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized= load_datasets(dataset, i)
-            curr_val_objective = val_rs['tr_team_w_reset_objective'][cost][i]
-            '''
-            if val_rs['hyrs_team_objective'][cost][i] < curr_val_objective:
-                new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['hyrs_model_contradictions'][cost][i].copy()
-                new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['hyrs_team_decision_loss'][cost][i].copy()
-                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][cost][i] + cost*new_rs['tr_model_w_reset_contradictions'][cost][i]/len(y_test)
-                print(f"cost: {cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
-                if i not in tracker[cost]:
-                    tracker[cost].append(i)
-                curr_val_objective = val_rs['hyrs_team_objective'][cost][i]
-            if val_rs['brs_team_objective'][cost][i] < curr_val_objective:
-                new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['brs_model_contradictions'][cost][i].copy()
-                new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['brs_team_decision_loss'][cost][i].copy()
-                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][cost][i] + cost*new_rs['tr_model_w_reset_contradictions'][cost][i]/len(y_test)
-                print(f"cost: {cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
-                curr_val_objective = val_rs['brs_team_objective'][cost][i]
-                if i not in tracker[cost]:
-                    tracker[cost].append(i)
-            '''
-            if val_rs['brs_team_w_reset_objective'][cost][i] < curr_val_objective:
-                new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['brs_model_w_reset_contradictions'][cost][i].copy()
-                new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['brs_team_w_reset_decision_loss'][cost][i].copy()
-                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][cost][i] + cost*new_rs['tr_model_w_reset_contradictions'][cost][i]/len(y_test)
-                print(f"cost: {cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
-                curr_val_objective = val_rs['brs_team_w_reset_objective'][cost][i]
-                if i not in tracker[cost]:
-                    tracker[cost].append(i)
-            '''
-            if val_rs['hyrs_team_w_reset_objective'][cost][i] < curr_val_objective:
-                new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['hyrs_model_w_reset_contradictions'][cost][i].copy()
-                new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['hyrs_team_w_reset_decision_loss'][cost][i].copy()
-                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][cost][i] + cost*new_rs['tr_model_w_reset_contradictions'][cost][i]/len(y_test)
-                print(f"cost: {cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
-                curr_val_objective = val_rs['hyrs_team_w_reset_objective'][cost][i]
-                if i not in tracker[cost]:
-                    tracker[cost].append(i)
-            '''
+    
 
-            
-            
-             
-            if val_rs['human_decision_loss'][cost][i] < curr_val_objective:
-                new_rs['tr_model_w_reset_contradictions'][cost][i] = 0
-                new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['human_decision_loss'][cost][i].copy()
-                new_rs['tr_team_w_reset_objective'][cost][i] = new_rs['tr_team_w_reset_decision_loss'][cost][i].copy()
-                print(f"cost: {cost}, i: {i}, replacing actual of {rs['tr_team_w_reset_objective'][cost][i]} with new of {new_rs['tr_team_w_reset_objective'][cost][i]}")
-                curr_val_objective = val_rs['human_decision_loss'][cost][i]
-                if i not in tracker[cost]:
-                    tracker[cost].append(i)
+    rs.columns = list(map(lambda x: x.lower(), rs.columns))
+
+    for j in range(len(team_methods)):
+
+    
+        tracker = {}
+        new_rs = deepcopy(rs)
+        for cost in rs.index:
+            tracker[cost] = []
+            for column in rs.columns:
+                new_rs.loc[cost, column] = deepcopy(rs.loc[cost, column])
+            for i in range(len(val_rs[team_method + '_objective'][cost])):
+                x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized= load_datasets(dataset, i)
+                curr_val_objective = val_rs[team_method + '_objective'][cost][i]
+                '''
+                if val_rs['hyrs_team_objective'][cost][i] < curr_val_objective:
+                    new_rs[model_method + '_contradictions'][cost][i] = rs['hyrs_model_contradictions'][cost][i].copy()
+                    new_rs[team_method + '_decision_loss'][cost][i] = rs['hyrs_team_decision_loss'][cost][i].copy()
+                    new_rs[team_method + '_objective'][cost][i] = new_rs[team_method + '_decision_loss'][cost][i] + cost*new_rs[model_method + '_contradictions'][cost][i]/len(y_test)
+                    print(f"cost: {cost}, i: {i}, replacing actual of {rs[team_method + '_objective'][cost][i]} with new of {new_rs[team_method + '_objective'][cost][i]}")
+                    if i not in tracker[cost]:
+                        tracker[cost].append(i)
+                    curr_val_objective = val_rs['hyrs_team_objective'][cost][i]
+                if val_rs['brs_team_objective'][cost][i] < curr_val_objective:
+                    new_rs[model_method + '_contradictions'][cost][i] = rs['brs_model_contradictions'][cost][i].copy()
+                    new_rs[team_method + '_decision_loss'][cost][i] = rs['brs_team_decision_loss'][cost][i].copy()
+                    new_rs[team_method + '_objective'][cost][i] = new_rs[team_method + '_decision_loss'][cost][i] + cost*new_rs[model_method + '_contradictions'][cost][i]/len(y_test)
+                    print(f"cost: {cost}, i: {i}, replacing actual of {rs[team_method + '_objective'][cost][i]} with new of {new_rs[team_method + '_objective'][cost][i]}")
+                    curr_val_objective = val_rs['brs_team_objective'][cost][i]
+                    if i not in tracker[cost]:
+                        tracker[cost].append(i)
+                
+                if val_rs['brs_team_w_reset_objective'][cost][i] < curr_val_objective:
+                    new_rs[model_method + '_contradictions'][cost][i] = rs['brs_model_w_reset_contradictions'][cost][i].copy()
+                    new_rs[team_method + '_decision_loss'][cost][i] = rs['brs_team_w_reset_decision_loss'][cost][i].copy()
+                    new_rs[team_method + '_objective'][cost][i] = new_rs[team_method + '_decision_loss'][cost][i] + cost*new_rs[model_method + '_contradictions'][cost][i]/len(y_test)
+                    print(f"cost: {cost}, i: {i}, replacing actual of {rs[team_method + '_objective'][cost][i]} with new of {new_rs[team_method + '_objective'][cost][i]}")
+                    curr_val_objective = val_rs['brs_team_w_reset_objective'][cost][i]
+                    if i not in tracker[cost]:
+                        tracker[cost].append(i)
+                
+                if val_rs['hyrs_team_w_reset_objective'][cost][i] < curr_val_objective:
+                    new_rs[model_method + '_contradictions'][cost][i] = rs['hyrs_model_w_reset_contradictions'][cost][i].copy()
+                    new_rs[team_method + '_decision_loss'][cost][i] = rs['hyrs_team_w_reset_decision_loss'][cost][i].copy()
+                    new_rs[team_method + '_objective'][cost][i] = new_rs[team_method + '_decision_loss'][cost][i] + cost*new_rs[model_method + '_contradictions'][cost][i]/len(y_test)
+                    print(f"cost: {cost}, i: {i}, replacing actual of {rs[team_method + '_objective'][cost][i]} with new of {new_rs[team_method + '_objective'][cost][i]}")
+                    curr_val_objective = val_rs['hyrs_team_w_reset_objective'][cost][i]
+                    if i not in tracker[cost]:
+                        tracker[cost].append(i)
+                '''
+
+                
+                #new_rs.columns = list(map(lambda x: x.lower(), new_rs.columns))
+                
+                if val_rs['human_decision_loss'][cost][i] < curr_val_objective:
+                    new_rs[model_method + '_contradictions'][cost][i] = 0
+                    new_rs[team_method + '_decision_loss'][cost][i] = rs['human_decision_loss'][cost][i].copy()
+                    new_rs[team_method + '_objective'][cost][i] = new_rs[team_method + '_decision_loss'][cost][i].copy()
+                    print(f"cost: {cost}, i: {i}, replacing actual of {rs[team_method + '_objective'][cost][i]} with new of {new_rs[team_method + '_objective'][cost][i]}")
+                    curr_val_objective = val_rs['human_decision_loss'][cost][i]
+                    if i not in tracker[cost]:
+                        tracker[cost].append(i)
                 
     new_results_means = new_rs.apply(lambda x: x.apply(lambda y: mean(y)))
     new_results_stderrs = new_rs.apply(lambda x: x.apply(lambda y: np.std(y)/np.sqrt(len(y))))
@@ -719,7 +730,7 @@ def cost_validation(rs, val_rs):
             for alt_cost in rs.index:
                 if alt_cost <= cost or alt_cost > cost + 0.2:
                     continue
-                alt_val_objective = val_rs['tr_team_w_reset_decision_loss'][alt_cost][i] + cost*(val_rs['tr_model_w_reset_contradictions'][alt_cost][i])/len(y_val)
+                alt_val_objective = val_rs['tr_team_w_reset_decision_loss'][alt_cost][i] + cost*(val_rs[team_method + '_contradictions'][alt_cost][i])/len(y_val)
                 if alt_val_objective < curr_val_objective:
                     new_rs['tr_model_w_reset_contradictions'][cost][i] = rs['tr_model_w_reset_contradictions'][alt_cost][i].copy()
                     new_rs['tr_team_w_reset_decision_loss'][cost][i] = rs['tr_team_w_reset_decision_loss'][alt_cost][i].copy()
@@ -792,8 +803,8 @@ datasets = ['heart_disease']
 names = ['biased', 'biased_dec_bias', 'offset_01']
 
 
-fig, axs = plt.subplots(3,3)
-fig.set_size_inches(7,5)
+fig, axs = plt.subplots(1,3)
+fig.set_size_inches(8,3)
 
 datarow = 0
 behaviorrow = 0
@@ -849,9 +860,15 @@ for dataset in datasets:
             #cval_means, cval_stderss, cval_rs, cost_tracker, final_cost = cost_validation(rs, val_rs)
             #cval_means, cval_stderss, cval_rs = cost_plus(rs)
             #cval_val_means, cval_val_stderrs, cval_val_rs = cost_plus(val_rs)
-            #rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(rs, val_rs)
-            rval_means = means
-            rval_stderss = std
+            team_methods = methods('team')
+            model_methods = methods('model')
+            for j in range(len(team_methods)):
+                if j == 0:
+                    rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(rs, val_rs, team_methods[j], model_methods[j])
+                else:
+                    rval_means, rval_stderss, rval_rs, rules_tracker = robust_rules(rval_rs, val_rs, team_methods[j], model_methods[j])
+            #rval_means = means
+            #rval_stderss = std
             rocs_dict = pd.read_pickle(f'results/{dataset}/roc_dict_{name}.pkl')
             for key, value in rocs_dict.items():
                 rocs_dict[key] = np.round(value, 3)
@@ -873,7 +890,7 @@ for dataset in datasets:
             
             #ccval_means, ccval_stderss, ccval_rs, _, _ = cost_validation(val_rs, val_rs) 
             #rcval_means, rcval_stderss, rcval_rs, both_tracker = robust_rules(cval_rs, ccval_rs)   
-            make_multi_TL_v_cost_plot(rval_means, rval_stderss, name, axs[datarow, behaviorrow], rocs_dict=rocs_dict)
+            make_multi_TL_v_cost_plot(rval_means, rval_stderss, name, axs[behaviorrow], rocs_dict=rocs_dict)
             #make_multi_TL_v_cost_plot(means, std, name, axs[datarow, behaviorrow], stopat=6)
             
 
@@ -902,15 +919,15 @@ for dataset in datasets:
     datarow += 1
     behaviorrow = 0
 
-for ax, col in zip(axs[0], cols):
+for ax, col in zip(axs, cols):
     ax.annotate(col, xy=(0.5, 1), xytext=(0, pad),
                 xycoords='axes fraction', textcoords='offset points',
                 size='medium', ha='center', va='baseline')
 
-for ax, row in zip(axs[:,0], rows):
-    ax.annotate(row, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - pad, 0),
-                xycoords=ax.yaxis.label, textcoords='offset points',
-                size='large', ha='right', va='center', rotation=90)
+#for ax, row in zip(axs, rows):
+#    ax.annotate(row, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - pad, 0),
+#                xycoords=ax.yaxis.label, textcoords='offset points',
+#                size='large', ha='right', va='center', rotation=90)
 
 
 fig.tight_layout()

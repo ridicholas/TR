@@ -305,20 +305,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
                         hyrs_norecon_model_preds = np.ones(len(y_test))
                         hyrs_norecon_team_preds = np.ones(len(y_test))
 
-                    if 'brs' in which_to_do:
-                        brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, learned_adb.ADB_model_wrapper)
-                        brs_reset = brs_expected_loss_filter(brs_mod, x_test, brs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=brs_conf, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=cost)
-                        brs_team_preds_w_reset = brs_team_preds.copy()
-                        brs_team_preds_w_reset[brs_reset] = human_decisions[brs_reset]
-                        brs_model_preds_w_reset = brs_model_preds.copy()
-                        brs_model_preds_w_reset[brs_reset] = human_decisions[brs_reset]
-                    else:
-                        brs_team_preds = np.ones(len(y_test))
-                        brs_model_preds = np.ones(len(y_test))
-                        brs_conf = np.ones(len(y_test))
-                        brs_reset = np.zeros(len(y_test))
-                        brs_team_preds_w_reset = np.ones(len(y_test))
-                        brs_model_preds_w_reset = np.ones(len(y_test))
+
 
 
 
