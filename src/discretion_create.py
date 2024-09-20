@@ -413,9 +413,18 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
                         p_adb = human.ADB(human_conf, tr_mod_confs, agreement)[agreement==False]
                         p_parADB = parADB(human_conf, tr_mod_confs, agreement)[agreement==False]
                         p_par30ADB = par30ADB(human_conf, tr_mod_confs, agreement)[agreement==False]
-                        rocs_adb.append(roc_auc_score(bernoulli.rvs(p=p_adb, size=(agreement==False).sum()).astype(bool), p))
-                        rocs_par.append(roc_auc_score(bernoulli.rvs(p=p_parADB, size=(agreement==False).sum()).astype(bool), p))
-                        rocs_par30.append(roc_auc_score(bernoulli.rvs(p=p_par30ADB, size=(agreement==False).sum()).astype(bool), p)) 
+                        try:
+                            rocs_adb.append(roc_auc_score(bernoulli.rvs(p=p_adb, size=(agreement==False).sum()).astype(bool), p))
+                        except: 
+                            pass
+                        try:   
+                            rocs_par.append(roc_auc_score(bernoulli.rvs(p=p_parADB, size=(agreement==False).sum()).astype(bool), p))
+                        except:
+                            pass
+                        try:
+                            rocs_par30.append(roc_auc_score(bernoulli.rvs(p=p_par30ADB, size=(agreement==False).sum()).astype(bool), p)) 
+                        except:
+                            pass
 
                 if 'tr' in which_to_do:
                     tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
@@ -687,7 +696,7 @@ costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5]
 
 num_runs = 10
 datasets = ['heart_disease']
-names = ['offset_01']
+names = ['biased_dec_bias']
 which_to_do = ['tr', 'tr2s', 'tr-no(adb)', 'brs']
 
 for dataset in datasets:

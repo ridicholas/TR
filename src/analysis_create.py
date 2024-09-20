@@ -174,7 +174,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
         for cost in costs:
             print(f'producing for cost {cost} run {run}.....')
             tr_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr')
-            hyrs_mod = load_results(dataset, f'_{whichtype}', run, cost, 'hyrs')
+            #hyrs_mod = load_results(dataset, f'_{whichtype}', run, cost, 'hyrs')
             trnoadb_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr-no(ADB)')
             #load e_y and e_yb mods
             #with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype}.pkl', 'rb') as f:
@@ -188,8 +188,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
             tr2s_mod.Y = y_train
             trnoadb_mod.df = x_train
             trnoadb_mod.Y = y_train
-            hyrs_mod.df = x_train
-            hyrs_mod.Y = y_train
+            #hyrs_mod.df = x_train
+            #hyrs_mod.Y = y_train
 
             
             tr_team_w_reset_decision_loss = []

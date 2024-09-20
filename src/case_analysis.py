@@ -168,7 +168,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype + 'case2_cal' #"_dec_bias"
+    whichtype = whichtype + 'case2' #"_dec_bias"
     r_mean = []
     hyrs_R = []
     tr_R = []
@@ -1233,7 +1233,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     case_results.loc['Improvement w.r.t. TDL', :] = weighted_avg_and_std(((human_confusion-tr_confusion)/total), totals_confusion)[0]
     case_results.loc['Reconciliation Costs Incurred', :] = weighted_avg_and_std(-(cost * tr_confusion_contras)/total, totals_confusion)[0]
     case_results.loc['Improved in TTL w.r.t. Human', :] = weighted_avg_and_std(((human_confusion-tr_confusion)-(cost * tr_confusion_contras))/total, totals_confusion)[0]
-    case_results.loc['Advising Accuracy', :] = weighted_avg_and_std(tr_covered_correct_confusion/tr_covered_confusion, tr_covered_confusion)[0]
+    case_results.loc['Advising Accuracy', :] = weighted_avg_and_std(tr_confusion_contras_correct/tr_confusion_contras, tr_confusion_contras)[0]
     case_results.loc['Self Advising Rate', :] = weighted_avg_and_std((tr_confusion_contras/quick_perc(tr_confusion_contras)), quick_perc(tr_confusion_contras))[0]
 
     tr2s_case_results = pd.DataFrame(index = ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence',
@@ -1246,7 +1246,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     tr2s_case_results.loc['Improvement w.r.t. TDL', :] = weighted_avg_and_std(((human_confusion-tr2s_confusion)/total), totals_confusion)[0]
     tr2s_case_results.loc['Reconciliation Costs Incurred', :] = weighted_avg_and_std(-(cost * tr2s_confusion_contras)/total, totals_confusion)[0]
     tr2s_case_results.loc['Improved in TTL w.r.t. Human', :] = weighted_avg_and_std(((human_confusion-tr2s_confusion)-(cost * tr2s_confusion_contras))/total, totals_confusion)[0]
-    tr2s_case_results.loc['Advising Accuracy', :] = weighted_avg_and_std(tr2s_covered_correct_confusion/tr2s_covered_confusion, tr2s_covered_confusion)[0]
+    tr2s_case_results.loc['Advising Accuracy', :] = weighted_avg_and_std(tr2s_confusion_contras_correct/tr2s_confusion_contras, tr2s_confusion_contras)[0]
     tr2s_case_results.loc['Self Advising Rate', :] = weighted_avg_and_std((tr2s_confusion_contras/quick_perc(tr2s_confusion_contras)), quick_perc(tr2s_confusion_contras))[0]
 
     hyrs_case_results = pd.DataFrame(index = ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence', 
@@ -1258,7 +1258,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     hyrs_case_results.loc['Improvement w.r.t. TDL', :] = weighted_avg_and_std(((human_confusion-hyrs_confusion)/total), totals_confusion)[0]
     hyrs_case_results.loc['Reconciliation Costs Incurred', :] = weighted_avg_and_std(-(cost * hyrs_confusion_contras)/total, totals_confusion)[0]
     hyrs_case_results.loc['Improved in TTL w.r.t. Human', :] = weighted_avg_and_std(((human_confusion-hyrs_confusion)-(cost * hyrs_confusion_contras))/total, totals_confusion)[0]
-    hyrs_case_results.loc['Advising Accuracy', :] = weighted_avg_and_std(hyrs_covered_correct_confusion/hyrs_covered_confusion, hyrs_covered_confusion)[0]
+    hyrs_case_results.loc['Advising Accuracy', :] = weighted_avg_and_std(hyrs_confusion_contras_correct/hyrs_confusion_contras, hyrs_confusion_contras)[0]
     hyrs_case_results.loc['Self Advising Rate', :] = weighted_avg_and_std((hyrs_confusion_contras/quick_perc(hyrs_confusion_contras)), quick_perc(hyrs_confusion_contras))[0]
 
     brs_case_results = pd.DataFrame(index = ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence', 
@@ -1271,7 +1271,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     brs_case_results.loc['Improvement w.r.t. TDL', :] = weighted_avg_and_std(((human_confusion-brs_confusion)/total), totals_confusion)[0]
     brs_case_results.loc['Reconciliation Costs Incurred', :] = weighted_avg_and_std(-(cost * brs_confusion_contras)/total, totals_confusion)[0]
     brs_case_results.loc['Improved in TTL w.r.t. Human', :] = weighted_avg_and_std(((human_confusion-brs_confusion)-(cost * brs_confusion_contras))/total, totals_confusion)[0]
-    brs_case_results.loc['Advising Accuracy', :] = weighted_avg_and_std(1-(brs_model_confusion/totals_confusion), totals_confusion)[0]
+    brs_case_results.loc['Advising Accuracy', :] = weighted_avg_and_std(brs_confusion_contras_correct/brs_confusion_contras, brs_confusion_contras)[0]
     brs_case_results.loc['Self Advising Rate', :] = weighted_avg_and_std((brs_confusion_contras/quick_perc(brs_confusion_contras)), quick_perc(brs_confusion_contras))[0]
 
     brs_w_reset_case_results = pd.DataFrame(index = ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence', 
@@ -1284,7 +1284,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     brs_w_reset_case_results.loc['Improvement w.r.t. TDL', :] = weighted_avg_and_std(((human_confusion-brs_w_reset_confusion)/total), totals_confusion)[0]
     brs_w_reset_case_results.loc['Reconciliation Costs Incurred', :] = weighted_avg_and_std(-(cost * brs_w_reset_confusion_contras)/total, totals_confusion)[0]
     brs_w_reset_case_results.loc['Improved in TTL w.r.t. Human', :] = weighted_avg_and_std(((human_confusion-brs_w_reset_confusion)-(cost * brs_w_reset_confusion_contras))/total, totals_confusion)[0]
-    brs_w_reset_case_results.loc['Advising Accuracy', :] = weighted_avg_and_std(1-(brs_w_reset_model_confusion/totals_confusion), totals_confusion)[0]
+    brs_w_reset_case_results.loc['Advising Accuracy', :] = weighted_avg_and_std(brs_w_reset_confusion_contras_correct/brs_w_reset_confusion_contras, brs_w_reset_confusion_contras)[0]
     brs_w_reset_case_results.loc['Self Advising Rate', :] = weighted_avg_and_std((brs_w_reset_model_confusion/quick_perc(brs_w_reset_model_confusion)), quick_perc(brs_w_reset_model_confusion))[0]
 
     bars = pd.DataFrame(columns=['Method', 'Group', 'Mean', 'Std', 'Metric'])
@@ -1294,8 +1294,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         for group in ['Female', 'Male', 'Total']:
             for metric in ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence', 'Contradiction Acceptance Rate', 'Improvement w.r.t. TDL', 'Reconciliation Costs Incurred', 'Improved in TTL w.r.t. Human', 'Self Advising Rate']:
                 bars = bars.append({'Method': method, 'Group': group, 'Mean': float(method_dict[method].loc[metric, group].split(' \pm ')[0]), 'Std': float(method_dict[method].loc[metric, group].split(' \pm ')[1]), 'Metric': metric}, ignore_index=True)
-    bars['Doctor'] = 'Doctor 2B'
-    bars.to_pickle('results/bars_doc2B.pkl')
+    bars['Doctor'] = 'Doctor 2A'
+    bars.to_pickle('results/bars_doc2A.pkl')
 
 
     
@@ -1324,10 +1324,10 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     d_hyrs_accept = (hyrs_confusion_contras_accepted/hyrs_confusion_contras)['Total']
     d_brs_accept = (brs_confusion_contras_accepted/brs_confusion_contras)['Total']
     d_brs_reset_accept = (brs_w_reset_confusion_contras_accepted/brs_w_reset_confusion_contras)['Total']
-    d_tr_advAcc = (tr_covered_correct_confusion/tr_covered_confusion)['Total']
-    d_hyrs_advAcc = (hyrs_covered_correct_confusion/hyrs_covered_confusion)['Total']
-    d_brs_advAcc = (brs_model_confusion/totals_confusion)['Total']
-    d_brs_reset_advAcc = (brs_w_reset_covered_correct_confusion/brs_w_reset_covered_confusion)['Total']
+    d_tr_advAcc = (tr_confusion_contras_correct/tr_confusion_contras)['Total']
+    d_hyrs_advAcc = (hyrs_confusion_contras_correct/hyrs_confusion_contras)['Total']
+    d_brs_advAcc = (brs_confusion_contras_correct/brs_confusion_contras)['Total']
+    d_brs_reset_advAcc = (brs_w_reset_confusion_contras_correct/brs_w_reset_confusion_contras)['Total']
     d_tr = d_tr['Total']
     d_hyrs = d_hyrs['Total']
     d_brs = d_brs['Total']
@@ -1360,8 +1360,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     bplot_data['Group'] = bplot_data.index
     
     
-    bplot_data['Doctor'] = 'Doctor B'
-    bplot_data.to_pickle('results/bplot2B.pkl')
+    bplot_data['Doctor'] = 'Doctor A'
+    bplot_data.to_pickle('results/bplot2A.pkl')
     
     color_dict = {'TR': '#348ABD', 'tr': '#348ABD', 'TR-no(ADB)': '#8EBA42', 'tr-no(ADB)': '#8EBA42', 'Task-Only (Current Practice)':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00'}
     '''
@@ -1371,7 +1371,7 @@ color_dict = {'TR': '#348ABD', 'tr': '#348ABD', 'TR-no(ADB)': '#8EBA42',
     
 # Methods ordered from top to bottom: 'tr', 'Task-Only (Current Practice)', 'tr-no(ADB)'
 methods = ['TR', 'Task-Only (Current Practice)', 'TR-no(ADB)']
-docs = ['Doctor B']
+docs = ['Doctor A']
 
 # Initialize structures to store male and female proportions for each method
 bar_means_female = {}
@@ -1394,12 +1394,12 @@ for method in methods:
 # Set up figure and axes for two side-by-side horizontal bar plots
 fig, ax = plt.subplots(1, 1, figsize=(12, 6))
 
-# Data for Doctor B (first entry) and Doctor B (second entry)
-doc_a_female = [bar_means_female[method][0] for method in methods]  # Female percentages for Doctor B
-doc_a_male = [bar_means_male[method][0] for method in methods]      # Male percentages for Doctor B
+# Data for Doctor A (first entry) and Doctor A (second entry)
+doc_a_female = [bar_means_female[method][0] for method in methods]  # Female percentages for Doctor A
+doc_a_male = [bar_means_male[method][0] for method in methods]      # Male percentages for Doctor A
 
-doc_b_female = [bar_means_female[method][0] for method in methods]  # Female percentages for Doctor B
-doc_b_male = [bar_means_male[method][0] for method in methods]      # Male percentages for Doctor B
+#doc_b_female = [bar_means_female[method][0] for method in methods]  # Female percentages for Doctor A
+#doc_b_male = [bar_means_male[method][0] for method in methods]      # Male percentages for Doctor A
 
 # X-axis positions for the methods (reverse the order to display them top to bottom correctly)
 x_pos = np.arange(len(methods))[::-1]
@@ -1412,7 +1412,7 @@ def add_percentage_labels(ax, male_values, female_values, x_pos):
         # Adding Female label
         ax.text(male + female / 2, x_pos[i], f'Female: {female:.2%}', va='center', ha='center', color='black', fontweight='bold')
 
-# Doctor B plot
+# Doctor A plot
 for i, method in enumerate(methods):
     # Male bar (no hatch)
     ax.barh(x_pos[i], doc_b_male[i], color=color_dict[method], label='Male', edgecolor='black')
@@ -1421,14 +1421,14 @@ for i, method in enumerate(methods):
 
 ax.set_yticks(x_pos)
 ax.set_yticklabels(methods, rotation=45)
-ax.set_title('Doctor B')
+ax.set_title('Doctor A')
 ax.set_xlim(0, 1)
 ax.set_xlabel('Proportion of Contradicting Advice Given')
 
-# Add percentage labels for Doctor B
+# Add percentage labels for Doctor A
 add_percentage_labels(ax, doc_b_male, doc_b_female, x_pos)
 
-# Doctor B plot
+# Doctor A plot
 for i, method in enumerate(methods):
     # Male bar (no hatch)
     ax2.barh(x_pos[i], doc_b_male[i], color=color_dict[method], label='Male', edgecolor='black')
@@ -1437,11 +1437,11 @@ for i, method in enumerate(methods):
 
 ax2.set_yticks(x_pos)
 ax2.set_yticklabels(methods)
-ax2.set_title('Doctor B')
+ax2.set_title('Doctor A')
 ax2.set_xlim(0, 1)
 ax2.set_xlabel('Proportion of Contradicting Advice Given')
 
-# Add percentage labels for Doctor B
+# Add percentage labels for Doctor A
 add_percentage_labels(ax2, doc_b_male, doc_b_female, x_pos)
 
 # Add a common legend (no hatch for Male, dash hatch for Female)
@@ -1463,9 +1463,9 @@ metrics2 = ['ContraRate', 'Confidence', 'AcceptRate', 'Vadded']
 
 # Cleaned names for the metrics to be used in titles and y-axis labels
 cleaned_metric_names = {
-    'ContraRate': 'Contradiction Rate \n',
+    'ContraRate': 'Advising Rate \n',
     'Confidence': 'Advising Confidence \n',
-    'AcceptRate': '   Contradiction  \n Acceptance Rate',
+    'AcceptRate': '   Advice  \n Acceptance Rate',
     'AdviceAcc': 'Advising Accuracy \n',
     'Vadded': 'Value Added'
 }
@@ -1483,7 +1483,7 @@ for col, group in enumerate(groups):
         'TR-no(ADB)': '.',  # Dotted pattern
         'Task-Only (Current Practice)': '-'  # Horizontal line
     }
-    docs = ['Doctor B']
+    docs = ['Doctor A']
     methods = ['TR', 'Task-Only (Current Practice)', 'TR-no(ADB)']
     cleaned_methods = ['TR', 'Task-Only \n (Current Practice)', 'TR-no(ADB)']
     
@@ -1548,7 +1548,7 @@ for row, metric in enumerate(metrics1):
            ax.set_ylabel(cleaned_metric_names[metric])
         ax.set_xticklabels(cleaned_methods, size=6)
         if metric == 'AdviceAcc':
-            ax.set_ylim(0.5, 1.05)
+            ax.set_ylim(0.0, 1.05)
         elif metric == 'ContraRate':
             ax.set_ylim(-.05, 0.55)
         elif metric == 'Confidence':
