@@ -1294,8 +1294,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         for group in ['Female', 'Male', 'Total']:
             for metric in ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence', 'Contradiction Acceptance Rate', 'Improvement w.r.t. TDL', 'Reconciliation Costs Incurred', 'Improved in TTL w.r.t. Human', 'Self Advising Rate']:
                 bars = bars.append({'Method': method, 'Group': group, 'Mean': float(method_dict[method].loc[metric, group].split(' \pm ')[0]), 'Std': float(method_dict[method].loc[metric, group].split(' \pm ')[1]), 'Metric': metric}, ignore_index=True)
-    bars['Doctor'] = 'Doctor 2A'
-    bars.to_pickle('results/bars_doc2A.pkl')
+    bars['Doctor'] = 'Doctor A'
+    bars.to_pickle('results/bars_docA.pkl')
 
 
     
@@ -1361,7 +1361,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     
     
     bplot_data['Doctor'] = 'Doctor A'
-    bplot_data.to_pickle('results/bplot2A.pkl')
+    bplot_data.to_pickle('results/bplotA.pkl')
     
     color_dict = {'TR': '#348ABD', 'tr': '#348ABD', 'TR-no(ADB)': '#8EBA42', 'tr-no(ADB)': '#8EBA42', 'Task-Only (Current Practice)':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00'}
     '''
@@ -1415,9 +1415,9 @@ def add_percentage_labels(ax, male_values, female_values, x_pos):
 # Doctor A plot
 for i, method in enumerate(methods):
     # Male bar (no hatch)
-    ax.barh(x_pos[i], doc_b_male[i], color=color_dict[method], label='Male', edgecolor='black')
+    ax.barh(x_pos[i], doc_a_male[i], color=color_dict[method], label='Male', edgecolor='black')
     # Female bar (dash hatch, alpha=0.7)
-    ax.barh(x_pos[i], doc_b_female[i], left=doc_b_male[i], color=color_dict[method], edgecolor='black',  alpha=0.7)
+    ax.barh(x_pos[i], doc_a_female[i], left=doc_a_male[i], color=color_dict[method], edgecolor='black',  alpha=0.7)
 
 ax.set_yticks(x_pos)
 ax.set_yticklabels(methods, rotation=45)
@@ -1426,9 +1426,9 @@ ax.set_xlim(0, 1)
 ax.set_xlabel('Proportion of Contradicting Advice Given')
 
 # Add percentage labels for Doctor A
-add_percentage_labels(ax, doc_b_male, doc_b_female, x_pos)
+add_percentage_labels(ax, doc_a_male, doc_a_female, x_pos)
 
-# Doctor A plot
+# Doctor B plot
 for i, method in enumerate(methods):
     # Male bar (no hatch)
     ax2.barh(x_pos[i], doc_b_male[i], color=color_dict[method], label='Male', edgecolor='black')
@@ -1458,12 +1458,12 @@ plt.show()
     
 # Define groups and metrics
 groups = ['Female', 'Male', 'Total']
-metrics1 = ['AdviceAcc', 'ContraRate', 'Confidence', 'AcceptRate']
+metrics1 = ['Confidence', 'AdviceAcc', 'ContraRate', 'AcceptRate']
 metrics2 = ['ContraRate', 'Confidence', 'AcceptRate', 'Vadded']
 
 # Cleaned names for the metrics to be used in titles and y-axis labels
 cleaned_metric_names = {
-    'ContraRate': 'Advising Rate \n',
+    'ContraRate': 'Advising Rate',
     'Confidence': 'Advising Confidence \n',
     'AcceptRate': '   Advice  \n Acceptance Rate',
     'AdviceAcc': 'Advising Accuracy \n',
@@ -1471,13 +1471,15 @@ cleaned_metric_names = {
 }
 
 # Create subplots: 5 rows, 3 columns
-fig, axes = plt.subplots(5, 3, figsize=(8, 9))
+fig, axes = plt.subplots(3, 3, figsize=(6.5, 4.5))
 
 # Adjust layout
 plt.subplots_adjust(hspace=0.4, wspace=0.3)
 
 for col, group in enumerate(groups):
     ax = axes[0, col]
+    ax2 = axes[1, col]
+    ax3 = axes[2, col]
     hatch_dict = {
         'TR': '/',  # Single diagonal line
         'TR-no(ADB)': '.',  # Dotted pattern
@@ -1485,10 +1487,14 @@ for col, group in enumerate(groups):
     }
     docs = ['Doctor A']
     methods = ['TR', 'Task-Only (Current Practice)', 'TR-no(ADB)']
-    cleaned_methods = ['TR', 'Task-Only \n (Current Practice)', 'TR-no(ADB)']
+    cleaned_methods = ['TR', 'Task-\nOnly', 'TR-\nno(ADB)']
     
     bar_means = {}
     bar_se = {}
+    tdl_bar_means = {}
+    tdl_bar_se = {}
+    cost_bar_means = {}
+    cost_bar_se = {}
     
     for method in methods: 
         bar_means[method] = list(bars[
@@ -1505,6 +1511,34 @@ for col, group in enumerate(groups):
             (bars.Method == method)
         ].sort_values(by='Doctor').Std)
 
+        tdl_bar_means[method] = list(bars[
+            (bars.Group == group) & 
+            (bars.Method != 'TR-SelectiveOnly') & 
+            (bars.Metric == 'Improvement w.r.t. TDL') & 
+            (bars.Method == method)
+        ].sort_values(by='Doctor').Mean)
+        
+        tdl_bar_se[method] = list(bars[
+            (bars.Group == group) & 
+            (bars.Method != 'TR-SelectiveOnly') & 
+            (bars.Metric == 'Improvement w.r.t. TDL') & 
+            (bars.Method == method)
+        ].sort_values(by='Doctor').Std)
+
+        cost_bar_means[method] = -1*np.array(list(bars[
+            (bars.Group == group) & 
+            (bars.Method != 'TR-SelectiveOnly') & 
+            (bars.Metric == 'Reconciliation Costs Incurred') & 
+            (bars.Method == method)
+        ].sort_values(by='Doctor').Mean))
+        
+        cost_bar_se[method] = list(bars[
+            (bars.Group == group) & 
+            (bars.Method != 'TR-SelectiveOnly') & 
+            (bars.Metric == 'Reconciliation Costs Incurred') & 
+            (bars.Method == method)
+        ].sort_values(by='Doctor').Std)
+
     x = np.arange(len(methods)) * 0.7 # Create distinct x positions for each method
     width = 0.5  # Width of the bars
     
@@ -1513,15 +1547,41 @@ for col, group in enumerate(groups):
         rects_tdl = ax.bar(x[i], bar_means[method], width, color=color_dict[method], 
                            edgecolor='black', hatch=hatch_dict[method], yerr=bar_se[method])
 
+        rects_tdl2 = ax2.bar(x[i], tdl_bar_means[method], width, color=color_dict[method], 
+                           edgecolor='black', hatch=hatch_dict[method], yerr=tdl_bar_se[method])
+        rects_tdl3 = ax3.bar(x[i], cost_bar_means[method], width, color=color_dict[method], 
+                           edgecolor='black', hatch=hatch_dict[method], yerr=cost_bar_se[method])
+        
+
     if group == 'Female':
-        ax.set_ylabel('Value Added')
+        ax.set_ylabel('Value Added \n', size=8)
+        ax2.set_ylabel('Accuracy Improvement \n w.r.t. Human', size=8)
+        ax3.set_ylabel('Advising Costs \n Incurred \n', size=8)
+    
+    for col, group in enumerate(groups):
+        axes[0, col].set_title(f"{group}", fontsize=12)
 
     # Set the x-tick labels to the cleaned method names
     ax.set_xticks(x)
+    ax.set_ylim(-0.065, 0.02)
     ax.set_xticklabels(cleaned_methods, size=6)
+    ax2.set_xticks(x)
+    ax2.set_ylim(-0.035, 0.025)
+    ax2.set_xticklabels(cleaned_methods, size=6)
+    ax3.set_xticks(x)
+    ax3.set_ylim(0.0, 0.035)
+    ax3.set_xticklabels(cleaned_methods, size=6)
 
     # Optional: add a legend for clarity
     #ax.legend(prop={'size': 4.5})
+
+    plt.tight_layout()
+
+# Create subplots: 5 rows, 3 columns
+fig, axes = plt.subplots(4, 3, figsize=(6.5, 6))
+
+# Adjust layout
+plt.subplots_adjust(hspace=0.4, wspace=0.3)
 
 # Function to generate each plot
 def create_boxplot(ax, group, metric):
@@ -1542,10 +1602,10 @@ def create_boxplot(ax, group, metric):
 # Loop over each row and column to create the subplots
 for row, metric in enumerate(metrics1):
     for col, group in enumerate(groups):
-        ax = axes[row+1, col]  # Get the axis for the current subplot
+        ax = axes[row, col]  # Get the axis for the current subplot
         create_boxplot(ax, group, metric)
         if group == 'Female':
-           ax.set_ylabel(cleaned_metric_names[metric])
+           ax.set_ylabel(cleaned_metric_names[metric], size=8)
         ax.set_xticklabels(cleaned_methods, size=6)
         if metric == 'AdviceAcc':
             ax.set_ylim(0.0, 1.05)

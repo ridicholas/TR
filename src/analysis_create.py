@@ -569,7 +569,7 @@ def make_TL_v_cost_plot(results_means, results_stderrs, name):
 costs = [0, 0.1, 0.2, 0.3, 0.4, 0.5]
 
 num_runs = 20
-datasets = ['fico']
+datasets = ['hr']
 names = ['biased', 'biased_dec_bias', 'offset_01']
 which_to_do = ['tr', 'tr2s', 'tr-no(adb)', 'brs']
 
