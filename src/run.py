@@ -244,7 +244,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             pickle.dump(hyrs_model, f)
     
     if 'brs' in which_models: 
-        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/brs_model_{human_name+custom_name}{appendType}.pkl')  or True:
+        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/brs_model_{human_name+custom_name}{appendType}.pkl'):
             print('tr result not there yet, starting training')
             brs_model = brs(x_train, y_train)
             brs_model.generate_rules(supp = supp, maxlen=maxlen, N=Nrules,  method='randomforest')
@@ -262,7 +262,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             print('brs already there!')
 
     if 'tr' in which_models:
-        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr_model_{human_name+custom_name}{appendType}.pkl')  or True:
+        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr_model_{human_name+custom_name}{appendType}.pkl'):
             print('tr result not there yet, starting training')
             #train estimates
             params = {
@@ -316,7 +316,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
     if 'tr2stage' in which_models:
         #train estimates
-        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr2stage_model_{human_name+custom_name}{appendType}.pkl') or True:
+        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr2stage_model_{human_name+custom_name}{appendType}.pkl'):
             print('tr2tage result not there yet, starting training')
             #e_y_mod = xgb.XGBClassifier().fit(x_train_non_binarized, y_train)
             #e_yb_mod = xgb.XGBClassifier().fit(x_train_non_binarized, human.get_decisions(x_train, y_train))
@@ -373,7 +373,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
     if 'tr-no(ADB)' in which_models:
         print('tr-no(ADB) in whichmodels')
 
-        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr-no(ADB)_model_{human_name+custom_name}{appendType}.pkl')  or True:
+        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr-no(ADB)_model_{human_name+custom_name}{appendType}.pkl'):
             print('result not there yet, starting training')
             #train estimates
             #e_y_mod = xgb.XGBClassifier().fit(x_train_non_binarized, y_train)
