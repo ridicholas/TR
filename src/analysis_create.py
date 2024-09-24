@@ -264,8 +264,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
                     learned_adb = ADB(adb_mod)
 
                     if 'tr' in which_to_do:
-                        tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                        tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=False,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                         tr_model_preds_with_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                         tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     else:
@@ -275,7 +275,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
                         tr_team_preds_no_reset = np.ones(len(y_test))
 
                     if 'tr2s' in which_to_do:
-                        tr2s_team_preds_with_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        tr2s_team_preds_with_reset = tr2s_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                         tr2s_model_preds_with_reset = tr2s_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     else:
                         tr2s_team_preds_with_reset = np.ones(len(y_test))
@@ -296,14 +296,31 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
                     
                     if 'tr-no(adb)' in which_to_do:
                         trnoadb_model_preds_w_reset = trnoadb_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                        trnoadb_team_preds_w_reset = trnoadb_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        trnoadb_team_preds_w_reset = trnoadb_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                         hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                        hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, noADB, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                        hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
                     else:
                         trnoadb_model_preds_w_reset = np.ones(len(y_test))
                         trnoadb_team_preds_w_reset = np.ones(len(y_test))
                         hyrs_norecon_model_preds = np.ones(len(y_test))
                         hyrs_norecon_team_preds = np.ones(len(y_test))
+
+                    if 'brs' in which_to_do:
+                        brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
+                        brs_reset = brs_expected_loss_filter(brs_mod, x_test, brs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=brs_conf, fA=learned_adb.ADB_model_wrapper, asym_loss=[1,1], contradiction_reg=cost)
+                        brs_team_preds_w_reset = brs_team_preds.copy()
+                        brs_team_preds_w_reset[brs_reset] = human_decisions[brs_reset]
+                        brs_model_preds_w_reset = brs_model_preds.copy()
+                        brs_model_preds_w_reset[brs_reset] = human_decisions[brs_reset]
+                    else:
+                        brs_team_preds = np.ones(len(y_test))
+                        brs_model_preds = np.ones(len(y_test))
+                        brs_conf = np.ones(len(y_test))
+                        brs_reset = np.zeros(len(y_test))
+                        brs_team_preds_w_reset = np.ones(len(y_test))
+                        brs_model_preds_w_reset = np.ones(len(y_test))
+
+
 
 
 
@@ -339,6 +356,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
                         tr2s_team_preds_with_reset = np.ones(len(y_test))
                         tr2s_mod_covered_w_reset = np.ones(len(y_test))
                         tr2s_mod_confs = np.ones(len(y_test))
+
+
                 
                     
                     #hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
