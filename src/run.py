@@ -19,14 +19,14 @@ from datetime import datetime
 class ADB(object):
     def __init__(self, adb_model) -> None:
         self.adb_model = adb_model
-    def ADB_model_wrapper(self, human_conf, model_conf, agreement):
-        X = pd.DataFrame({'human_conf': human_conf, 'model_confs': model_conf, 'agreement':agreement})
+    def ADB_model_wrapper(self, human_conf, model_conf, agreement, asym_scaling=0, asym_scaler=0):
+        X = pd.DataFrame({'human_conf': human_conf, 'model_confs': model_conf, 'agreement':agreement, 'asym_scaling': asym_scaling})
         try:
             return self.adb_model.predict_proba(X)[:, 1]
         except:
-            return self.adb_model(human_conf, model_conf, agreement)
+            return self.adb_model(human_conf, model_conf, agreement, asym_scaling=asym_scaling, asym_scaler=asym_scaler)
         
-def noADB(human_conf, model_conf, agreement):
+def noADB(human_conf, model_conf, agreement, asym_scaling=0, asym_scaler=0):
     return np.ones(len(human_conf))
     
 #a run of the experiment consists of: a dataset, a human, a set of models, and a set of parameters
@@ -79,6 +79,17 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         human.val_decisions = human.get_decisions(x_val, y_val)
         human.test_decisions = human.get_decisions(x_test, y_test)
         human.learning_decisions = human.get_decisions(x_learning, y_learning)
+        if runtype == 'asym':
+            human.beta = 1
+            human.asym_scaling_learning = human.learning_decisions
+            human.asym_scaling_val = human.val_decisions
+            human.asym_scaling =  human.train_decisions
+            human.asym_scaler = 0.5
+        else:
+            human.asym_scaler = 0
+            human.asym_scaling_learning = 0
+            human.asym_scaling_val = 0
+            human.asym_scaling =  0
         with open(f'results/{dataset}/run{run_num}/{human_name+custom_name}.pkl', 'wb') as f:
             pickle.dump(human, f)
     else:
@@ -89,8 +100,9 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             with open(f'results/{dataset}/run{run_num}/{human_name+custom_name}.pkl', 'rb') as f:
                 human = pickle.load(f)
 
-    if runtype == 'asym':
-        human.beta = 0.5
+
+
+    
     print('humans loaded')
     #train confidence model
     if remake_humans or not os.path.exists(f'results/{dataset}/run{run_num}/conf_model_{human_name+custom_name}.pkl'):
@@ -147,12 +159,19 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
                                             'agreement': (initial_task_model.predict(x_train) == human.train_decisions)})
 
             if runtype == 'asym':
-                human.beta = 1
+                adb_learning_data['asym_scaling'] = human.asym_scaling_learning
+                adb_val_data['asym_scaling'] = human.asym_scaling_val
+                adb_train_data['asym_scaling'] = human.asym_scaling
+            else:
+                adb_learning_data['asym_scaling'] = np.zeros(adb_learning_data.shape[0])
+                adb_val_data['asym_scaling'] = np.zeros(adb_val_data.shape[0])
+                adb_train_data['asym_scaling'] = np.zeros(adb_train_data.shape[0])
+
 
             
-            p_accepts = human.ADB(adb_learning_data['human_conf'], adb_learning_data['model_confs'], adb_learning_data['agreement'])
-            p_accepts_val = human.ADB(adb_val_data['human_conf'], adb_val_data['model_confs'], adb_val_data['agreement'])
-            p_accepts_train = human.ADB(adb_train_data['human_conf'], adb_train_data['model_confs'], adb_train_data['agreement'])
+            p_accepts = human.ADB(adb_learning_data['human_conf'], adb_learning_data['model_confs'], adb_learning_data['agreement'], asym_scaler=human.asym_scaler, asym_scaling=human.asym_scaling_learning)
+            p_accepts_val = human.ADB(adb_val_data['human_conf'], adb_val_data['model_confs'], adb_val_data['agreement'], asym_scaler=human.asym_scaler, asym_scaling=human.asym_scaling_val)
+            p_accepts_train = human.ADB(adb_train_data['human_conf'], adb_train_data['model_confs'], adb_train_data['agreement'], asym_scaler=human.asym_scaler, asym_scaling=human.asym_scaling)
             realized_accepts = bernoulli.rvs(p=p_accepts, size=len(p_accepts))
             roc_trains = []
             roc_vals = []
@@ -244,7 +263,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             pickle.dump(hyrs_model, f)
     
     if 'brs' in which_models: 
-        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/brs_model_{human_name+custom_name}{appendType}.pkl'):
+        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/brs_model_{human_name+custom_name}{appendType}.pkl') or True:
             print('tr result not there yet, starting training')
             brs_model = brs(x_train, y_train)
             brs_model.generate_rules(supp = supp, maxlen=maxlen, N=Nrules,  method='randomforest')
@@ -257,12 +276,12 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
             with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/brs_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
                 brs_model.make_lite()
                 pickle.dump(brs_model, f)
-                #del brs_model
+                del brs_model
         else:
             print('brs already there!')
 
     if 'tr' in which_models:
-        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr_model_{human_name+custom_name}{appendType}.pkl'):
+        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr_model_{human_name+custom_name}{appendType}.pkl') or True:
             print('tr result not there yet, starting training')
             #train estimates
             params = {
@@ -295,7 +314,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
                         human.get_confidence(x_train), 
                         p_y=e_y_mod.predict_proba(x_train_non_binarized))
 
-            tr_model.set_parameters(alpha = alpha, beta=beta, contradiction_reg=contradiction_reg, fairness_reg=fairness_reg, force_complete_coverage=False, asym_loss=asym_loss, fA=adb.ADB_model_wrapper)
+            tr_model.set_parameters(alpha = alpha, beta=beta, contradiction_reg=contradiction_reg, fairness_reg=fairness_reg, force_complete_coverage=False, asym_loss=asym_loss, fA=adb.ADB_model_wrapper, asym_scaler=human.asym_scaler, asym_scaling=human.asym_scaling)
 
             tr_model.generate_rulespace(supp = supp, maxlen=maxlen, N=Nrules, need_negcode=True, method='randomforest',criteria='precision')
             _, _, _ = tr_model.train(Niteration=Niteration, T0=0.01, print_message=False, with_reset=True)
@@ -373,7 +392,7 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
     if 'tr-no(ADB)' in which_models:
         print('tr-no(ADB) in whichmodels')
 
-        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr-no(ADB)_model_{human_name+custom_name}{appendType}.pkl'):
+        if not os.path.isfile(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/tr-no(ADB)_model_{human_name+custom_name}{appendType}.pkl') or True:
             print('result not there yet, starting training')
             #train estimates
             #e_y_mod = xgb.XGBClassifier().fit(x_train_non_binarized, y_train)
@@ -458,27 +477,26 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
 
 
 
-
-#run('heart_disease', 0, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 1, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 2, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 3, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 4, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 5, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 6, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 7, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 8, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 9, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 10, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 11, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 12, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 13, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 14, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 15, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 16, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 17, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 18, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
-#run('heart_disease', 19, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal', use_true=False, subsplit=1)
+run('heart_disease', 0, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+run('heart_disease', 1, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+run('heart_disease', 2, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+run('heart_disease', 3, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+run('heart_disease', 4, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 5, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 6, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 7, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 8, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 9, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 10, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 11, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 12, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 13, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 14, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 15, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 16, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 17, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 18, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 19, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
 
 
 

@@ -291,7 +291,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
         
         dataset = dataset
         human, adb_mod, conf_mod = load_humans(dataset, whichtype, run)
-        brs_mod = load_results(dataset, f'_{whichtype}' , run, 0.0, 'brs')
+        
 
 
         for cost in costs:
@@ -300,6 +300,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
             hyrs_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr')
             trnoadb_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr-no(ADB)')
             tr2s_mod = load_results(dataset, f'_{whichtype}', run, cost, 'tr')
+            brs_mod = load_results(dataset, f'_{whichtype}' , run, 0.0, 'brs')
             #load e_y and e_yb mods
             #with open(f'results/{dataset}/run{run}/cost{float(cost)}/eyb_model_{whichtype}.pkl', 'rb') as f:
             #    e_yb_mod = pickle.load(f)
@@ -371,11 +372,10 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
 
             hyrs_norecon_mod = deepcopy(tr_mod)
 
-            if cost == 0.0:
-                brs_mod.df = x_train
-                brs_mod.Y = y_train
-                brs_model_preds = brs_predict(brs_mod.opt_rules, x_test)
-                brs_conf = brs_predict_conf(brs_mod.opt_rules, x_test, brs_mod)
+            
+            brs_mod.df = x_train
+            brs_mod.Y = y_train
+
 
 
             #rocs = []
@@ -464,6 +464,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, which_to
                     hyrs_norecon_team_preds = np.ones(len(y_test))
 
                 if 'brs' in which_to_do:
+                    brs_model_preds = brs_predict(brs_mod.opt_rules, x_test)
+                    brs_conf = brs_predict_conf(brs_mod.opt_rules, x_test, brs_mod)
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, parADB)
                     brs_reset = brs_expected_loss_filter(brs_mod, x_test, brs_model_preds, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), e_human_responses=human_decisions, conf_model=brs_conf, fA=parADB, asym_loss=[1,1], contradiction_reg=cost)
                     brs_team_preds_w_reset = brs_team_preds.copy()

@@ -14,7 +14,40 @@ from run import evaluate_adb_model
 from copy import deepcopy
 import os
 
-def noADB(human_conf, model_conf, agreement):
+
+def weighted_avg_and_std(values, weights=None, filter=['Female','Male','Total'], num_runs=20):
+        """
+        Return the weighted average and standard deviation.
+
+        They weights are in effect first normalized so that they 
+        sum to 1 (and so they must not all be 0).
+
+        values, weights -- NumPy ndarrays with the same shape.
+        """
+        if weights is not None:
+                new_weights = weights.copy()
+                new_weights[values.isna()] = 0
+        result = []
+        result_mean = []
+        result_std = []
+        for pop in filter:
+                v = values.loc[pop, 'Total'][values.loc[pop, 'Total'].notna()]
+                if weights is None:
+                    w = np.ones(len(v))
+                    average = np.nanmean(v)
+                    variance = np.nanstd(v)**2
+                else:
+                        
+                        w = new_weights.loc[pop, 'Total'][values.loc[pop, 'Total'].notna()]
+                        average = np.average(v, weights=w)
+                
+                        variance = np.average((v-average)**2, weights=w)
+                result.append(str(round(average,3)) + ' \pm ' + str(round(math.sqrt(variance)/math.sqrt(num_runs), 3)))
+                result_mean.append(str(round(average,3)))
+                result_std.append(str(round(math.sqrt(variance)/math.sqrt(num_runs), 3)))
+        return result, result_mean, result_std
+
+def noADB(human_conf, model_conf, agreement, asym_scaling=0, asym_scaler=0):
     return np.ones(len(human_conf))
 
 def load_datasets(dataset, run_num):
@@ -90,7 +123,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype + 'asymFinal'
+    whichtype = whichtype + 'asymFinal_newbehav'
     for run in bar(range(num_runs)):
 
         
@@ -240,14 +273,16 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
                     human_decisions = human.get_decisions(x_test, y_test)
                     human_conf = human.get_confidence(x_test)
+                    human_scaling = human_decisions
+                    
                     conf_mod_preds = conf_mod.predict(x_test_non_binarized)
 
                     learned_adb = ADB(adb_mod)
-                    tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized), asym_scaler=human.asym_scaler, asym_scaling=human_scaling)[0]
+                    tr_team_preds_no_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, learned_adb.ADB_model_wrapper, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized), asym_scaler=human.asym_scaler, asym_scaling=human_scaling)[0]
 
-                    tr_model_preds_with_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    tr_model_preds_with_reset = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), asym_scaler=human.asym_scaler, asym_scaling=human_scaling)[0]
+                    tr_model_preds_no_reset = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), asym_scaler=human.asym_scaler, asym_scaling=human_scaling)[0]
 
                     hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions)[0]
                     hyrs_team_preds = hyrs_mod.humanifyPreds(hyrs_model_preds, human_decisions, human_conf, learned_adb.ADB_model_wrapper, x_test)
@@ -266,21 +301,22 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
                     learned_adb = ADB(adb_mod)
                     human_decisions = human.get_decisions(x_test, y_test)
                     human_conf = human.get_confidence(x_test)
-                    tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    human_scaling = human_decisions
+                    tr_team_preds_with_reset = tr_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized), asym_scaler=human.asym_scaler, asym_scaling=human_scaling)[0]
                     tr_team_preds_no_reset = tr_team_preds_with_reset #tr_mod.predictHumanInLoop(x_test, human_decisions,human_conf, human.ADB, with_reset=False, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
 
-                    tr_model_preds_with_reset, tr_mod_covered_w_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
+                    tr_model_preds_with_reset, tr_mod_covered_w_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized), asym_scaler=human.asym_scaler, asym_scaling=human_scaling)
                     #tr_model_preds_no_reset, tr_mod_covered_no_reset, _ = tr_mod.predict(x_test, human_decisions, with_reset=False, conf_human=human_conf, p_y=e_y_mod.predict_proba(x_test_non_binarized))
                     tr_model_preds_no_reset = tr_model_preds_with_reset
                     tr_mod_confs = tr_mod.get_model_conf_agreement(x_test, human_decisions, prs_min=tr_mod.prs_min, nrs_min=tr_mod.nrs_min)[0]
                 
 
-                    hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    hyrs_team_preds = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_model_preds = hyrs_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized), asym_scaler=human.asym_scaler, asym_scaling=human_scaling)[0]
+                    hyrs_team_preds = hyrs_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized), asym_scaler=human.asym_scaler, asym_scaling=human_scaling)[0]
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
 
-                    hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
-                    hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized))[0]
+                    hyrs_norecon_model_preds = hyrs_norecon_mod.predict(x_test, human_decisions, with_reset=True, conf_human=human_conf,  p_y=e_y_mod.predict_proba(x_test_non_binarized), asym_scaler=human.asym_scaler, asym_scaling=human_scaling)[0]
+                    hyrs_norecon_team_preds = hyrs_norecon_mod.predictHumanInLoop(x_test, human_decisions, human_conf, human.ADB, with_reset=True, p_y=e_y_mod.predict_proba(x_test_non_binarized), asym_scaler=human.asym_scaler, asym_scaling=human_scaling)[0]
                     brs_team_preds = brs_humanifyPreds(brs_model_preds, brs_conf, human_decisions, human_conf, human.ADB)
 
 
@@ -731,7 +767,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
 
 costs = [0.0]
-num_runs = 20
+num_runs = 5
 dataset = 'heart_disease'
 case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, costs, False, asym_costs=[3,1])
    

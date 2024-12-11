@@ -171,11 +171,14 @@ class Human(object):
         final_decisions = p_a*advice + (1-p_a)*self.get_decisions(X)
         return final_decisions
     
-    def ADB(self, c_human, c_model, agreement, delta=5, beta=0.5, k=0.63, gamma=0.95):
+    def ADB(self, c_human, c_model, agreement, delta=5, beta=0.5, k=0.63, gamma=0.95, asym_scaler=0, asym_scaling=0):
         # from will you accept the AI recommendation
         
         if hasattr(self, 'beta'):
             beta = self.beta
+
+        if type(asym_scaling) == int:
+            asym_scaling = np.zeros(len(c_human))
 
         
 
@@ -204,6 +207,11 @@ class Human(object):
 
         prob = np.exp(delta*util_accept) / \
             (np.exp(delta*util_accept)+np.exp(delta*util_reject))
+        
+        prob[asym_scaling == 1] = prob[asym_scaling == 1]*(1-asym_scaler)
+        prob[asym_scaling == 0] = prob[asym_scaling == 0]*(1+asym_scaler)
+        prob[prob > 1] = 1
+        prob[prob < 0] = 0
         df = pd.DataFrame({'c_human': c_human, 'c_human_new': c_human_new,
                         'conf': conf, 'c_model': c_model, 'agreement': agreement, 'prob': prob})
 

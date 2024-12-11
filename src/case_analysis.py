@@ -168,7 +168,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         results.loc[cost] = [[] for i in range(len(results.columns))]
 
     bar=progressbar.ProgressBar()
-    whichtype = whichtype + 'case2' #"_dec_bias"
+    whichtype = whichtype + 'case2_cal' #"_dec_bias"
     r_mean = []
     hyrs_R = []
     tr_R = []
@@ -358,7 +358,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
 
             totals = {}
-            for i in range(25):
+            for i in range(50):
                 
                 
 
@@ -1294,8 +1294,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
         for group in ['Female', 'Male', 'Total']:
             for metric in ['Advising Accuracy', 'Advising Rate', 'Contradiction Rate', 'Advising Confidence', 'Contradiction Acceptance Rate', 'Improvement w.r.t. TDL', 'Reconciliation Costs Incurred', 'Improved in TTL w.r.t. Human', 'Self Advising Rate']:
                 bars = bars.append({'Method': method, 'Group': group, 'Mean': float(method_dict[method].loc[metric, group].split(' \pm ')[0]), 'Std': float(method_dict[method].loc[metric, group].split(' \pm ')[1]), 'Metric': metric}, ignore_index=True)
-    bars['Doctor'] = 'Doctor A'
-    bars.to_pickle('results/bars_docA.pkl')
+    bars['Doctor'] = 'Doctor B'
+    bars.to_pickle('results/bars_docB.pkl')
 
 
     
@@ -1360,8 +1360,8 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
     bplot_data['Group'] = bplot_data.index
     
     
-    bplot_data['Doctor'] = 'Doctor A'
-    bplot_data.to_pickle('results/bplotA.pkl')
+    bplot_data['Doctor'] = 'Doctor B'
+    bplot_data.to_pickle('results/bplotB.pkl')
     
     color_dict = {'TR': '#348ABD', 'tr': '#348ABD', 'TR-no(ADB)': '#8EBA42', 'tr-no(ADB)': '#8EBA42', 'Task-Only (Current Practice)':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00'}
     '''
@@ -1371,7 +1371,7 @@ color_dict = {'TR': '#348ABD', 'tr': '#348ABD', 'TR-no(ADB)': '#8EBA42',
     
 # Methods ordered from top to bottom: 'tr', 'Task-Only (Current Practice)', 'tr-no(ADB)'
 methods = ['TR', 'Task-Only (Current Practice)', 'TR-no(ADB)']
-docs = ['Doctor A']
+docs = ['Doctor B']
 
 # Initialize structures to store male and female proportions for each method
 bar_means_female = {}
@@ -1394,12 +1394,12 @@ for method in methods:
 # Set up figure and axes for two side-by-side horizontal bar plots
 fig, ax = plt.subplots(1, 1, figsize=(12, 6))
 
-# Data for Doctor A (first entry) and Doctor A (second entry)
-doc_a_female = [bar_means_female[method][0] for method in methods]  # Female percentages for Doctor A
-doc_a_male = [bar_means_male[method][0] for method in methods]      # Male percentages for Doctor A
+# Data for Doctor B (first entry) and Doctor B (second entry)
+doc_a_female = [bar_means_female[method][0] for method in methods]  # Female percentages for Doctor B
+doc_a_male = [bar_means_male[method][0] for method in methods]      # Male percentages for Doctor B
 
-#doc_b_female = [bar_means_female[method][0] for method in methods]  # Female percentages for Doctor A
-#doc_b_male = [bar_means_male[method][0] for method in methods]      # Male percentages for Doctor A
+#doc_b_female = [bar_means_female[method][0] for method in methods]  # Female percentages for Doctor B
+#doc_b_male = [bar_means_male[method][0] for method in methods]      # Male percentages for Doctor B
 
 # X-axis positions for the methods (reverse the order to display them top to bottom correctly)
 x_pos = np.arange(len(methods))[::-1]
@@ -1412,7 +1412,7 @@ def add_percentage_labels(ax, male_values, female_values, x_pos):
         # Adding Female label
         ax.text(male + female / 2, x_pos[i], f'Female: {female:.2%}', va='center', ha='center', color='black', fontweight='bold')
 
-# Doctor A plot
+# Doctor B plot
 for i, method in enumerate(methods):
     # Male bar (no hatch)
     ax.barh(x_pos[i], doc_a_male[i], color=color_dict[method], label='Male', edgecolor='black')
@@ -1421,11 +1421,11 @@ for i, method in enumerate(methods):
 
 ax.set_yticks(x_pos)
 ax.set_yticklabels(methods, rotation=45)
-ax.set_title('Doctor A')
+ax.set_title('Doctor B')
 ax.set_xlim(0, 1)
 ax.set_xlabel('Proportion of Contradicting Advice Given')
 
-# Add percentage labels for Doctor A
+# Add percentage labels for Doctor B
 add_percentage_labels(ax, doc_a_male, doc_a_female, x_pos)
 
 # Doctor B plot
@@ -1437,11 +1437,11 @@ for i, method in enumerate(methods):
 
 ax2.set_yticks(x_pos)
 ax2.set_yticklabels(methods)
-ax2.set_title('Doctor A')
+ax2.set_title('Doctor B')
 ax2.set_xlim(0, 1)
 ax2.set_xlabel('Proportion of Contradicting Advice Given')
 
-# Add percentage labels for Doctor A
+# Add percentage labels for Doctor B
 add_percentage_labels(ax2, doc_b_male, doc_b_female, x_pos)
 
 # Add a common legend (no hatch for Male, dash hatch for Female)
@@ -1463,15 +1463,15 @@ metrics2 = ['ContraRate', 'Confidence', 'AcceptRate', 'Vadded']
 
 # Cleaned names for the metrics to be used in titles and y-axis labels
 cleaned_metric_names = {
-    'ContraRate': 'Advising Rate',
-    'Confidence': 'Advising Confidence \n',
-    'AcceptRate': '   Advice  \n Acceptance Rate',
-    'AdviceAcc': 'Advising Accuracy \n',
-    'Vadded': 'Value Added'
+    'ContraRate': 'Advising rate',
+    'Confidence': 'Advising confidence \n',
+    'AcceptRate': '   Advice  \n acceptance rate',
+    'AdviceAcc': 'Advising accuracy \n',
+    'Vadded': 'Value added'
 }
 
 # Create subplots: 5 rows, 3 columns
-fig, axes = plt.subplots(3, 3, figsize=(6.5, 4.5))
+fig, axes = plt.subplots(3, 3, figsize=(5.5, 4.5))
 
 # Adjust layout
 plt.subplots_adjust(hspace=0.4, wspace=0.3)
@@ -1485,7 +1485,7 @@ for col, group in enumerate(groups):
         'TR-no(ADB)': '.',  # Dotted pattern
         'Task-Only (Current Practice)': '-'  # Horizontal line
     }
-    docs = ['Doctor A']
+    docs = ['Doctor B']
     methods = ['TR', 'Task-Only (Current Practice)', 'TR-no(ADB)']
     cleaned_methods = ['TR', 'Task-\nOnly', 'TR-\nno(ADB)']
     
@@ -1545,28 +1545,28 @@ for col, group in enumerate(groups):
     # Now plot each method's bar at the corresponding x position
     for i, method in enumerate(methods):
         rects_tdl = ax.bar(x[i], bar_means[method], width, color=color_dict[method], 
-                           edgecolor='black', hatch=hatch_dict[method], yerr=bar_se[method])
+                           edgecolor='black', yerr=bar_se[method])
 
         rects_tdl2 = ax2.bar(x[i], tdl_bar_means[method], width, color=color_dict[method], 
-                           edgecolor='black', hatch=hatch_dict[method], yerr=tdl_bar_se[method])
+                           edgecolor='black', yerr=tdl_bar_se[method])
         rects_tdl3 = ax3.bar(x[i], cost_bar_means[method], width, color=color_dict[method], 
-                           edgecolor='black', hatch=hatch_dict[method], yerr=cost_bar_se[method])
+                           edgecolor='black', yerr=cost_bar_se[method])
         
 
     if group == 'Female':
-        ax.set_ylabel('Value Added \n', size=8)
-        ax2.set_ylabel('Accuracy Improvement \n w.r.t. Human', size=8)
-        ax3.set_ylabel('Advising Costs \n Incurred \n', size=8)
+        ax.set_ylabel('Value added', size=8)
+        ax2.set_ylabel('Accuracy improvement \n w.r.t. human', size=8)
+        ax3.set_ylabel('Advising costs \n incurred', size=8)
     
     for col, group in enumerate(groups):
-        axes[0, col].set_title(f"{group}", fontsize=12)
+        axes[0, col].set_title(f"{group}", fontsize=10)
 
     # Set the x-tick labels to the cleaned method names
     ax.set_xticks(x)
-    ax.set_ylim(-0.065, 0.02)
+    ax.set_ylim(-0.065, 0.05)
     ax.set_xticklabels(cleaned_methods, size=6)
     ax2.set_xticks(x)
-    ax2.set_ylim(-0.035, 0.025)
+    ax2.set_ylim(-0.035, 0.05)
     ax2.set_xticklabels(cleaned_methods, size=6)
     ax3.set_xticks(x)
     ax3.set_ylim(0.0, 0.035)
@@ -1575,10 +1575,19 @@ for col, group in enumerate(groups):
     # Optional: add a legend for clarity
     #ax.legend(prop={'size': 4.5})
 
+    subs = ['a','b','c','d','e','f','g','h','i']
+    pad = 5
     plt.tight_layout()
 
+    for ax, sub in zip(axes.flatten(), subs):
+        ax.annotate(sub, xy=(-0.4, 1.05), xytext=(0, pad),
+                    xycoords='axes fraction', textcoords='offset points',
+                    size=10, ha='center', va='baseline', weight='bold')
+
+    
+
 # Create subplots: 5 rows, 3 columns
-fig, axes = plt.subplots(4, 3, figsize=(6.5, 6))
+fig, axes = plt.subplots(4, 3, figsize=(5.5, 6))
 
 # Adjust layout
 plt.subplots_adjust(hspace=0.4, wspace=0.3)
@@ -1627,7 +1636,14 @@ for col, group in enumerate(groups):
 
     
 # Show the full plot
-fig.tight_layout()
+subs = ['a','b','c','d','e','f','g','h','i','j','k','l']
+pad = 5
+plt.tight_layout()
+
+for ax, sub in zip(axes.flatten(), subs):
+    ax.annotate(sub, xy=(-0.3, 1.05), xytext=(0, pad),
+                xycoords='axes fraction', textcoords='offset points',
+                size=10, ha='center', va='baseline', weight='bold')
 plt.show()
 plt.savefig('boxes.png', dpi=400)
     '''

@@ -548,57 +548,57 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, train=Fa
 
 def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6, set_x = False, set_y = False):
     
-    color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00', 'TR-no(Cost)': '#CC79A7'}  #75c361
-    ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, Cost)', markersize=2.2, linewidth=1.4)
-    ax.plot(results_means.index[0:stopat], results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=2.2, linewidth=1.4)
-    ax.plot(results_means.index[0:stopat], results_means['tr_team_w_reset_objective'].iloc[0:stopat], marker = '.', c=color_dict['TR'], label='TR', markersize=1.8, linewidth=1.4)
-    ax.plot(results_means.index[0:stopat], results_means['tr2s_team_w_reset_objective'].iloc[0:stopat], marker = '^', label='TR-no(Cost)', c=color_dict['TR-no(Cost)'], markersize=2.2, linewidth=1.4)
-    ax.plot(results_means.index[0:stopat], results_means['brs_team_objective'].iloc[0:stopat], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=2.2, linewidth=1.4)
-    #ax.plot(results_means.index[0:stopat], results_means['brs_team_w_reset_objective'].iloc[0:stopat], marker = 'v', c=color_dict['BRSselect'], label='TR-SelectiveOnly', markersize=2.2, linewidth=1.4)
+    color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00', 'TR-no(Cost)': '#CC79A7'}  #75c36
+    #ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, Cost)', markersize=2.1, linewidth=1)
+    #ax.plot(results_means.index[0:stopat], results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=2.1, linewidth=1)
+    ax.plot(results_means.index[0:stopat], results_means['tr_team_w_reset_objective'].iloc[0:stopat], marker = '.', c=color_dict['TR'], label='TR', markersize=2.1, linewidth=1)
+    #ax.plot(results_means.index[0:stopat], results_means['tr2s_team_w_reset_objective'].iloc[0:stopat], marker = '^', label='TR-no(Cost)', c=color_dict['TR-no(Cost)'], markersize=2.1, linewidth=1)
+    #ax.plot(results_means.index[0:stopat], results_means['brs_team_objective'].iloc[0:stopat], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=2.1, linewidth=1)
+    ax.plot(results_means.index[0:stopat], results_means['brs_team_w_reset_objective'].iloc[0:stopat], marker = 'v', c=color_dict['BRSselect'], label='TR-SelectiveOnly', markersize=2.1, linewidth=1)
     
     ax.plot(results_means.index[0:stopat], results_means['human_decision_loss'].iloc[0:stopat], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
     
     ax.fill_between(results_means.index[0:stopat], 
                 results_means['human_decision_loss'].iloc[0:stopat]-1.00*(results_stderrs['human_decision_loss'].iloc[0:stopat]),
                 results_means['human_decision_loss'].iloc[0:stopat]+1.00*(results_stderrs['human_decision_loss'].iloc[0:stopat]) ,
-                color=color_dict['Human'], alpha=0.4)
-    
+                color=color_dict['Human'], alpha=0.22)
+    '''
     ax.fill_between(results_means.index[0:stopat], 
                 results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat]-1.00*(results_stderrs['trnoadb_team_w_reset_objective'].iloc[0:stopat]),
                 results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat]+1.00*(results_stderrs['trnoadb_team_w_reset_objective'].iloc[0:stopat]) ,
-                color=color_dict['HYRSRecon'], alpha=0.4)
+                color=color_dict['HYRSRecon'], alpha=0.22)
     
     ax.fill_between(results_means.index[0:stopat], 
                 results_means['hyrs_norecon_objective'].iloc[0:stopat]-1.00*(results_stderrs['hyrs_norecon_objective'].iloc[0:stopat]),
                 results_means['hyrs_norecon_objective'].iloc[0:stopat]+1.00*(results_stderrs['hyrs_norecon_objective'].iloc[0:stopat]) ,
-                color=color_dict['HYRS'], alpha=0.4)
+                color=color_dict['HYRS'], alpha=0.22)
     
     ax.fill_between(results_means.index[0:stopat], 
                 results_means['brs_team_objective'].iloc[0:stopat]-1.00*(results_stderrs['brs_team_objective'].iloc[0:stopat]),
                 results_means['brs_team_objective'].iloc[0:stopat]+1.00*(results_stderrs['brs_team_objective'].iloc[0:stopat]) ,
-                color=color_dict['BRS'], alpha=0.4)
+                color=color_dict['BRS'], alpha=0.22)
     
-    
+    '''
     ax.fill_between(results_means.index[0:stopat], 
                 results_means['tr_team_w_reset_objective'].iloc[0:stopat]-1.00*(results_stderrs['tr_team_w_reset_objective'].iloc[0:stopat]),
                 results_means['tr_team_w_reset_objective'].iloc[0:stopat]+1.00*(results_stderrs['tr_team_w_reset_objective'].iloc[0:stopat]),
-                color=color_dict['TR'], alpha=0.4)
+                color=color_dict['TR'], alpha=0.22)
     
-    
+    '''
     ax.fill_between(results_means.index[0:stopat], 
                 results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]-1.00*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]),
-                results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]+1.00*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]), color = color_dict['TR-no(Cost)'], alpha=0.4)
+                results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]+1.00*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]), color = color_dict['TR-no(Cost)'], alpha=0.22)
     '''
     ax.fill_between(results_means.iloc[0:stopat].index,
                      results_means['brs_team_w_reset_objective'].iloc[0:stopat]-(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
                 results_means['brs_team_w_reset_objective'].iloc[0:stopat]+(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
-                color=color_dict['BRSselect'], alpha=0.4)
-    '''
+                color=color_dict['BRSselect'], alpha=0.22)
+    
     if set_x == True:
-        ax.set_xlabel('Advising Cost-Benefit Tradeoff', fontsize=7)
+        ax.set_xlabel('Cost-benefit trade-off', fontsize=7)
     if set_y == True:
-        ax.set_ylabel('Value Added', fontsize=7)
-    ax.tick_params(labelrotation=45, labelsize=8)
+        ax.set_ylabel('Value added', fontsize=7)
+    ax.tick_params(labelrotation=45, labelsize=6)
     #ax.title('{} Setting'.format(setting), fontsize=15)
     #ax.title('Income Prediction (Adult Dataset)', fontsize=15)
     #ax.legend(prop={'size': 7, 'weight': 'heavy'})
@@ -804,12 +804,13 @@ names = ['biased', 'biased_dec_bias', 'offset_01']
 
 
 fig, axs = plt.subplots(3,3)
-fig.set_size_inches(8,6)
+fig.set_size_inches(6,5)
 
 datarow = 0
 behaviorrow = 0
-cols = ['{}'.format(col) for col in ['Difficulty-Biased Decisions \n Group-Biased ADB', 'Group-Biased Decisions \n Group-Biased ADB', 'Difficulty-Biased Decisions \n Accuracy-Biased ADB']]
+cols = ['{}'.format(col) for col in ['Difficulty-biased decisions \n Group-biased ADB', 'Group-biased decisions \n Group-biased ADB', 'Difficulty-biased decisions \n Accuracy-biased ADB']]
 rows = ['{}'.format(row) for row in ['Heart Disease', '    FICO    ', '     HR     ']]
+subs = ['a','b','c','d','e','f','g','h','i']
 pad = 5
 
 #means, std, rs = make_results('heart_disease', 'biased', 5, [0.0], validation=False, train=False)
@@ -918,20 +919,28 @@ for dataset in datasets:
 for ax, col in zip(axs[0], cols):
     ax.annotate(col, xy=(0.5, 1), xytext=(0, pad),
                 xycoords='axes fraction', textcoords='offset points',
-                size='small', ha='center', va='baseline')
+                size=8, ha='center', va='baseline')
+
+
 
 for ax, row in zip(axs[:,0], rows):
     ax.annotate(row, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - pad, 0),
                 xycoords=ax.yaxis.label, textcoords='offset points',
-                size='small', ha='right', va='center', rotation=90)
+                size=8, ha='right', va='center', rotation=90)
+
+for ax, sub in zip(axs.flatten(), subs):
+    ax.annotate(sub, xy=(-0.3, 0.95), xytext=(0, pad),
+                xycoords='axes fraction', textcoords='offset points',
+                size=10, ha='center', va='baseline', weight='bold')
     
 handles, labels = ax.get_legend_handles_labels()  # Get the legend from one of the subplots
-fig.legend(handles, labels, loc='lower center', ncol=3)
-plt.subplots_adjust(bottom=0.2)
+fig.legend(handles, labels, loc='lower center', ncol=3, fontsize=7)
+
 
 
 fig.tight_layout()
-fig.savefig(f'combined_plots_final.png', dpi=400)
+plt.subplots_adjust(bottom=0.15)
+fig.savefig(f'selective_v_specialization.jpg', dpi=400)
 
 
 
