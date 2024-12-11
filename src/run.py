@@ -477,11 +477,11 @@ os.chdir('..')
 
 
 
-run('heart_disease', 0, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.2, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-run('heart_disease', 1, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.2, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-run('heart_disease', 2, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.2, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-run('heart_disease', 3, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.2, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-run('heart_disease', 4, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.2, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+run('heart_disease', 0, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.4, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+run('heart_disease', 1, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.4, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+run('heart_disease', 2, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.4, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+run('heart_disease', 3, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.4, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+run('heart_disease', 4, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.4, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
 #run('heart_disease', 5, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
 #run('heart_disease', 6, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
 #run('heart_disease', 7, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
