@@ -358,7 +358,7 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, asym_cos
 
 
             totals = {}
-            for i in range(50):
+            for i in range(25):
                 
                 
 
@@ -1669,7 +1669,7 @@ plt.savefig('boxes.png', dpi=400)
 
 
 
-costs = [0.0]
+costs = [0.2]
 num_runs = 5
 dataset = 'heart_disease'
 case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, costs, False, asym_costs=[3,1])
