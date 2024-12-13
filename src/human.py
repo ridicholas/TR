@@ -59,7 +59,7 @@ class Human(object):
                 if ('case1' in self.alteration) or ('case2' in self.alteration):
                     model_confidences[(X['sex_Male'] == 1)] = 0
                 elif 'asym' in self.alteration:
-                    model_confidences[(y == 0)] = 0 #model_confidences[(X['age50.0'] == 1)] = 0  #model_confidences[(X['age54.0'] == 0) | (X['sex_Male'] == 0)] = 0
+                    model_confidences[(y == 0) | (X['sex_Male'] == 1) ] = 0 #model_confidences[(X['age50.0'] == 1)] = 0  #model_confidences[(X['age54.0'] == 0) | (X['sex_Male'] == 0)] = 0
                 else:
                     model_confidences[(X['age50.0'] == 1)] = 0
                 
@@ -260,17 +260,12 @@ class Human(object):
                     confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 1
                     confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
                     confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.2
-                elif self.alteration == 'case_cal' or self.alteration == 'case1_cal' or self.alteration == 'case2_cal':
+                elif self.alteration == 'case2_cal':
                     confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.95
                     confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.95
                     confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal)] = 0.2
                     confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 0.2
-                elif self.alteration == 'quick':
-                    confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.9
-                    confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.2
-                    confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal)] = 0.9
-                    confidences[(X['sex_Male'] == 0) & (start_confidences > self.confVal)] = 1
-                else:
+                else: #case2 
                     confidences[(X['sex_Male'] == 1) & (start_confidences <= self.confVal)] = 0.95
                     confidences[(X['sex_Male'] == 1) & (start_confidences > self.confVal)] = 0.95
                     confidences[(X['sex_Male'] == 0) & (start_confidences <= self.confVal)] = 0.95
