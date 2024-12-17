@@ -1672,7 +1672,7 @@ plt.savefig('boxes.png', dpi=400)
 
 
 costs = [0.0]
-num_runs = 4
+num_runs = 10
 dataset = 'heart_disease'
 case1_means, case1_std, case1_rs = make_results(dataset, 'biased', num_runs, costs, False, asym_costs=[3,1])
    
