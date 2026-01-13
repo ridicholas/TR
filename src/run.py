@@ -22,7 +22,6 @@ from util_CV import ManualCalibratedClassifierCV
 #from tabpfn_client import init, TabPFNClassifier
 #import tabpfn_client
 #token = tabpfn_client.get_access_token()
-#token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiN2QxYzk5YWEtOWU1Zi00ZmRhLTk4ZGItMTQ2YzkwYmVjYzY0IiwiZXhwIjoxNzkyNTI5NDg0fQ.v67xBYN3xgSnH8K4mPx7xPzHpmSVN8qNGpr26emgly4'
 #tabpfn_client.set_access_token(token)
 
 
@@ -801,116 +800,5 @@ datasets = ['heart_disease', 'fico', 'hr']
 behavs = ['biased', 'biased_dec_bias', 'offset_01']
 
 #run('heart_disease', 0, 'biased', runtype='standard', which_models=['base_xgb','synth_xgb', 'base_tabPFN', 'synth_tabPFN'], contradiction_reg=0.0, remake_humans=False, human_decision_bias=True, custom_name='_dec_bias', use_true=False, subsplit=1)
-#run('heart_disease', 0, 'biased', runtype='standard', which_models=['base_xgb', 'synth_xgb'], contradiction_reg=0.5, remake_humans=False, human_decision_bias=False, custom_name='', use_true=False, subsplit=1)
-#run('heart_disease', 1, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2_cal', use_true=False, subsplit=1)
-#run('heart_disease', 2, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2_cal', use_true=False, subsplit=1)
-#run('heart_disease', 3, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2_cal', use_true=False, subsplit=1)
-#run('heart_disease', 4, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2_cal', use_true=False, subsplit=1)
-#run('heart_disease', 5, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2', use_true=False, subsplit=1)
-#run('heart_disease', 6, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2', use_true=False, subsplit=1)
-#run('heart_disease', 7, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2', use_true=False, subsplit=1)
-#run('heart_disease', 8, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2', use_true=False, subsplit=1)
-#run('heart_disease', 9, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2', use_true=False, subsplit=1)
-#run('heart_disease', 10, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2', use_true=False, subsplit=1)
-#run('heart_disease', 11, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2', use_true=False, subsplit=1)
-#run('heart_disease', 12, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2', use_true=False, subsplit=1)
-#run('heart_disease', 13, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2', use_true=False, subsplit=1)
-#run('heart_disease', 14, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2', use_true=False, subsplit=1)
-#run('heart_disease', 15, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2', use_true=False, subsplit=1)
-#run('heart_disease', 16, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2', use_true=False, subsplit=1)
-#run('heart_disease', 17, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2', use_true=False, subsplit=1)
-#run('heart_disease', 18, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2', use_true=False, subsplit=1)
-#run('heart_disease', 19, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2', use_true=False, subsplit=1)
 
-
-
-
-#run('heart_disease', 0, 'biased', runtype='asym', which_models=['tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav2', use_true=False, subsplit=1)
-#run('heart_disease', 1, 'biased', runtype='asym', which_models=['tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav2', use_true=False, subsplit=1)
-#run('heart_disease', 2, 'biased', runtype='asym', which_models=['tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 3, 'biased', runtype='asym', which_models=['tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 4, 'biased', runtype='asym', which_models=['tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 5, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 6, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 7, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 8, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 9, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 10, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 11, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 12, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 13, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 14, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 15, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 16, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 17, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 18, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-#run('heart_disease', 19, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-
-
-
-
-#run('heart_disease', 11, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 12, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 13, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 14, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 15, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 16, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 17, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 18, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-#run('heart_disease', 19, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymCase', use_true=False, subsplit=1)
-
-#run('heart_disease', 15, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1', use_true=False, subsplit=1)
-#run('heart_disease', 16, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1', use_true=False, subsplit=1)
-#run('heart_disease', 17, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1', use_true=False, subsplit=1)
-#run('heart_disease', 18, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1', use_true=False, subsplit=1)
-#run('heart_disease', 19, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1', use_true=False, subsplit=1)
-#run('heart_disease', 10, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1', use_true=False, subsplit=1)
-#run('heart_disease', 11, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1', use_true=False, subsplit=1)
-#run('heart_disease', 12, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1', use_true=False, subsplit=1)
-#run('heart_disease', 13, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1', use_true=False, subsplit=1)
-#run('heart_disease', 14, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1', use_true=False, subsplit=1)
-
-
-#run('heart_disease', 15, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1_cal', use_true=False, subsplit=1)
-#run('heart_disease', 16, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1_cal', use_true=False, subsplit=1)
-#run('heart_disease', 17, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1_cal', use_true=False, subsplit=1)
-#run('heart_disease', 18, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1_cal', use_true=False, subsplit=1)
-#run('heart_disease', 19, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1_cal', use_true=False, subsplit=1)
-#run('heart_disease', 10, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1_cal', use_true=False, subsplit=1)
-#run('heart_disease', 11, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1_cal', use_true=False, subsplit=1)
-#run('heart_disease', 12, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1_cal', use_true=False, subsplit=1)
-#run('heart_disease', 13, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1_cal', use_true=False, subsplit=1)
-#run('heart_disease', 14, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.1, remake_humans=False, human_decision_bias=True, custom_name='case1_cal', use_true=False, subsplit=1)
-
-
-#run('heart_disease', 2, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.2, remake_humans=True, human_decision_bias=True, custom_name='case_cal', use_true=False, subsplit=1)
-#run('heart_disease', 3, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.2, remake_humans=True, human_decision_bias=True, custom_name='case_cal', use_true=False, subsplit=1)
-#run('heart_disease', 4, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.2, remake_humans=True, human_decision_bias=True, custom_name='case_cal', use_true=False, subsplit=1)
-#run('heart_disease', 1, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.2, remake_humans=True, human_decision_bias=True, custom_name='case', use_true=False, subsplit=1)
-#run('heart_disease', 2, 'biased', runtype='asym', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.4, remake_humans=True, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
-#run('heart_disease', 4, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
-#run('heart_disease', 2, 'biased', runtype='standard', which_models=['brs', 'hyrs', 'tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
-#run('fico', 1, 'biased', runtype='standard', which_models=['hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
-#run('fico', 2, 'biased', runtype='standard', which_models=['hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
-#run('heart_disease', 3, 'biased', runtype='standard', which_models=['brs', 'hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
-#run('heart_disease', 4, 'biased', runtype='standard', which_models=['brs','hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='quickTest', use_true=False, subsplit=1)
-
-#run('heart_disease', 5, 'biased', runtype='asym', which_models=['brs'], contradiction_reg=0.0, remake_humans=False, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
-#run('heart_disease', 6, 'biased', runtype='asym', which_models=['brs'], contradiction_reg=0.0, remake_humans=False, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
-#run('heart_disease', 7, 'biased', runtype='asym', which_models=['brs'], contradiction_reg=0.0, remake_humans=False, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
-#run('heart_disease', 8, 'biased', runtype='asym', which_models=['brs'], contradiction_reg=0.0, remake_humans=False, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
-#run('heart_disease', 9, 'biased', runtype='asym', which_models=['brs'], contradiction_reg=0.0, remake_humans=False, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
-#run('heart_disease', 10, 'biased', runtype='asym', which_models=['brs'], contradiction_reg=0.0, remake_humans=False, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
-#run('heart_disease', 11, 'biased', runtype='asym', which_models=['brs'], contradiction_reg=0.0, remake_humans=False, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
-#run('heart_disease', 12, 'biased', runtype='asym', which_models=['brs'], contradiction_reg=0.0, remake_humans=False, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
-#run('heart_disease', 13, 'biased', runtype='asym', which_models=['brs'], contradiction_reg=0.0, remake_humans=False, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
-#run('heart_disease', 14, 'biased', runtype='asym', which_models=['brs'], contradiction_reg=0.0, remake_humans=False, human_decision_bias=True, custom_name='asymTest', use_true=False, subsplit=1)
-
-#run('heart_disease', 0, 'biased', runtype='standard', which_models=['brs','hyrs','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=False, custom_name='_discretionTrue', use_true=True, subsplit=1, shared_human=True)
-#run('heart_disease', 1, 'biased', runtype='standard', which_models=['brs','hyrs','tr'], contradiction_reg=0.0, remake_humans=False, human_decision_bias=False, custom_name='_discretionTrue', use_true=True, subsplit=1, shared_human=True)
-    
-
-        
-
-    
     

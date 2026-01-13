@@ -5,10 +5,11 @@ This repository contains the implementation of the **TeamRules algorithm**.
 ## Quick Start
 
 ### Main Algorithm
-The **TeamRules algorithm** implementation is found in `tr.py`. This contains the core logic for:
+The **TeamRules algorithm** implementation is found in `src/tr.py`. This contains the core logic for:
 - Generating interpretable rule-based advice
 - Modeling human acceptance/rejection of AI recommendations  
 - Optimizing when to provide advice vs. withhold it
+
 
 ### Running Experiments
 To reproduce the experimental results, run the provided shell scripts:
@@ -69,3 +70,11 @@ Difficulty-biased decisions + Accuracy-biased ADB:
 - **TR-no(ADB)**: TeamRules without human acceptance modeling
 
 TR-no(ADB, Cost) and TR-no(Cost) results are produced by evaluating the TR-no(ADB) and TR methods trained for cost 0 (assuming no cost) across all cost settings. 
+
+### Additional Key Files
+`src/human.py` contains the human class for simulating relevant human behaviors in different decision domains. 
+`util.py` contains suite of helper functions. 
+`data_processing_funcs.py` contains functions used to transform raw datasets into binarized train/test splits. 
+`run.py` contains experimental process of loading task datasets, creating humans, learning human ADB, training specified advising models, storing advising models in outputs. analysis_create files are subsequently used to produce eval outcomes of human+model pairs.
+
+***Other files can be disregarded, they include currently unused prototype code. 
