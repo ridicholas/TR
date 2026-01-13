@@ -1,10 +1,43 @@
 import pandas as pd
+import sys
+import pickle as original_pickle
+
+def load_pandas_pickle(filepath):
+    """Load pandas pickle with compatibility for old versions"""
+    
+    # Set up the compatibility module before loading
+    if 'pandas.core.indexes.numeric' not in sys.modules:
+        import pandas as pd
+        
+        class NumericIndexModule:
+            # In newer pandas, these are all just Index
+            Float64Index = pd.Index
+            Int64Index = pd.Index
+            
+            # Try to get the actual classes if they still exist
+            def __getattr__(self, name):
+                # Try pandas directly first
+                if hasattr(pd, name):
+                    return getattr(pd, name)
+                # Try core.indexes.base
+                elif hasattr(pd.core.indexes.base, name):
+                    return getattr(pd.core.indexes.base, name)
+                # Default to Index for numeric index types
+                elif name.endswith('Index'):
+                    return pd.Index
+                else:
+                    raise AttributeError(f"module has no attribute '{name}'")
+        
+        sys.modules['pandas.core.indexes.numeric'] = NumericIndexModule()
+    
+    # Now load the pickle
+    with open(filepath, 'rb') as f:
+        return original_pickle.load(f)
 import numpy as np
 import matplotlib.pyplot as plt
 from tr import *
 from hyrs import *
 from brs import *
-import pickle
 from sklearn.metrics import accuracy_score, auc, roc_auc_score, roc_curve, mean_squared_error
 from util_BOA import *
 from numpy import mean 
@@ -549,12 +582,12 @@ def make_results(dataset, whichtype, num_runs, costs, validation=False, train=Fa
 def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6, set_x = False, set_y = False):
     
     color_dict = {'TR': '#348ABD', 'HYRS': '#E24A33', 'BRS':'#988ED5', 'Human': 'darkgray', 'HYRSRecon': '#8EBA42', 'BRSselect': '#FF7F00', 'TR-no(Cost)': '#CC79A7'}  #75c36
-    #ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, Cost)', markersize=2.1, linewidth=1)
-    #ax.plot(results_means.index[0:stopat], results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=2.1, linewidth=1)
+    ax.plot(results_means.index[0:stopat], results_means['hyrs_norecon_objective'].iloc[0:stopat], marker = 'v', c=color_dict['HYRS'], label = 'TR-No(ADB, Cost)', markersize=2.1, linewidth=1)
+    ax.plot(results_means.index[0:stopat], results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat], marker = 'x', c=color_dict['HYRSRecon'], label = 'TR-No(ADB)', markersize=2.1, linewidth=1)
     ax.plot(results_means.index[0:stopat], results_means['tr_team_w_reset_objective'].iloc[0:stopat], marker = '.', c=color_dict['TR'], label='TR', markersize=2.1, linewidth=1)
-    #ax.plot(results_means.index[0:stopat], results_means['tr2s_team_w_reset_objective'].iloc[0:stopat], marker = '^', label='TR-no(Cost)', c=color_dict['TR-no(Cost)'], markersize=2.1, linewidth=1)
-    #ax.plot(results_means.index[0:stopat], results_means['brs_team_objective'].iloc[0:stopat], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=2.1, linewidth=1)
-    ax.plot(results_means.index[0:stopat], results_means['brs_team_w_reset_objective'].iloc[0:stopat], marker = 'v', c=color_dict['BRSselect'], label='TR-SelectiveOnly', markersize=2.1, linewidth=1)
+    ax.plot(results_means.index[0:stopat], results_means['tr2s_team_w_reset_objective'].iloc[0:stopat], marker = '^', label='TR-no(Cost)', c=color_dict['TR-no(Cost)'], markersize=2.1, linewidth=1)
+    ax.plot(results_means.index[0:stopat], results_means['brs_team_objective'].iloc[0:stopat], marker = 's', c=color_dict['BRS'], label='Task-Only (Current Practice)', markersize=2.1, linewidth=1)
+    #ax.plot(results_means.index[0:stopat], results_means['brs_team_w_reset_objective'].iloc[0:stopat], marker = 'v', c=color_dict['BRSselect'], label='TR-SelectiveOnly', markersize=2.1, linewidth=1)
     
     ax.plot(results_means.index[0:stopat], results_means['human_decision_loss'].iloc[0:stopat], c = color_dict['Human'], markersize=1, label='Human Alone', ls='--', alpha=0.5)
     
@@ -562,7 +595,7 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6
                 results_means['human_decision_loss'].iloc[0:stopat]-1.00*(results_stderrs['human_decision_loss'].iloc[0:stopat]),
                 results_means['human_decision_loss'].iloc[0:stopat]+1.00*(results_stderrs['human_decision_loss'].iloc[0:stopat]) ,
                 color=color_dict['Human'], alpha=0.22)
-    '''
+    
     ax.fill_between(results_means.index[0:stopat], 
                 results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat]-1.00*(results_stderrs['trnoadb_team_w_reset_objective'].iloc[0:stopat]),
                 results_means['trnoadb_team_w_reset_objective'].iloc[0:stopat]+1.00*(results_stderrs['trnoadb_team_w_reset_objective'].iloc[0:stopat]) ,
@@ -578,13 +611,12 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6
                 results_means['brs_team_objective'].iloc[0:stopat]+1.00*(results_stderrs['brs_team_objective'].iloc[0:stopat]) ,
                 color=color_dict['BRS'], alpha=0.22)
     
-    '''
+    
     ax.fill_between(results_means.index[0:stopat], 
                 results_means['tr_team_w_reset_objective'].iloc[0:stopat]-1.00*(results_stderrs['tr_team_w_reset_objective'].iloc[0:stopat]),
                 results_means['tr_team_w_reset_objective'].iloc[0:stopat]+1.00*(results_stderrs['tr_team_w_reset_objective'].iloc[0:stopat]),
                 color=color_dict['TR'], alpha=0.22)
     
-    '''
     ax.fill_between(results_means.index[0:stopat], 
                 results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]-1.00*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]),
                 results_means['tr2s_team_w_reset_objective'].iloc[0:stopat]+1.00*(results_stderrs['tr2s_team_w_reset_objective'].iloc[0:stopat]), color = color_dict['TR-no(Cost)'], alpha=0.22)
@@ -593,6 +625,7 @@ def make_multi_TL_v_cost_plot(results_means, results_stderrs, name, ax, stopat=6
                      results_means['brs_team_w_reset_objective'].iloc[0:stopat]-(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
                 results_means['brs_team_w_reset_objective'].iloc[0:stopat]+(results_stderrs['brs_team_w_reset_objective'].iloc[0:stopat]),
                 color=color_dict['BRSselect'], alpha=0.22)
+    '''
     
     if set_x == True:
         ax.set_xlabel('Cost-benefit trade-off', fontsize=7)
@@ -833,6 +866,10 @@ for dataset in datasets:
 
         '''
         if os.path.isfile(f'results/{dataset}/{name}_rs.pkl'):
+            rs = load_pandas_pickle(f'results/{dataset}/{name}_rs.pkl')
+            means = load_pandas_pickle(f'results/{dataset}/{name}_means.pkl')
+            std = load_pandas_pickle(f'results/{dataset}/{name}_std.pkl')
+            '''
             with open(f'results/{dataset}/{name}_rs.pkl', 'rb') as f:
                 rs = pickle.load(f)
             with open(f'results/{dataset}/{name}_means.pkl', 'rb') as f:
@@ -846,7 +883,7 @@ for dataset in datasets:
                 val_means = pickle.load(f)
             with open(f'results/{dataset}/val_{name}_std.pkl', 'rb') as f:
                 val_std = pickle.load(f)
-            
+            '''
 
             if name == 'biased':
                 set_y = True

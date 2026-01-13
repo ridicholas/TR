@@ -11,8 +11,19 @@ import pickle
 from scipy.stats import bernoulli, uniform
 from sklearn.metrics import accuracy_score, auc, roc_auc_score, roc_curve, mean_squared_error
 import numpy as np
-from sklearn.model_selection import train_test_split, StratifiedKFold, RandomizedSearchCV
+from sklearn.model_selection import train_test_split, StratifiedKFold, RandomizedSearchCV, ParameterSampler
 from datetime import datetime
+from llms import LLMModel, RevLLMModel
+from rev_xg import BaseXGBoostModel, RevAIXGBoostModel, simulate_human_decisions, comprehensive_evaluation, apply_expected_value_filter
+from tabpfn import TabPFNClassifier
+from sklearn.calibration import CalibratedClassifierCV
+from util_CV import ManualCalibratedClassifierCV
+#from grad_boost import BaseGradientBoostingModel, IterativeRevAIGradientBoosting, simulate_human_decisions, comprehensive_evaluation
+#from tabpfn_client import init, TabPFNClassifier
+#import tabpfn_client
+#token = tabpfn_client.get_access_token()
+#token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiN2QxYzk5YWEtOWU1Zi00ZmRhLTk4ZGItMTQ2YzkwYmVjYzY0IiwiZXhwIjoxNzkyNTI5NDg0fQ.v67xBYN3xgSnH8K4mPx7xPzHpmSVN8qNGpr26emgly4'
+#tabpfn_client.set_access_token(token)
 
 
 
@@ -20,11 +31,17 @@ class ADB(object):
     def __init__(self, adb_model) -> None:
         self.adb_model = adb_model
     def ADB_model_wrapper(self, human_conf, model_conf, agreement, asym_scaling=0, asym_scaler=0):
-        X = pd.DataFrame({'human_conf': human_conf, 'model_confs': model_conf, 'agreement':agreement, 'asym_scaling': asym_scaling})
+        X = pd.DataFrame({'human_conf': human_conf, 'model_confs': model_conf, 'agreement':agreement, 'asym_scaling':asym_scaling})
+
         try:
             return self.adb_model.predict_proba(X)[:, 1]
         except:
-            return self.adb_model(human_conf, model_conf, agreement, asym_scaling=asym_scaling, asym_scaler=asym_scaler)
+            try:
+                return self.adb_model.predict_proba(X.drop('asym_scaling', axis=1))[:, 1]
+            except:
+                return self.adb_model(human_conf, model_conf, agreement, asym_scaling=asym_scaling, asym_scaler=asym_scaler)
+
+
         
 def noADB(human_conf, model_conf, agreement, asym_scaling=0, asym_scaler=0):
     return np.ones(len(human_conf))
@@ -62,6 +79,7 @@ def evaluate_adb_model(adb_model, human, x_test, c_human_true, c_human_estimate,
     return np.array(scores).mean()
 
 def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], contradiction_reg=0, remake_humans=False, human_decision_bias=False, custom_name="", use_true=False, subsplit=1, shared_human=False):   
+    print(os.getcwd())
     print('starting run')
     # load data
     x_train, y_train, x_train_non_binarized, x_learning_non_binarized, x_learning, y_learning, x_human_train, y_human_train, x_val, y_val, x_test, y_test, x_val_non_binarized, x_test_non_binarized = load_datasets(dataset, run_num)
@@ -249,7 +267,6 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         os.makedirs(f'results/{dataset}/run{run_num}/cost{contradiction_reg}')
 
     # train advising
-    
     if 'hyrs' in which_models:
         hyrs_model = hyrs(x_train, y_train, human.train_decisions)
 
@@ -450,10 +467,341 @@ def run(dataset, run_num, human_name, runtype='standard', which_models=['tr'], c
         else:
             print('already there!')
 
+    
+
+    if any('base' in item for item in which_models):
+        
+        print('starting base training')
+
+        # Add human behavior features to training data
+        human_decisions_train = human.train_decisions.values if hasattr(human.train_decisions, 'values') else human.train_decisions
+        human_conf_train = human.get_confidence(x_train)
+
+    
+        print("Tuning base XGBoost hyperparameters...")
+        baseline_xgb_params = {
+            'n_estimators': [200, 300, 400],
+            'learning_rate': [0.01, 0.05, 0.1], 
+            'max_depth': [3, 4, 5, 6],
+            'subsample': [0.7, 0.8, 0.9],
+            'colsample_bytree': [0.7, 0.8, 0.9]
+        }
 
 
-os.chdir('..')
-#run('heart_disease', 0, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2_cal', use_true=False, subsplit=1)
+
+        # Manual random search
+        param_list = list(ParameterSampler(baseline_xgb_params, n_iter=10, random_state=1001))
+        cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=1001)
+
+        best_score = 0
+        best_params = None
+
+        for params in param_list:
+            cv_scores = []
+            for train_idx, val_idx in cv.split(x_train_non_binarized, y_train):
+                X_fold_train = x_train_non_binarized.iloc[train_idx]
+                X_fold_val = x_train_non_binarized.iloc[val_idx]
+                y_fold_train = y_train.iloc[train_idx] 
+                y_fold_val = y_train.iloc[val_idx]
+                
+                model = BaseXGBoostModel(**params)
+                model.fit(X_fold_train, y_fold_train)
+
+                
+                y_pred_proba = model.predict_proba(X_fold_val)[:, 1]
+                score = roc_auc_score(y_fold_val, y_pred_proba)
+                cv_scores.append(score)
+            
+            avg_score = np.mean(cv_scores)
+            if avg_score > best_score:
+                best_score = avg_score
+                best_params = params
+
+        print(f"Best base XGBoost params: {best_params}")
+
+        # Create final model with best params
+        baseline_model = BaseXGBoostModel(**best_params)
+        baseline_model.fit(x_train_non_binarized, y_train)
+
+
+        # Calibrate
+        calibrated = ManualCalibratedClassifierCV(baseline_model, method='sigmoid', cv='prefit')
+        calibrated.fit(x_val_non_binarized, y_val)
+        e_y_mod = calibrated
+        baseline_model = e_y_mod
+                # Create synthetic labels using the ReV-AI framework
+        p_y_train = e_y_mod.predict_proba(x_train_non_binarized)
+        baseline_model_conf = np.maximum(p_y_train[:, 0], p_y_train[:, 1])
+
+        # Estimate acceptance probabilities
+        p_accept_agree = adb.ADB_model_wrapper(human_conf_train, baseline_model_conf, 
+                                            np.ones(len(human_decisions_train)))  # agreement
+        p_accept_disagree = adb.ADB_model_wrapper(human_conf_train, baseline_model_conf, 
+                                                np.zeros(len(human_decisions_train)))  # disagreement
+        
+        # Augment training features
+        x_train_augmented = x_train_non_binarized.copy()
+        x_train_augmented['human_decision'] = human_decisions_train
+        x_train_augmented['human_confidence'] = human_conf_train
+        x_train_augmented['p_accept_agree'] = p_accept_agree
+        x_train_augmented['p_accept_disagree'] = p_accept_disagree
+        
+        # Create augmented test features
+        human_decisions_test = human.test_decisions.values if hasattr(human.test_decisions, 'values') else human.test_decisions
+        human_conf_test = human.get_confidence(x_test)
+        baseline_model_conf_test = np.maximum(baseline_model.predict_proba(x_test_non_binarized)[:, 0], 
+                                            baseline_model.predict_proba(x_test_non_binarized)[:, 1])
+        
+        #p_accept_agree_test = adb.ADB_model_wrapper(human_conf_test, baseline_model_conf_test, 
+        #                                        np.ones(len(human_decisions_test)))
+        #p_accept_disagree_test = adb.ADB_model_wrapper(human_conf_test, baseline_model_conf_test, 
+        #                                            np.zeros(len(human_decisions_test)))
+        
+        #x_test_augmented = x_test_non_binarized.copy()
+        #x_test_augmented['human_decision'] = human_decisions_test
+        #x_test_augmented['human_confidence'] = human_conf_test
+        #x_test_augmented['p_accept_agree'] = p_accept_agree_test
+        #x_test_augmented['p_accept_disagree'] = p_accept_disagree_test
+            
+        if 'base_xgb' in which_models:
+            print("Tuning base XGBoost hyperparameters...")
+            base_xgb_params = {
+                'n_estimators': [200, 300, 400],
+                'learning_rate': [0.01, 0.05, 0.1], 
+                'max_depth': [3, 4, 5, 6],
+                'subsample': [0.7, 0.8, 0.9],
+                'colsample_bytree': [0.7, 0.8, 0.9]
+            }
+
+
+
+            # Manual random search
+            param_list = list(ParameterSampler(base_xgb_params, n_iter=10, random_state=1001))
+            cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=1001)
+
+            best_score = 0
+            best_params = None
+
+            for params in param_list:
+                cv_scores = []
+                for train_idx, val_idx in cv.split(x_train_non_binarized, y_train):
+                    X_fold_train = x_train_non_binarized.iloc[train_idx]
+                    X_fold_val = x_train_non_binarized.iloc[val_idx]
+                    y_fold_train = y_train.iloc[train_idx] 
+                    y_fold_val = y_train.iloc[val_idx]
+                    
+                    model = BaseXGBoostModel(**params)
+                    model.fit(X_fold_train, y_fold_train)
+
+                    
+                    y_pred_proba = model.predict_proba(X_fold_val)[:, 1]
+                    score = roc_auc_score(y_fold_val, y_pred_proba)
+                    cv_scores.append(score)
+                
+                avg_score = np.mean(cv_scores)
+                if avg_score > best_score:
+                    best_score = avg_score
+                    best_params = params
+
+            print(f"Best base XGBoost params: {best_params}")
+
+            # Create final model with best params
+            base_xgb_model = BaseXGBoostModel(**best_params)
+            base_xgb_model.fit(x_train_non_binarized, y_train)
+
+            # Save models and augmented test data
+            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
+                pickle.dump(e_y_mod, f)
+
+                
+            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/base_xgb_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
+                pickle.dump(base_xgb_model, f)
+                #del base_xgb_model
+                
+            #with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/x_test_augmented_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
+            #    pickle.dump(x_test_augmented, f)
+                
+            print("Saved base XGBoost model and augmented test data")
+
+
+        if 'base_tabPFN' in which_models:
+            base_tabpfn_model = TabPFNClassifier(random_state=42)
+            base_tabpfn_model.fit(x_train_non_binarized, y_train)
+            #y_pred_proba = tabpfn_model.predict_proba(x_test_augmented)
+
+            #roc_auc = roc_auc_score(y_test, y_pred_proba[:, 1])
+            #print(f"TabPFN ROC AUC Score: {roc_auc:.4f}")
+            # Save models and augmented test data
+            
+            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
+                pickle.dump(e_y_mod, f)
+
+                
+            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/base_tabPFN_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
+                pickle.dump(base_tabpfn_model, f)
+                #del tabpfn_model
+                
+            #with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/x_test_augmented_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
+            #    pickle.dump(x_test_augmented, f)
+
+                
+            print("Saved base tabPFN model and augmented test data")
+
+            
+            
+
+
+    if any('synth' in item for item in which_models):
+    
+        print('synth_xgb result not there yet, starting training')
+        
+        
+        # Create synthetic labels using the ReV-AI framework
+        p_y_train = e_y_mod.predict_proba(x_train_non_binarized)
+        
+        # Get human decisions and confidence
+        human_decisions_train = human.train_decisions.values if hasattr(human.train_decisions, 'values') else human.train_decisions
+        human_conf_train = human.get_confidence(x_train)
+        
+        # Get model confidence for ADB estimation
+        baseline_model_conf = np.maximum(p_y_train[:, 0], p_y_train[:, 1])
+        
+        # Estimate acceptance probabilities
+        p_accept_agree = adb.ADB_model_wrapper(human_conf_train, baseline_model_conf, 
+                                            np.ones(len(human_decisions_train)))  # agreement
+        p_accept_disagree = adb.ADB_model_wrapper(human_conf_train, baseline_model_conf, 
+                                                np.zeros(len(human_decisions_train)))  # disagreement
+        
+        # Augment training features
+        x_train_augmented = x_train_non_binarized.copy()
+        x_train_augmented['human_decision'] = human_decisions_train
+        x_train_augmented['human_confidence'] = human_conf_train
+        x_train_augmented['p_accept_agree'] = p_accept_agree
+        x_train_augmented['p_accept_disagree'] = p_accept_disagree
+        
+        # Create augmented test features
+        human_decisions_test = human.test_decisions.values if hasattr(human.test_decisions, 'values') else human.test_decisions
+        human_conf_test = human.get_confidence(x_test)
+        p_y_test = e_y_mod.predict_proba(x_test_non_binarized)
+        baseline_model_conf_test = np.maximum(p_y_test[:, 0], p_y_test[:, 1])
+        
+        p_accept_agree_test = adb.ADB_model_wrapper(human_conf_test, baseline_model_conf_test, 
+                                                np.ones(len(human_decisions_test)))
+        p_accept_disagree_test = adb.ADB_model_wrapper(human_conf_test, baseline_model_conf_test, 
+                                                    np.zeros(len(human_decisions_test)))
+        
+        x_test_augmented = x_test_non_binarized.copy()
+        x_test_augmented['human_decision'] = human_decisions_test
+        x_test_augmented['human_confidence'] = human_conf_test
+        x_test_augmented['p_accept_agree'] = p_accept_agree_test
+        x_test_augmented['p_accept_disagree'] = p_accept_disagree_test
+        
+        
+        # Start with all synthetic labels as h (agree with human)
+        synthetic_labels = human_decisions_train.copy()
+        
+        # Calculate contradict condition for each instance
+        v_contradict = p_y_train[np.arange(len(human_decisions_train)), human_decisions_train.astype(int)]
+        v_agree = p_y_train[np.arange(len(human_decisions_train)), 1 - human_decisions_train.astype(int)]
+        
+        # Condition: contradict if p_accept * [V(y, 1-h) - V(y, h)] + alpha < 0
+        expected_benefit = p_accept_disagree * (v_contradict - v_agree) + contradiction_reg
+        contradict_mask = expected_benefit < 0
+        
+        # Set synthetic labels to 1-h where we should contradict
+        synthetic_labels[contradict_mask] = 1 - human_decisions_train[contradict_mask]
+        
+        if 'synth_xgb' in which_models:
+            print("Tuning synthetic XGBoost hyperparameters...")
+            base_xgb_params = {
+                'n_estimators': [200, 300, 400],
+                'learning_rate': [0.01, 0.05, 0.1], 
+                'max_depth': [3, 4, 5, 6],
+                'subsample': [0.7, 0.8, 0.9],
+                'colsample_bytree': [0.7, 0.8, 0.9]
+            }
+
+
+            # Manual random search
+            param_list = list(ParameterSampler(base_xgb_params, n_iter=10, random_state=1001))
+            cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=1001)
+
+            best_score = 0
+            best_params = None
+
+            for params in param_list:
+                cv_scores = []
+                for train_idx, val_idx in cv.split(x_train_augmented, synthetic_labels):
+                    X_fold_train = x_train_augmented.iloc[train_idx]
+                    X_fold_val = x_train_augmented.iloc[val_idx]
+                    y_fold_train = synthetic_labels[train_idx] 
+                    y_fold_val = synthetic_labels[val_idx]
+                    
+                    model = BaseXGBoostModel(**params)
+                    model.fit(X_fold_train, y_fold_train)
+                    
+                    y_pred_proba = model.predict_proba(X_fold_val)[:, 1]
+                    score = roc_auc_score(y_fold_val, y_pred_proba)
+                    cv_scores.append(score)
+                
+                avg_score = np.mean(cv_scores)
+                if avg_score > best_score:
+                    best_score = avg_score
+                    best_params = params
+
+            print(f"Best synthetic XGBoost params: {best_params}")
+
+            # Create final model with best params trained on synthetic labels
+            synth_xgb_model = BaseXGBoostModel(**best_params)
+            synth_xgb_model.fit(x_train_augmented, synthetic_labels)
+            
+            
+            # Save models and augmented test data
+            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
+                pickle.dump(e_y_mod, f)
+                
+                
+            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/synth_xgb_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
+                pickle.dump(synth_xgb_model, f)
+                #del synth_xgb_model
+                
+            #with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/x_test_augmented_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
+            #    pickle.dump(x_test_augmented, f)
+                
+            print(f"Saved synthetic XGBoost model and augmented test data. Contradictions: {contradict_mask.sum()}/{len(contradict_mask)}")
+        
+        if 'synth_tabPFN' in which_models:
+            synth_tabpfn_model = TabPFNClassifier(random_state=42)
+            synth_tabpfn_model.fit(x_train_augmented, synthetic_labels)
+            #y_pred_proba = tabpfn_model.predict_proba(x_test_augmented)
+
+            #roc_auc = roc_auc_score(y_test, y_pred_proba[:, 1])
+            #print(f"TabPFN ROC AUC Score: {roc_auc:.4f}")
+            # Save models and augmented test data
+            
+            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/ey_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
+                pickle.dump(e_y_mod, f)
+                #del e_y_mod
+                #del baseline_model
+                
+            with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/synth_tabPFN_model_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
+                pickle.dump(synth_tabpfn_model, f)
+                #del tabpfn_model
+                
+            #with open(f'results/{dataset}/run{run_num}/cost{contradiction_reg}/x_test_augmented_{human_name+custom_name}{appendType}.pkl', 'wb') as f:
+            #    pickle.dump(x_test_augmented, f)
+            #    del x_test_augmented
+                
+            print("Saved synthetic tabPFN model and augmented test data")
+
+
+
+#os.chdir('..')
+datasets = ['heart_disease', 'fico', 'hr']
+behavs = ['biased', 'biased_dec_bias', 'offset_01']
+
+#run('heart_disease', 0, 'biased', runtype='standard', which_models=['base_xgb','synth_xgb', 'base_tabPFN', 'synth_tabPFN'], contradiction_reg=0.0, remake_humans=False, human_decision_bias=True, custom_name='_dec_bias', use_true=False, subsplit=1)
+#run('heart_disease', 0, 'biased', runtype='standard', which_models=['base_xgb', 'synth_xgb'], contradiction_reg=0.5, remake_humans=False, human_decision_bias=False, custom_name='', use_true=False, subsplit=1)
 #run('heart_disease', 1, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2_cal', use_true=False, subsplit=1)
 #run('heart_disease', 2, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2_cal', use_true=False, subsplit=1)
 #run('heart_disease', 3, 'biased', runtype='standard', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='case2_cal', use_true=False, subsplit=1)
@@ -481,7 +829,7 @@ os.chdir('..')
 #run('heart_disease', 1, 'biased', runtype='asym', which_models=['tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav2', use_true=False, subsplit=1)
 #run('heart_disease', 2, 'biased', runtype='asym', which_models=['tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
 #run('heart_disease', 3, 'biased', runtype='asym', which_models=['tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
-run('heart_disease', 4, 'biased', runtype='asym', which_models=['tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
+#run('heart_disease', 4, 'biased', runtype='asym', which_models=['tr-no(ADB)','tr'], contradiction_reg=0.0, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
 #run('heart_disease', 5, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
 #run('heart_disease', 6, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
 #run('heart_disease', 7, 'biased', runtype='asym', which_models=['brs','tr-no(ADB)','tr'], contradiction_reg=0.1, remake_humans=True, human_decision_bias=True, custom_name='asymFinal_newbehav', use_true=False, subsplit=1)
