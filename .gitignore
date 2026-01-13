@@ -152,13 +152,16 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-#data 
+#data
 *.gpickle
 *.gexf
 *.csv
 *.pkl
 *.pickle
 *.out
+
+# Files folder
+files/
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
